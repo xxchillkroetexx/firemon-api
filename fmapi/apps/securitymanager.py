@@ -382,14 +382,15 @@ class CentralSyslogs(object):
             id = None
         if not id:
             filter_lookup = self.filter(**kwargs)
-            if len(filter_lookup) > 1:
-                raise ValueError(
-                        "get() returned more than one result. "
-                        "Check that the kwarg(s) passed are valid for this "
-                        "or use filter() or all() instead."
-                    )
-            else:
-                return filter_lookup[0]
+            if filter_lookup:
+                if len(filter_lookup) > 1:
+                    raise ValueError(
+                            "get() returned more than one result. "
+                            "Check that the kwarg(s) passed are valid for this "
+                            "or use filter() or all() instead."
+                        )
+                else:
+                    return filter_lookup[0]
             return None
 
     def filter(self, **kwargs):
@@ -424,7 +425,7 @@ class CentralSyslogs(object):
             if resp['results']:
                 return[CentralSyslog(self, cs) for cs in resp['results']]
             else:
-                return None
+                return []
         else:
             raise DeviceError("ERROR retrieving device! HTTP code: {}"
                                " Server response: {}".format(
@@ -558,7 +559,7 @@ class Devices(object):
                     results.extend(resp['results'])
                 return [Device(self, dev) for dev in results]
             else:
-                return None
+                return []
         else:
             raise DeviceError("ERROR retrieving device! HTTP code: {}"
                                " Server response: {}".format(
@@ -596,14 +597,15 @@ class Devices(object):
             id = None
         if not id:
             filter_lookup = self.filter(**kwargs)
-            if len(filter_lookup) > 1:
-                raise ValueError(
-                        "get() returned more than one result. "
-                        "Check that the kwarg(s) passed are valid for this "
-                        "or use filter() or all() instead."
-                    )
-            else:
-                return filter_lookup[0]
+            if filter_lookup:
+                if len(filter_lookup) > 1:
+                    raise ValueError(
+                            "get() returned more than one result. "
+                            "Check that the kwarg(s) passed are valid for this "
+                            "or use filter() or all() instead."
+                        )
+                else:
+                    return filter_lookup[0]
             return None
 
     def filter(self, **kwargs):
@@ -624,7 +626,7 @@ class Devices(object):
         Examples:
 
         Partial name search return multiple devices
-        >>> fm.sm.domain.devices.filter(name='bogus')
+        >>> fm.sm.devices.filter(name='bogus')
         [bogus-ASA-support-3101, bogus.lab.securepassage.com]
 
         Partial IP search.
@@ -636,7 +638,7 @@ class Devices(object):
         total = 0
         page = 0
         count = 0
-        url = url = self.url + '/filter?page={page}&pageSize=100&filter={filters}'.format(
+        url = self.url + '/filter?page={page}&pageSize=100&filter={filters}'.format(
                             page=page, filters=urlencode(kwargs, quote_via=quote))
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.get(url)
@@ -656,7 +658,56 @@ class Devices(object):
                     results.extend(resp['results'])
                 return [Device(self, dev) for dev in results]
             else:
-                return None
+                return []
+        else:
+            raise DeviceError("ERROR retrieving device! HTTP code: {}"
+                               " Server response: {}".format(
+                               response.status_code, response.text))
+
+    def search(self, arg):
+        """ Filter devices based on search parameters
+
+        Args:
+            arg (str): search parameter
+
+        Return:
+            list: List of Device(objects)
+            None: if not found
+
+        Examples:
+
+        Partial name search return multiple devices
+        >>> fm.sm.devices.search('bogus')
+        [bogus-ASA-support-3101, bogus.lab.securepassage.com]
+
+        Partial IP search.
+        >>> fm.sm.devices.search('10.2')
+        [bogus.lab.securepassage.com, Some auto test]
+        """
+        total = 0
+        page = 0
+        count = 0
+        url = self.url + '?page={page}&pageSize=100&search={filter}'.format(
+                            page=page, filter=arg)
+        self.session.headers.update({'Content-Type': 'application/json'})
+        response = self.session.get(url)
+        if response.status_code == 200:
+            resp = response.json()
+            if resp['results']:
+                results = resp['results']
+                total = resp['total']
+                count = resp['count']
+                while total > count:
+                    page += 1
+                    url = url = self.url + '?page={page}&pageSize=100&search={filter}'.format(
+                                    page=page, filter=arg)
+                    response = self.session.get(url)
+                    resp = response.json()
+                    count += resp['count']
+                    results.extend(resp['results'])
+                return [Device(self, dev) for dev in results]
+            else:
+                return []
         else:
             raise DeviceError("ERROR retrieving device! HTTP code: {}"
                                " Server response: {}".format(
@@ -756,13 +807,13 @@ class Device(Record):
         else:
             raise FiremonError('Error! unable to reload Device')
 
-    def delete(self, deleteChildren: bool=False, async: bool=False,
+    def delete(self, deleteChildren: bool=False, a_sync: bool=False,
                     sendNotification: bool=False, postProcessing: bool=True):
         """ Delete the device (and child devices)
 
         Args:
             deleteChildren (bool): delete all associated child devices
-            async (bool): ???
+            a_sync (bool): ???
             sendNotification (bool): ???
             postProcessing (bool): ???
 
@@ -777,7 +828,7 @@ class Device(Record):
         True
         """
 
-        kwargs = {'deleteChildren': deleteChildren, 'async': async,
+        kwargs = {'deleteChildren': deleteChildren, 'async': a_sync,
                   'sendNotification': sendNotification, 'postProcessing': postProcessing}
         url = self.url + '?{filters}'.format(filters=urlencode(kwargs, quote_via=quote))
         response = self.session.delete(url)
