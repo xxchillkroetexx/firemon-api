@@ -4,13 +4,13 @@
 
 from setuptools import setup, find_packages
 
-PROJECT = 'firemon_api'
+PROJECT = 'fmapi'
 
 with open('README.rst') as f:
     readme = f.read()
 
 setup(
-    name='firemon_api',
+    name='fmapi',
     version='0.0.3',
     description='NetSec Python Wrapper for Firemon API',
     long_description=readme,
