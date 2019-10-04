@@ -63,9 +63,11 @@ class SecurityManager(object):
     Valid attributes are:
         * cc (collection configs)
         * centralsyslogs
+        * collectors
         * devices
         * dp (devicepacks)
         * revisions
+        * users
         * Todo: add more as needed
     """
 
@@ -81,9 +83,11 @@ class SecurityManager(object):
         # Endpoints
         self.cc = CollectionConfigs(self)
         self.centralsyslogs = CentralSyslogs(self)
+        self.collectors = Collectors(self)
         self.devices = Devices(self)
         self.dp = DevicePacks(self)  # Todo: create the other /plugins
         self.revisions = Revisions(self)
+        self.users = Users(self)
 
     def _verify_domain(self, id):
         """ Verify that requested domain Id exists.
@@ -541,7 +545,7 @@ class Devices(object):
         total = 0
         page = 0
         count = 0
-        url = url = self.url + '?page={page}&pageSize=100'.format(page=page)
+        url = self.url + '?page={page}&pageSize=100'.format(page=page)
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.get(url)
         if response.status_code == 200:
@@ -552,7 +556,7 @@ class Devices(object):
                 count = resp['count']
                 while total > count:
                     page += 1
-                    url = url = self.url + '?page={page}&pageSize=100'.format(page=page)
+                    url = self.url + '?page={page}&pageSize=100'.format(page=page)
                     response = self.session.get(url)
                     resp = response.json()
                     count += resp['count']
@@ -650,7 +654,7 @@ class Devices(object):
                 count = resp['count']
                 while total > count:
                     page += 1
-                    url = url = self.url + '/filter?page={page}&pageSize=100&filter={filters}'.format(
+                    url = self.url + '/filter?page={page}&pageSize=100&filter={filters}'.format(
                                     page=page, filters=urlencode(kwargs, quote_via=quote))
                     response = self.session.get(url)
                     resp = response.json()
@@ -867,7 +871,9 @@ class Device(Record):
     def import_support(self, zip_file: bytes, renormalize: bool=False):
         """ Todo: Import a 'support' file, a zip file with the expected device
         config files along with 'NORMALIZED' and meta-data files. Use this
-        function and set 'renormalize = True' and mimic 'import_config'
+        function and set 'renormalize = True' and mimic 'import_config'.
+
+        NOTE: Device packs must match from the support files descriptor.json
 
         Args:
             zip_file (bytes): bytes that make a zip file
@@ -1029,7 +1035,7 @@ class Revisions(object):
         have direct access to /rev endpoint so we will injest all then parse locally
 
         Returns:
-            dict: a dictionary that contain device pack info
+            dict: a dictionary that contains revision info
         """
         total = 0
         page = 0
@@ -1303,6 +1309,7 @@ class ParsedRevision(Record):
     def __str__(self):
         return("{}".format(self.revisionId))
 
+
 class CollectionConfigs(object):
     """ Represents the Collection Configs
     Filtering is terrible given the API.
@@ -1477,6 +1484,16 @@ class CollectionConfigs(object):
         to Juniper collections)
         >>> config.pop('id')
         >>> fm.sm.cc.create(config)
+
+        *DO NOT DO THIS*
+        >>> for cc in fm.sm.cc.all():
+        ...   config = dict(cc)
+        ...   config['changePattern'] = 'shrug'
+        ...   config['usagePattern'] = 'shrug'
+        ...   config['name'] = 'defau1t'
+        ...   config.pop('index')
+        ...   fm.sm.cc.create(config)
+        ...
         """
         assert(isinstance(dev_config, dict)), 'Configuration needs to be a dict'
         self.session.headers.update({'Content-Type': 'application/json'})
@@ -1753,3 +1770,492 @@ class CollectionConfig(Record):
 
     def __str__(self):
         return("{}".format(self.name))
+
+
+class Collectors(object):
+    """ Represents the Data Collectors """
+
+    def __init__(self, api):
+        self.api = api
+        self.domainId = api.domainId
+        self.sm_url = api.sm_url  # sec mgr url
+        self.domain_url = api.domain_url  # Domain URL
+        self.url = self.sm_url + '/collector'  # Collector URL
+        self.session = api.session
+
+    def all(self):
+        """ Get all data collector servers
+
+        Return:
+            list: List of Collector(object)
+
+        Examples:
+
+        >>> collectors = fm.sm.collector.all()
+        [..., ..., ..., ..., ]
+        """
+        url = self.url + '?pageSize=100'  # Note: I'm not bothering with anything beyond 100. That's crazy
+        self.session.headers.update({'Content-Type': 'application/json'})
+        response = self.session.get(url)
+        if response.status_code == 200:
+            resp = response.json()
+            if resp['results']:
+                return [DataCollector(self, col) for col in resp['results']]
+            else:
+                return None
+        else:
+            raise DeviceError("ERROR retrieving device! HTTP code: {}"
+                               " Server response: {}".format(
+                               response.status_code, response.text))
+
+    def get(self, *args, **kwargs):
+        """ Get single device
+
+        Args:
+            *args (int): (optional) Device id to retrieve
+            **kwargs (str): (optional) see filter() for available filters
+
+        Examples:
+
+        Get by ID
+        >>> fm.sm.collectors.get(2)
+        ...
+
+        """
+        try:
+            id = args[0]
+            url = self.url + '/{id}'.format(id=str(id))
+            self.session.headers.update({'Content-Type': 'application/json'})
+            response = self.session.get(url)
+            if response.status_code == 200:
+                return DataCollector(self, response.json())
+            else:
+                raise DeviceError("ERROR retrieving device! HTTP code: {}"
+                                   " Server response: {}".format(
+                                   response.status_code, response.text))
+        except IndexError:
+            id = None
+        if not id:
+            filter_lookup = self.filter(**kwargs)
+            if filter_lookup:
+                if len(filter_lookup) > 1:
+                    raise ValueError(
+                            "get() returned more than one result. "
+                            "Check that the kwarg(s) passed are valid for this "
+                            "or use filter() or all() instead."
+                        )
+                else:
+                    return filter_lookup[0]
+            return None
+
+    def filter(self, **kwargs):
+        """ Filter devices based on search parameters
+
+        Args:
+            **kwargs (str): filter parameters
+
+        Available Filters:
+            name (you read that correct, name is the only one)
+
+        Return:
+            list: List of DataCollector(objects)
+            None: if not found
+
+        Examples:
+
+        Partial name search return multiple devices
+        >>> fm.sm.collector.filter(name='dc')
+        [..., ]
+
+        Note: did not implement multiple pages. Figured 100 collectors is extreme.
+        """
+        if not kwargs:
+            raise ValueError('filter() must be passed kwargs. ')
+        url = self.url + '?pageSize=100&search={filters}'.format(
+                                filters=next(iter(kwargs.values())))  # just takeing the first kwarg value meh
+        self.session.headers.update({'Content-Type': 'application/json'})
+        response = self.session.get(url)
+        if response.status_code == 200:
+            resp = response.json()
+            if resp['results']:
+                return[DataCollector(self, col) for col in resp['results']]
+            else:
+                return []
+        else:
+            raise DeviceError("ERROR retrieving device! HTTP code: {}"
+                               " Server response: {}".format(
+                               response.status_code, response.text))
+
+    #def create(self, *args, **kwargs):
+    #    """ Create a new Collector
+#
+    #    Args:
+    #        args (dict): a dictionary of all the config settings for a Collector
+#
+    #    Return:
+    #        int: id for newly created Collector
+#
+    #    Examples:
+#
+    #    Create by dictionary
+    #    >>> fm.sm.c...
+    #    """
+    #    try:
+    #        config = args[0]
+    #        config['domainId'] = int(self.domainId)  # API is dumb to auto-fill
+    #    except IndexError:
+    #        config = None
+    #    if not config:
+    #        config = kwargs
+    #        config['domainId'] = self.domainId # API is dumb to auto-fill
+    #    self.session.headers.update({'Content-Type': 'application/json'})
+    #    response = self.session.post(self.url, json=config)
+    #    if response.status_code == 200:
+    #        return json.loads(response.content)['id']
+    #    else:
+    #        raise FiremonError("ERROR creating collector! HTTP code: {}"
+    #                           " Server response: {}".format(
+    #                           response.status_code, response.text))
+
+    def __repr__(self):
+        return("<Collectors(url='{}')>".format(self.url))
+
+    def __str__(self):
+        return("{}".format(self.url))
+
+
+class DataCollector(Record):
+    """ Represents the Data Collector """
+
+    def __init__(self, api, config):
+        super().__init__(api, config)
+        self.sm_url = api.sm_url  # sec mgr url
+        self.domain_url = api.domain_url  # Domain URL
+        self.domainId = api.domainId
+        self._url = api.url  # Collectors
+        self.url = self._url + '/{id}'.format(id=self.id)  # DC URL
+
+    def delete(self):
+        """ Delete Data Collector device
+
+        Examples:
+        >>> dc = fm.sm.collectors.get(name='wasp.lab.firemon.com')
+        """
+        self.session.headers.update({'Content-Type': 'application/json'})
+        response = self.session.delete(self.url)
+        if response.status_code == 204:
+            return True
+        else:
+            raise FiremonError("ERROR deleting data collector! HTTP code: {}"
+                               " Server response: {}".format(
+                               response.status_code, response.text))
+
+    def update(self):
+        """ Todo: send update config to Data Collector """
+        pass
+
+    def device_list(self):
+        """ Get all devices assigned to DataCollector
+
+        Return:
+            list: List of Device(object)
+
+        Examples:
+
+        >>> devices = dc.device_list()
+        """
+        total = 0
+        page = 0
+        count = 0
+        url = self.url + '/device?page={page}&pageSize=100'.format(page=page)
+        self.session.headers.update({'Content-Type': 'application/json'})
+        response = self.session.get(url)
+        if response.status_code == 200:
+            resp = response.json()
+            if resp['results']:
+                results = resp['results']
+                total = resp['total']
+                count = resp['count']
+                while total > count:
+                    page += 1
+                    url = self.url + '/device?page={page}&pageSize=100'.format(page=page)
+                    response = self.session.get(url)
+                    resp = response.json()
+                    count += resp['count']
+                    results.extend(resp['results'])
+                return [Device(self, dev) for dev in results]
+            else:
+                return []
+        else:
+            raise DeviceError("ERROR retrieving device! HTTP code: {}"
+                               " Server response: {}".format(
+                               response.status_code, response.text))
+
+    def device_assign(self):
+        """ Todo: assign a device to DC """
+        pass
+
+    def device_remove(self):
+        """ Todo: remove a device from a DC """
+        pass
+
+    def __repr__(self):
+        return("<DataCollector(id='{}', name='{}')>".format(self.id, self.name))
+
+    def __str__(self):
+        return("{}".format(self.name))
+
+
+class Users(object):
+    """ Represents the Users """
+
+    def __init__(self, api):
+        self.api = api
+        self.domainId = api.domainId
+        self.sm_url = api.sm_url  # sec mgr url
+        self.domain_url = api.domain_url  # Domain URL
+        self.url = self.domain_url + '/user'  # user URL
+        self.session = api.session
+
+    def all(self):
+        """ Get all users
+
+        Return:
+            list: List of User(object)
+
+        Examples:
+
+        >>> users = fm.sm.users.all()
+        [..., ..., ..., ..., ]
+        """
+        url = self.url + '?includeSystem=true&includeDisabled=true&sort=id&pageSize=100'
+        self.session.headers.update({'Content-Type': 'application/json'})
+        response = self.session.get(url)
+        if response.status_code == 200:
+            resp = response.json()
+            if resp['results']:
+                return [User(self, user) for user in resp['results']]
+            else:
+                return None
+        else:
+            raise FiremonError("ERROR retrieving user! HTTP code: {}"
+                               " Server response: {}".format(
+                               response.status_code, response.text))
+
+    def get(self, *args, **kwargs):
+        """ Get single user
+
+        Args:
+            *args (int): (optional) User id to retrieve
+            **kwargs (str): (optional) see filter() for available filters
+
+        Examples:
+
+        Get by ID
+        >>> fm.sm.users.get(2)
+        ...
+
+        """
+        try:
+            id = args[0]
+            url = self.url + '/{id}'.format(id=str(id))
+            self.session.headers.update({'Content-Type': 'application/json'})
+            response = self.session.get(url)
+            if response.status_code == 200:
+                return User(self, response.json())
+            else:
+                raise FiremonError("ERROR retrieving user! HTTP code: {}"
+                                   " Server response: {}".format(
+                                   response.status_code, response.text))
+        except IndexError:
+            id = None
+        if not id:
+            filter_lookup = self.filter(**kwargs)
+            if filter_lookup:
+                if len(filter_lookup) > 1:
+                    raise ValueError(
+                            "get() returned more than one result. "
+                            "Check that the kwarg(s) passed are valid for this "
+                            "or use filter() or all() instead."
+                        )
+                else:
+                    return filter_lookup[0]
+            return None
+
+    def filter(self, **kwargs):
+        """ Filter users based on search parameters
+
+        Args:
+            **kwargs (str): filter parameters
+
+        Available Filters:
+            username, firstName, lastName, email,
+            passwordExpired, locked, expired, enabled
+
+        Return:
+            list: List of User(objects)
+            None: if not found
+
+        Examples:
+
+        Partial name search return multiple users
+        >>> fm.sm.users.filter(username='socra')
+        [<User(id='4', username=dc_socrates)>, <User(id='3', username=nd_socrates)>]
+
+        >>> fm.sm.users.filter(enabled=False)
+        [<User(id='2', username=workflow)>]
+
+        >>> fm.sm.users.filter(locked=True)
+        [<User(id='2', username=workflow)>]
+
+        """
+        if not kwargs:
+            raise ValueError('filter() must be passed kwargs. ')
+        total = 0
+        page = 0
+        count = 0
+        url = self.url + '/filter?page={page}&pageSize=100&filter={filters}'.format(
+                            page=page, filters=urlencode(kwargs, quote_via=quote))
+        self.session.headers.update({'Content-Type': 'application/json'})
+        response = self.session.get(url)
+        if response.status_code == 200:
+            resp = response.json()
+            if resp['results']:
+                results = resp['results']
+                total = resp['total']
+                count = resp['count']
+                while total > count:
+                    page += 1
+                    url = self.url + '/filter?page={page}&pageSize=100&filter={filters}'.format(
+                                    page=page, filters=urlencode(kwargs, quote_via=quote))
+                    response = self.session.get(url)
+                    resp = response.json()
+                    count += resp['count']
+                    results.extend(resp['results'])
+                return [User(self, user) for user in results]
+            else:
+                return []
+        else:
+            raise DeviceError("ERROR retrieving users! HTTP code: {}"
+                               " Server response: {}".format(
+                               response.status_code, response.text))
+
+    #def create(self, *args, **kwargs):
+    #    """ Create a new Collector
+#
+    #    Args:
+    #        args (dict): a dictionary of all the config settings for a Collector
+#
+    #    Return:
+    #        int: id for newly created Collector
+#
+    #    Examples:
+#
+    #    Create by dictionary
+    #    >>> fm.sm.c...
+    #    """
+    #    try:
+    #        config = args[0]
+    #        config['domainId'] = int(self.domainId)  # API is dumb to auto-fill
+    #    except IndexError:
+    #        config = None
+    #    if not config:
+    #        config = kwargs
+    #        config['domainId'] = self.domainId # API is dumb to auto-fill
+    #    self.session.headers.update({'Content-Type': 'application/json'})
+    #    response = self.session.post(self.url, json=config)
+    #    if response.status_code == 200:
+    #        return json.loads(response.content)['id']
+    #    else:
+    #        raise FiremonError("ERROR creating collector! HTTP code: {}"
+    #                           " Server response: {}".format(
+    #                           response.status_code, response.text))
+
+    def __repr__(self):
+        return("<Users(url='{}')>".format(self.url))
+
+    def __str__(self):
+        return("{}".format(self.url))
+
+
+class User(Record):
+    """ Represents a User in Firemon
+
+    Args:
+        api: Need that session
+        config (dict): all the things
+    """
+    def __init__(self, api, config):
+        super().__init__(api, config)
+
+        self.sm_url = api.sm_url  # SecMgr URL
+        self.domain_url = api.domain_url  # Domain URL
+        self.url = api.domain_url + '/user/{id}'.format(id=str(config['id']))  # User id URL
+
+    def _reload(self):
+        """ Todo: Get configuration info upon change """
+        self.session.headers.update({'Content-Type': 'application/json'})
+        response = self.session.get(self.url)
+        if response.status_code == 200:
+            config = response.json()
+            self._config = config
+            self.__init__(self.api, self._config)
+        else:
+            raise FiremonError('Error! unable to reload User')
+
+    def enable(self):
+        url = self.url + '/enable'
+        self.session.headers.update({'Content-Type': 'application/json'})
+        response = self.session.put(url)
+        if response.status_code == 204:
+            self._reload()
+            return True
+        else:
+            raise DeviceError("ERROR enableing User! HTTP code: {}  \
+                            Content {}".format(response.status_code, response.text))
+
+    def disable(self):
+        url = self.url + '/disable'
+        self.session.headers.update({'Content-Type': 'application/json'})
+        response = self.session.put(url)
+        if response.status_code == 204:
+            self._reload()
+            return True
+        else:
+            raise DeviceError("ERROR disabling User! HTTP code: {}  \
+                            Content {}".format(response.status_code, response.text))
+
+    def unlock(self):
+        url = self.url + '/unlock'
+        self.session.headers.update({'Content-Type': 'application/json'})
+        response = self.session.put(url)
+        if response.status_code == 204:
+            self._reload()
+            return True
+        else:
+            raise DeviceError("ERROR unlocking User! HTTP code: {}  \
+                            Content {}".format(response.status_code, response.text))
+
+    def update(self):
+        pass
+
+    def __repr__(self):
+        return("<User(id='{}', username={})>".format(self.id, self.username))
+
+    def __str__(self):
+        return("{}".format(self.username))
+
+
+class UserGroup(Record):
+    """ Represents a UserGroup in Firemon
+
+    Args:
+        api: Need that session
+        config (dict): all the things
+    """
+    def __init__(self, api, config):
+        super().__init__(api, config)
+
+        self.sm_url = api.sm_url  # SecMgr URL
+        self.domain_url = api.domain_url  # Domain URL
+        self.url = api.domain_url + '/user/{id}'.format(id=str(config['id']))  # User id URL
