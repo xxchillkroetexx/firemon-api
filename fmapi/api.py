@@ -20,7 +20,11 @@ except:
 # Local packages
 from fmapi.errors import AuthenticationError, FiremonError, LicenseError
 from fmapi.errors import DeviceError, DevicePackError, VersionError
-from fmapi.apps import securitymanager
+from fmapi.apps.securitymanager import SecurityManager
+from fmapi.apps.globalpolicycontroller import GlobalPolicyController
+from fmapi.apps.policyplanner import PolicyPlanner
+from fmapi.apps.policyoptimizer import PolicyOptimizer
+
 
 class FiremonAPI(object):
     """ The FiremonAPI object is the entry point to fmapi
@@ -40,13 +44,12 @@ class FiremonAPI(object):
         proxy (str): ip.add.re.ss:port of proxy
 
     Valid attributes currently are (see domainId setter for updates):
-        * sm (Security Manager)
-        * gpc (Global Policy Controller) *TODO*
-        * pp (Policy Planner) *TODO*
-        * po (Policy Optimizer) *TODO*
+        * sm: SecurityManager()
+        * gpc: GlobalPolicyController()
+        * pp: PolicyPlanner()
+        * po: PolicyOptimizer()
 
     Examples:
-
         Import the API
         >>> import fmapi
         >>> fm = fmapi.api('hobbes', 'firemon', 'firemon')
@@ -127,6 +130,21 @@ class FiremonAPI(object):
                               "Server response: {}".format(
                               response.status_code, response.text))
 
+    def _verify_domain(self, id):
+        """ Verify that requested domain Id exists.
+        Set the domainId that will be used.
+        """
+        url = self.base_url + "/securitymanager/api/domain/{id}".format(id=str(id))
+        self.session.headers.update({'Content-Type': 'application/json'})
+        response = self.session.get(url)
+        if response.status_code == 200:
+            resp = response.json()
+            self.domainName = resp['name']
+            self.domainDescription = resp['description']
+            return True
+        else:
+            return False
+
     def __repr__(self):
         return("<Firemon(host='{}', version='{}')>".format(self.host, self.version))
 
@@ -139,13 +157,13 @@ class FiremonAPI(object):
 
     @domainId.setter
     def domainId(self, id):
-        try:
+        if self._verify_domain(id):
             self._domain = id
-            self.sm = securitymanager.SecurityManager(self)
-            #self.gpc = globalpolicycontroller(self) # Todo: build this
-            #self.po = policyoptimizer(self) # Todo: build this
-            #self.pp = policyplanner(self) # Todo: build this
-        except FiremonError:
+            self.sm = SecurityManager(self)
+            self.gpc = GlobalPolicyController(self)
+            self.po = PolicyOptimizer(self) # Todo: build this
+            self.pp = PolicyPlanner(self) # Todo: build this
+        else:
             raise FiremonError('Domain {} is not valid'.format(id))
 
     @property
