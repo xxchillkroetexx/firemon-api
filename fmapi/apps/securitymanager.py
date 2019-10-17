@@ -12,6 +12,7 @@ import json
 import os
 from typing import Generator
 from urllib.parse import urlencode, quote
+import uuid
 
 # Local packages
 from fmapi.errors import AuthenticationError, FiremonError, LicenseError
@@ -60,25 +61,28 @@ def _build_dict(seq: list, key: str) -> dict:
 class SecurityManager(object):
     """ Represents Security Manager in Firemon
 
+    Args:
+        api (obj): FiremonAPI()
+
     Valid attributes are:
-        * cc (collection configs)
-        * centralsyslogs
-        * collectors
-        * devices
-        * dp (devicepacks)
-        * revisions
-        * users
+        * cc: CollectionConfigs()
+        * centralsyslogs: CentralSyslogs()
+        * collectors: Collectors()
+        * devices: Devices()
+        * dp: DevicePacks()
+        * revisions: Revisions()
+        * users: Users()
         * Todo: add more as needed
     """
 
     def __init__(self, api):
         self.api = api
         self.session = api.session
-        self.domainId = api.domainId
-        self._url = api.base_url  # Prevoius level URL
-        self.sm_url = "{_url}/securitymanager/api".format(_url=self._url)
+        #self.domainId = api.domainId
+        #self._url = api.base_url  # Prevoius level URL
+        self.sm_url = "{url}/securitymanager/api".format(url=api.base_url)
 
-        self._verify_domain(self.domainId)
+        self._verify_domain(self.api.domainId)
 
         # Endpoints
         self.cc = CollectionConfigs(self)
@@ -99,9 +103,9 @@ class SecurityManager(object):
         response = self.session.get(self.domain_url)
         if response.status_code == 200:
             resp = response.json()
-            self.domainId = resp['id']
-            self.name = resp['name']
-            self.description = resp['description']
+            #self.domainId = resp['id']
+            self.api.domainName = resp['name']
+            self.api.domainDescription = resp['description']
         else:
             raise FiremonError('Domain {} is not valid'.format(id))
 
@@ -116,22 +120,23 @@ class DevicePacks(object):
     """ Represents the Device Packs. There is no API to query individual Device Packs
     so this is a kludge. Retrieve all DPs and query from there.
 
+    Args:
+        sm (obj): SecurityManager
+
     Examples:
+        Get a list of all device packs
+        >>> device_packs = fm.sm.dp.all()
 
-    Get a list of all device packs
-    >>> device_packs = fm.sm.dp.all()
+        Get a single device pack by artifactId
+        >>> dp = fm.sm.dp.get('juniper_srx')
 
-    Get a single device pack by artifactId
-    >>> dp = fm.sm.dp.get('juniper_srx')
-
-    Get a list of device packs by config options
-    >>> fm.sm.dp.filter(ssh=True)
+        Get a list of device packs by config options
+        >>> fm.sm.dp.filter(ssh=True)
     """
-    def __init__(self, api):
-        self.api = api
-        self.session = api.session
-        self.sm_url = api.sm_url  # Security Manager URL
-        self.url = "{sm_url}/plugin".format(sm_url=self.sm_url)
+    def __init__(self, sm):
+        self.sm = sm
+        self.session = sm.session
+        self.url = "{sm_url}/plugin".format(sm_url=sm.sm_url)
         self.device_packs = {}
 
     def _get_all(self) -> list:
@@ -256,13 +261,18 @@ class DevicePacks(object):
 
 
 class DevicePack(Record):
-    """ The device pack. Most of the major bits of info are attributes
-            * artifactId
-            * groupId
-            * deviceName
-            * vendor
-            * deviceType
-            * version
+    """ Representation of the device pack
+
+    Args:
+        dps (obj): DevicePacks()
+
+    Attributes:
+        * artifactId
+        * groupId
+        * deviceName
+        * vendor
+        * deviceType
+        * version
 
     Example:
         >>> dp = fm.sm.dp.get('juniper_srx')
@@ -271,10 +281,10 @@ class DevicePack(Record):
         >>> dp.version
         '1.24.10'
     """
-    def __init__(self, api, config):
-        super().__init__(api, config)
-        self.sm_url = api.sm_url  # SecMgr URL
-        self.url = api.url
+    def __init__(self, dps, config):
+        super().__init__(dps, config)
+        self.dps =  dps
+        self.url = dps.url
 
     def template(self):
         """ Get default template format for a device. Note that a number of fields
@@ -294,7 +304,7 @@ class DevicePack(Record):
         template['name'] = None
         template['description'] = None
         template['managementIp'] = None
-        template['domainId'] = self.api.api.domainId
+        template['domainId'] = self.dps.sm.api.domainId
         template['dataCollectorId'] = 1  # Assuming
         template['devicePack'] = {}
         template['devicePack']['artifactId'] = self.artifactId
@@ -319,15 +329,19 @@ class DevicePack(Record):
 
 
 class CentralSyslogs(object):
-    """ Represents the Central Syslogs """
+    """ Represents the Central Syslogs
 
-    def __init__(self, api):
-        self.api = api
-        self.domainId = api.domainId
-        self.sm_url = api.sm_url  # sec mgr url
-        self.domain_url = api.domain_url  # Domain URL
+    Args:
+        sm (obj): SecurityManager
+    """
+
+    def __init__(self, sm):
+        self.sm = sm
+        #self.domainId = sm.domainId
+        #self.sm_url = sm.sm_url  # sec mgr url
+        self.domain_url = sm.domain_url  # Domain URL
         self.url = self.domain_url + '/central-syslog'  # CSs URL
-        self.session = api.session
+        self.session = sm.session
 
     def all(self):
         """ Get all central syslog servers
@@ -336,9 +350,8 @@ class CentralSyslogs(object):
             list: List of CentralSyslog(object)
 
         Examples:
-
-        >>> cs = fm.sm.centralsyslog.all()
-        [cs_test2, cs_test2, cs_test1, miami, miami, new york, detroit]
+            >>> cs = fm.sm.centralsyslog.all()
+            [cs_test2, cs_test2, cs_test1, miami, miami, new york, detroit]
         """
         url = self.url + '?pageSize=100'  # Note: I'm not bothering with anything beyond 100. That's crazy
         self.session.headers.update({'Content-Type': 'application/json'})
@@ -362,14 +375,13 @@ class CentralSyslogs(object):
             **kwargs (str): (optional) see filter() for available filters
 
         Examples:
+            Get by ID
+            >>> fm.sm.centralsyslogs.get(12)
+            new york
 
-        Get by ID
-        >>> fm.sm.centralsyslogs.get(12)
-        new york
-
-        Get by partial name. Case insensative.
-        >>> fm.sm.centralsyslogs.get(name='detro')
-        detroit
+            Get by partial name. Case insensative.
+            >>> fm.sm.centralsyslogs.get(name='detro')
+            detroit
         """
         try:
             id = args[0]
@@ -411,12 +423,11 @@ class CentralSyslogs(object):
             None: if not found
 
         Examples:
+            Partial name search return multiple devices
+            >>> fm.sm.centralsyslog.filter(name='mia')
+            [miami, miami-2]
 
-        Partial name search return multiple devices
-        >>> fm.sm.centralsyslog.filter(name='mia')
-        [miami, miami-2]
-
-        Note: did not implement multiple pages. Figured 100 CS is extreme.
+            Note: did not implement multiple pages. Figured 100 CS is extreme.
         """
         if not kwargs:
             raise ValueError('filter() must be passed kwargs. ')
@@ -446,23 +457,22 @@ class CentralSyslogs(object):
             int: id for newly created CS
 
         Examples:
+            Create by dictionary
+            >>> fm.sm.centralsyslogs.create({'name': 'miami', 'ip': '10.2.2.2'})
+            11
 
-        Create by dictionary
-        >>> fm.sm.centralsyslogs.create({'name': 'miami', 'ip': '10.2.2.2'})
-        11
-
-        Create by keyword
-        >>> fm.sm.centralsyslogs.create(name='new york', ip='10.2.2.3')
-        12
+            Create by keyword
+            >>> fm.sm.centralsyslogs.create(name='new york', ip='10.2.2.3')
+            12
         """
         try:
             config = args[0]
-            config['domainId'] = int(self.domainId)  # API is dumb to auto-fill
+            config['domainId'] = int(self.sm.api.domainId)  # API is dumb to auto-fill
         except IndexError:
             config = None
         if not config:
             config = kwargs
-            config['domainId'] = self.domainId # API is dumb to auto-fill
+            config['domainId'] = self.sm.api.domainId # API is dumb to auto-fill
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.post(self.url, json=config)
         if response.status_code == 200:
@@ -480,23 +490,26 @@ class CentralSyslogs(object):
 
 
 class CentralSyslog(Record):
-    """ Represents the Central Syslog """
+    """ Represents the Central Syslog
 
-    def __init__(self, api, config):
-        super().__init__(api, config)
-        self.domainId = api.domainId
-        self._url = api.url  # Central Syslogs
-        self.url = self._url + '/{id}'.format(id=self.id)  # CS URL
+    Args:
+        cs (obj): CentralSyslogs()
+    """
+
+    def __init__(self, cs, config):
+        super().__init__(cs, config)
+        self.cs = cs
+        self.url = cs.url + '/{id}'.format(id=self.id)  # CS URL
 
     def delete(self):
         """ Delete Central Syslog device
 
         Examples:
-        >>> cs = fm.sm.centralsyslog.get(13)
-        >>> cs
-        detroit
-        >>> cs.delete()
-        True
+            >>> cs = fm.sm.centralsyslog.get(13)
+            >>> cs
+            detroit
+            >>> cs.delete()
+            True
         """
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.delete(self.url)
@@ -519,28 +532,28 @@ class CentralSyslog(Record):
 
 
 class Devices(object):
-    """ Represents the Devices """
+    """ Represents the Devices
 
-    def __init__(self, api):
-        self.api = api
-        self.sm_url = api.sm_url  # sec mgr URL
-        self.domain_url = api.domain_url  # domain url
-        self.url = self.domain_url + '/device'  # Devices URL
-        self.domainId = api.domainId
-        self.session = api.session
+    Args:
+        sm (obj): SecurityManager()
+    """
+
+    def __init__(self, sm):
+        self.sm = sm
+        self.url = sm.domain_url + '/device'  # Devices URL
+        self.session = sm.session
 
     def all(self):
         """ Get all devices
 
         Return:
-            list: List of Device(object)
+            list: List of Device() Records
 
         Examples:
+            >>> devices = fm.sm.devices.all()
 
-        >>> devices = fm.sm.devices.all()
-
-        >>> fm.domainId = 3
-        >>> devices = fm.sm.devices.all()
+            >>> fm.domainId = 3
+            >>> devices = fm.sm.devices.all()
         """
         total = 0
         page = 0
@@ -577,14 +590,13 @@ class Devices(object):
             **kwargs (str): (optional) see filter() for available filters
 
         Examples:
+            Get by ID
+            >>> fm.sm.devices.get(21)
+            vSRX-2
 
-        Get by ID
-        >>> fm.sm.devices.get(21)
-        vSRX-2
-
-        Get by partial name. Case insensative.
-        >>> fm.sm.devices.get(name='SONICWAll')
-        SONICWALL-TZ-210-1
+            Get by partial name. Case insensative.
+            >>> fm.sm.devices.get(name='SONICWAll')
+            SONICWALL-TZ-210-1
         """
         try:
             id = args[0]
@@ -624,18 +636,17 @@ class Devices(object):
             log, parentids, devicepackids
 
         Return:
-            list: List of Device(objects)
+            list: List of Device() Records
             None: if not found
 
         Examples:
+            Partial name search return multiple devices
+            >>> fm.sm.devices.filter(name='bogus')
+            [bogus-ASA-support-3101, bogus.lab.securepassage.com]
 
-        Partial name search return multiple devices
-        >>> fm.sm.devices.filter(name='bogus')
-        [bogus-ASA-support-3101, bogus.lab.securepassage.com]
-
-        Partial IP search.
-        >>> fm.sm.devices.filter(mgmtip='10.2')
-        [bogus.lab.securepassage.com, Some auto test]
+            Partial IP search.
+            >>> fm.sm.devices.filter(mgmtip='10.2')
+            [bogus.lab.securepassage.com, Some auto test]
         """
         if not kwargs:
             raise ValueError('filter() must be passed kwargs. ')
@@ -675,18 +686,17 @@ class Devices(object):
             arg (str): search parameter
 
         Return:
-            list: List of Device(objects)
+            list: List of Device() Records
             None: if not found
 
         Examples:
+            Partial name search return multiple devices
+            >>> fm.sm.devices.search('bogus')
+            [bogus-ASA-support-3101, bogus.lab.securepassage.com]
 
-        Partial name search return multiple devices
-        >>> fm.sm.devices.search('bogus')
-        [bogus-ASA-support-3101, bogus.lab.securepassage.com]
-
-        Partial IP search.
-        >>> fm.sm.devices.search('10.2')
-        [bogus.lab.securepassage.com, Some auto test]
+            Partial IP search.
+            >>> fm.sm.devices.search('10.2')
+            [bogus.lab.securepassage.com, Some auto test]
         """
         total = 0
         page = 0
@@ -725,16 +735,15 @@ class Devices(object):
             retrieve (bool): whether to kick off a manual retrieval
 
         Return:
-            Device(object): a Device(object) of the newly created device
+            Device (obj): a Device() of the newly created device
 
         Examples:
-
-        >>> config = fm.sm.dp.get('juniper_srx').template()
-        >>> config['name'] = 'Conan'
-        >>> config['description'] = 'A test of the API'
-        >>> config['managementIp'] = '10.2.2.2'
-        >>> dev = fm.sm.devices.create(config)
-        Conan
+            >>> config = fm.sm.dp.get('juniper_srx').template()
+            >>> config['name'] = 'Conan'
+            >>> config['description'] = 'A test of the API'
+            >>> config['managementIp'] = '10.2.2.2'
+            >>> dev = fm.sm.devices.create(config)
+            Conan
         """
         assert(isinstance(dev_config, dict)), 'Configuration needs to be a dict'
         url = self.url + '?manualRetrieval={debug}'.format(debug=str(retrieve))
@@ -759,7 +768,7 @@ class Device(Record):
     """ Represents a device in Firemon
 
     Args:
-        api: Need that session
+        devs (obj): Devices()
         config (dict): all the things
 
     Attributes:
@@ -768,37 +777,37 @@ class Device(Record):
 
     Examples:
 
-    Get device by ID
-    >>> dev = fm.sm.devices.get(21)
-    >>> dev
-    vSRX-2
+        Get device by ID
+        >>> dev = fm.sm.devices.get(21)
+        >>> dev
+        vSRX-2
 
-    Show configuration data
-    >>> dict(dev)
-    {'id': 21, 'domainId': 1, 'name': 'vSRX-2', 'description': 'regression test SRX', ...}
+        Show configuration data
+        >>> dict(dev)
+        {'id': 21, 'domainId': 1, 'name': 'vSRX-2', 'description': 'regression test SRX', ...}
 
-    List all collection configs that device can use
-    >>> dev.cc.all()
-    [21, 46]
-    >>> cc = dev.cc.get(46)
+        List all collection configs that device can use
+        >>> dev.cc.all()
+        [21, 46]
+        >>> cc = dev.cc.get(46)
 
-    List all revisions associated with device
-    >>> dev.revisions.all()
-    [76, 77, 108, 177, 178]
+        List all revisions associated with device
+        >>> dev.revisions.all()
+        [76, 77, 108, 177, 178]
 
-    Get the latest revision
-    >>> rev = dev.revisions.filter(latest=True)[0]
-    178
+        Get the latest revision
+        >>> rev = dev.revisions.filter(latest=True)[0]
+        178
     """
-    def __init__(self, api, config):
-        super().__init__(api, config)
+    def __init__(self, devs, config):
+        super().__init__(devs, config)
 
-        self.sm_url = api.sm_url  # SecMgr URL
-        self.domain_url = api.domain_url  # Domain URL
-        self.url = api.domain_url + '/device/{id}'.format(id=str(config['id']))  # Device id URL
+        self.devs = devs
+        self.url = devs.sm.domain_url + '/device/{id}'.format(id=str(config['id']))  # Device id URL
 
-        self.revisions = Revisions(self.api, self.id)
-        self.cc = CollectionConfigs(self.api, self.devicePack.id, self.id)
+        # Add attributes to Record() so we can get more info
+        self.revisions = Revisions(self.devs.sm, self.id)
+        self.cc = CollectionConfigs(self.devs.sm, self.devicePack.id, self.id)
 
     def _reload(self):
         """ Todo: Get configuration info upon change """
@@ -807,7 +816,7 @@ class Device(Record):
         if response.status_code == 200:
             config = response.json()
             self._config = config
-            self.__init__(self.api, self._config)
+            self.__init__(self.devs, self._config)
         else:
             raise FiremonError('Error! unable to reload Device')
 
@@ -815,21 +824,20 @@ class Device(Record):
                     sendNotification: bool=False, postProcessing: bool=True):
         """ Delete the device (and child devices)
 
-        Args:
+        Kwargs:
             deleteChildren (bool): delete all associated child devices
             a_sync (bool): ???
             sendNotification (bool): ???
             postProcessing (bool): ???
 
         Example:
+            >>> dev = fm.sm.devices.get(17)
+            >>> dev
+            CSM-2
 
-        >>> dev = fm.sm.devices.get(17)
-        >>> dev
-        CSM-2
-
-        Delete device and all child devices
-        >>> dev.delete(deleteChildren=True)
-        True
+            Delete device and all child devices
+            >>> dev.delete(deleteChildren=True)
+            True
         """
 
         kwargs = {'deleteChildren': deleteChildren, 'async': a_sync,
@@ -850,16 +858,19 @@ class Device(Record):
                 tuple is ('file', ('<file-name>', open(<path_to_file>, 'rb'), 'text/plain'))
 
         Example:
-        >>> dev = fm.sm.devices.get(name='vsrx-2')
-        >>> dir = '/path/to/config/files/'
-        >>> f_list = []
-        >>> for fn in os.listdir(dir):
-        ... 	path = os.path.join(dir, fn)
-        ... 	f_list.append(('file', (fn, open(path, 'rb'), 'text/plain')))
-        >>> dev.import_config(f_list)
+            >>> dev = fm.sm.devices.get(name='vsrx-2')
+            >>> dir = '/path/to/config/files/'
+            >>> f_list = []
+            >>> for fn in os.listdir(dir):
+            ... 	path = os.path.join(dir, fn)
+            ... 	f_list.append(('file', (fn, open(path, 'rb'), 'text/plain')))
+            >>> dev.import_config(f_list)
         """
         self.session.headers.update({'Content-Type': 'multipart/form-data'})
-        url = self.url + '/rev?action=IMPORT'
+        changeUser = self.devs.sm.api.username  # Not really needed
+        correlationId = str(uuid.uuid1())  # Not really needed
+        url = self.url + '/rev?action=IMPORT&changeUser={}&correlationId={}'.format(
+            changeUser, correlationId)  # changeUser and corId not need
         response = self.session.post(url, files=f_list)
         if response.status_code == 200:
             self.session.headers.pop('Content-type', None)
@@ -877,15 +888,17 @@ class Device(Record):
 
         Args:
             zip_file (bytes): bytes that make a zip file
+
+        Kwargs:
             renormalize (bool): defualt (False). Tell system to re-normalize from
                 config (True) or use imported 'NORMALIZED' files (False)
 
         Example:
-        >>> dev = fm.sm.devices.get(name='vsrx-2')
-        >>> fn = '/path/to/file/vsrx-2.zip'
-        >>> with open(fn, 'rb') as f:
-        >>>     zip_file = f.read()
-        >>> dev.import_support(zip_file)
+            >>> dev = fm.sm.devices.get(name='vsrx-2')
+            >>> fn = '/path/to/file/vsrx-2.zip'
+            >>> with open(fn, 'rb') as f:
+            >>>     zip_file = f.read()
+            >>> dev.import_support(zip_file)
         """
         self.session.headers.update({'Content-Type': 'multipart/form-data'})
         url = self.url + '/import?renormalize={}'.format(str(renormalize))
@@ -903,6 +916,8 @@ class Device(Record):
 
         Args:
             dev_config (dict): a dictionary containing values for a collection
+
+        Kwargs:
             retrieve (bool): whether to kick off a manual retrieval
 
         Return:
@@ -910,19 +925,19 @@ class Device(Record):
 
         Examples:
 
-        Update from dictionary
+            Update from dictionary
 
-        >>> dev = fm.sm.devices.get(1)
-        >>> config = dev.template()
-        Modify config
-        >>> config['description'] = 'internal test device'
-        >>> dev.update(config)
+            >>> dev = fm.sm.devices.get(1)
+            >>> config = dev.template()
+            Modify config
+            >>> config['description'] = 'internal test device'
+            >>> dev.update(config)
 
-        Update self
+            Update self
 
-        >>> dev = fm.sm.devices.get(1)
-        >>> dev.description = 'A random test device'
-        >>> dev.update(dict(dev))
+            >>> dev = fm.sm.devices.get(1)
+            >>> dev.description = 'A random test device'
+            >>> dev.update(dict(dev))
         """
         assert(isinstance(dev_config, dict)), 'Configuration needs to be a dict'
         dev_config['id'] = self._config['id']  # make sure this is set appropriately
@@ -961,7 +976,7 @@ class Device(Record):
     def do_retrieval(self, debug: bool=False):
         """ Have current device begin a manual retrieval.
 
-        Args:
+        Kwargs:
             debug (bool): ???
         """
         url = self.url + '/manualretrieval?debug={debug}'.format(debug=str(debug))
@@ -975,7 +990,7 @@ class Device(Record):
         """ This appears to be a very generic bit of information. Purely the
         total hits for all rules on the device.
 
-        Args:
+        Kwargs:
             total (str): either 'total' or 'daily'
 
         Return:
@@ -996,7 +1011,7 @@ class Device(Record):
         self.session.headers.update({'Accept': 'application/json'})
         response = self.session.get(url)
         if response.status_code == 200:
-            return ParsedRevision(self.api, response.json())
+            return ParsedRevision(self.devs, response.json())
         else:
             raise FiremonError('Error: Unable to retrieve latest parsed revision')
 
@@ -1008,24 +1023,28 @@ class Device(Record):
 
 
 class Revisions(object):
-    """ Represents the Revisions. Filtering is terrible given the API. It is a mixture
-    of revID, static domain requirements and deviceID, or searching by a weird subset
+    """ Represents the Revisions.
+    Filtering is terrible given the API. It is a mixture of revID,
+    static domain requirements and deviceID, or searching by a weird subset
     of our internal SIQL (but you cannot search by name or anything in SIQL). As a
     kludge I just ingest all revisions (like the device packs) and create get() and
-    filter() functions to parse a dictionary.
+    filter() functions to parse a dictionary. This may be problematic if there
+    are crazy number of revisions but since this is for interal use *meh*.
+
+    Args:
+        sm (object): SecurityManager()
+
+    Kwargs:
+        deviceId (int): Device id
 
     Examples:
-
-    >>> rev = fm.sm.revisions.get(34)
-    >>> rev = fm.sm.revisions.filter(latest=True, deviceName='vSRX-2')[0]
+        >>> rev = fm.sm.revisions.get(34)
+        >>> rev = fm.sm.revisions.filter(latest=True, deviceName='vSRX-2')[0]
     """
-    def __init__(self, api, deviceId: int=None):
-        self.api = api
-        self.session = api.session
-        self.sm_url = api.sm_url  # sec mgr url
-        self.domain_url = api.domain_url  # domain url
-        self.url = "{sm_url}/rev".format(sm_url=self.sm_url)
-        self.domainId = api.domainId
+    def __init__(self, sm, deviceId: int=None):
+        self.sm = sm
+        self.session = sm.session
+        self.url = "{sm_url}/rev".format(sm_url=sm.sm_url)
         # Use setter. Intended for use when Revisions is called from Device(objects)
         self._deviceId = deviceId
         self._revisions = {}
@@ -1041,10 +1060,12 @@ class Revisions(object):
         page = 0
         count = 0
         if self.deviceId:
-            url = self.domain_url + '/device/{deviceId}/rev?sort=id&page={page}&pageSize=100'.format(
-                                                deviceId=self.deviceId, page=page)
+            url = self.sm.domain_url + \
+                '/device/{deviceId}/rev?sort=id&page={page}&pageSize=100'.format(
+                deviceId=self.deviceId, page=page)
         else:
-            url = self.domain_url + '/rev?sort=id&page={page}&pageSize=100'.format(page=page)
+            url = self.sm.domain_url + \
+                '/rev?sort=id&page={page}&pageSize=100'.format(page=page)
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.get(url)
         if response.status_code == 200:
@@ -1056,10 +1077,12 @@ class Revisions(object):
                 while total > count:
                     page += 1
                     if self.deviceId:
-                        url = self.domain_url + 'device/{deviceId}/rev?sort=id&page={page}&pageSize=100'.format(
-                                                deviceId=self.deviceId, page=page)
+                        url = self.sm.domain_url + \
+                            'device/{deviceId}/rev?sort=id&page={page}&pageSize=100'.format(
+                            deviceId=self.deviceId, page=page)
                     else:
-                        url = self.domain_url + '/rev?sort=id&page={page}&pageSize=100'.format(page=page)
+                        url = self.sm.domain_url + \
+                            '/rev?sort=id&page={page}&pageSize=100'.format(page=page)
                     response = self.session.get(url)
                     resp = response.json()
                     count += resp['count']
@@ -1080,7 +1103,7 @@ class Revisions(object):
 
         Examples:
 
-        >>> revs = fm.sm.revisions.all()
+            >>> revs = fm.sm.revisions.all()
         """
         #if not self._revisions:
         #    self._get_all()
@@ -1099,14 +1122,14 @@ class Revisions(object):
 
         Examples:
 
-        >>> fm.sm.revisions.get(3)
-        3
-        >>> rev = fm.sm.revisions.get(3)
-        >>> type(rev)
-        <class 'fmapi.apps.securitymanager.Revision'>
-        >>> rev = fm.sm.revisions.get(correlationId='7a5406e4-93de-44af-8ed1-0e4135458324')
-        >>> rev
-        11
+            >>> fm.sm.revisions.get(3)
+            3
+            >>> rev = fm.sm.revisions.get(3)
+            >>> type(rev)
+            <class 'fmapi.apps.securitymanager.Revision'>
+            >>> rev = fm.sm.revisions.get(correlationId='7a5406e4-93de-44af-8ed1-0e4135458324')
+            >>> rev
+            11
         """
         #if not self._revisions:
         #    self._get_all()
@@ -1143,17 +1166,17 @@ class Revisions(object):
 
         Examples:
 
-        >>> fm.sm.revisions.filter(deviceName='vSRX-2')
-        [76, 77, 108, 177, 178]
+            >>> fm.sm.revisions.filter(deviceName='vSRX-2')
+            [76, 77, 108, 177, 178]
 
-        >>> fm.sm.revisions.filter(latest=True, deviceName='vSRX-2')
-        [178]
+            >>> fm.sm.revisions.filter(latest=True, deviceName='vSRX-2')
+            [178]
 
-        >>> fm.sm.revisions.filter(deviceType='FIREWALL')
-        [3, 4, 5, 6, 7, 8, 9,
+            >>> fm.sm.revisions.filter(deviceType='FIREWALL')
+            [3, 4, 5, 6, 7, 8, 9,
 
-        >>> fm.sm.revisions.filter(latest=True)
-        [1, 2, 3, 6, 8, 9, 10, 13, 14, 75, 122, 153, 171, 174, 178, 189, 190, 193, 195]
+            >>> fm.sm.revisions.filter(latest=True)
+            [1, 2, 3, 6, 8, 9, 10, 13, 14, 75, 122, 153, 171, 174, 178, 189]
         """
         #if not self._revisions:
         #    self._get_all()
@@ -1189,30 +1212,26 @@ class Revision(Record):
     (change configuration &/or normalization state)
 
     Args:
-        api: Need that session
+        revs: Revisions() object
         config (dict): all the things
 
     Examples:
-
-    >>> rev = fm.sm.revisions.filter(latest=True, deviceName='vSRX-2')[0]
-    >>> zip = rev.export()
-    >>> with open('export.zip', 'wb') as f:
-    ...   f.write(zip)
-    ...
-    36915
-    >>> zip = rev.export(with_meta=False)
-    >>> rev.delete()
-    True
+        >>> rev = fm.sm.revisions.filter(latest=True, deviceName='vSRX-2')[0]
+        >>> zip = rev.export()
+        >>> with open('export.zip', 'wb') as f:
+        ...   f.write(zip)
+        ...
+        36915
+        >>> zip = rev.export(with_meta=False)
+        >>> rev.delete()
+        True
     """
-    def __init__(self, api, config):
-        super().__init__(api, config)
-
-        self.deviceId = config['deviceId']  # int
-        self.sm_url = api.sm_url  # sec mgr URL
-        self.domain_url = api.domain_url
-        self.url = api.sm_url + '/rev/{revId}'.format(revId=str(config['id']))
+    def __init__(self, revs, config):
+        super().__init__(revs, config)
+        self.revs = revs
+        self.url = revs.sm.sm_url + '/rev/{revId}'.format(revId=str(config['id']))
         # Because instead of just operating on the revision they needed another path <sigh>
-        self.url2 = api.domain_url + '/device/{deviceId}/rev/{revId}'.format(\
+        self.url2 = revs.sm.domain_url + '/device/{deviceId}/rev/{revId}'.format(\
                     deviceId=str(config['deviceId']), revId=str(config['id']))
 
     def summary(self):
@@ -1246,11 +1265,12 @@ class Revision(Record):
             raise FiremonError("ERROR retrieving revisions! HTTP code: {}  "
                               "Server response: {}".format(
                               response.status_code, response.text))
+
     def export(self, with_meta: bool=True):
         """ Export a zip file contain the config data for the device and,
         optionally, other meta data and NORMALIZED data. Support files in gui.
 
-        Args:
+        Kwargs:
             with_meta (bool): Include metadata and NORMALIZED config files
 
         Return:
@@ -1275,7 +1295,9 @@ class Revision(Record):
         Return:
             bool: True if deleted
         """
-        url = self.domain_url + '/device/{deviceId}/rev/{revId}'.format(deviceId=str(self.deviceId), revId=str(self.id))
+        url = self.revs.sm.domain_url + \
+            '/device/{deviceId}/rev/{revId}'.format(
+                deviceId=str(self.deviceId), revId=str(self.id))
         response = self.session.delete(url)
         if response.status_code == 204:
             return True
@@ -1288,7 +1310,7 @@ class Revision(Record):
         self.session.headers.update({'Accept': 'application/json'})
         response = self.session.get(url)
         if response.status_code == 200:
-            return ParsedRevision(self.api, response.json())
+            return ParsedRevision(self.revs, response.json())
         else:
             raise FiremonError('Error: Unable to retrieve parsed revision')
 
@@ -1301,7 +1323,10 @@ class Revision(Record):
 
 class ParsedRevision(Record):
     """A dynamic representation of all the NORMALIZED things
-    Todo: document the JSON/Record information and key values purpose
+
+    Todo:
+        Document the JSON/Record information and key values purpose
+            or at least some of the major ones
     """
     def __repr__(self):
         return("ParsedRevision<(id='{}')>".format(self.revisionId))
@@ -1316,18 +1341,22 @@ class CollectionConfigs(object):
     As a kludge I just injest all collectionconfigs (like the device packs) and create
     get() and filter() functions to parse a dictionary.
 
-    Examples:
+    Args:
+        sm (obj): SecurityManager() object
 
-    >>> cc = fm.sm.cc.get(46)
-    >>> cc = fm.sm.cc.filter(activatedForDevicePack=True, devicePackArtifactId='juniper_srx')[0]
+    Kwargs:
+        devicePackId (int): Device Pack id
+        deviceId (int): Device id
+
+    Examples:
+        >>> cc = fm.sm.cc.get(46)
+        >>> cc = fm.sm.cc.filter(activatedForDevicePack=True, devicePackArtifactId='juniper_srx')[0]
     """
-    def __init__(self, api, devicePackId: int=None, deviceId: int=None):
-        self.api = api
-        self.sm_url = api.sm_url  # sec mgr URL
-        self.url = self.sm_url + '/collectionconfig'  # Collection Config URL
-        self.domainId = api.domainId
-        self.session = api.session
-        # Use setter. Intended for use when CollectionConfigs is called from Device(objects)
+    def __init__(self, sm, devicePackId: int=None, deviceId: int=None):
+        self.sm = sm
+        self.url = sm.sm_url + '/collectionconfig'  # Collection Config URL
+        self.session = sm.session
+        # Use setter. Intended for use when CollectionConfigs() is called from Device()
         self._devicePackId = devicePackId
         self._deviceId = deviceId
 
@@ -1376,8 +1405,7 @@ class CollectionConfigs(object):
             list: List of CollectionConfig(object)
 
         Examples:
-
-        >>> configs = fm.sm.cc.all()
+            >>> configs = fm.sm.cc.all()
         """
         self._get_all()
         return [CollectionConfig(self, self._collectionconfigs[id]) for id in self._collectionconfigs]
@@ -1393,15 +1421,14 @@ class CollectionConfigs(object):
             CollectionConfig(object): a single CollectionConfig(object)
 
         Examples:
-
-        >>> fm.sm.cc.get(8)
-        8
-        >>> cc = fm.sm.cc.get(8)
-        >>> type(cc)
-        <class 'fmapi.apps.securitymanager.CollectionConfig'>
-        >>> cc = fm.sm.cc.get(name='Grape Ape')
-        >>> cc
-        46
+            >>> fm.sm.cc.get(8)
+            8
+            >>> cc = fm.sm.cc.get(8)
+            >>> type(cc)
+            <class 'fmapi.apps.securitymanager.CollectionConfig'>
+            >>> cc = fm.sm.cc.get(name='Grape Ape')
+            >>> cc
+            46
         """
         #if not self._revisions:
         #    self._get_all()
@@ -1438,18 +1465,17 @@ class CollectionConfigs(object):
             list: a list of CollectionConfig(object)
 
         Examples:
+            >>> fm.sm.cc.filter(devicePackArtifactId='juniper_srx')
+            [47, 21, 46]
 
-        >>> fm.sm.cc.filter(devicePackArtifactId='juniper_srx')
-        [47, 21, 46]
+            >>> fm.sm.cc.filter(activatedForDevicePack=True, devicePackId=40)
+            [21]
 
-        >>> fm.sm.cc.filter(activatedForDevicePack=True, devicePackId=40)
-        [21]
+            >>> fm.sm.cc.filter(devicePackDeviceType='FIREWALL')
+            [4, 24, 13, 8, 30, 31, 3, 5, ...]
 
-        >>> fm.sm.cc.filter(devicePackDeviceType='FIREWALL')
-        [4, 24, 13, 8, 30, 31, 3, 5, ...]
-
-        >>> fm.sm.cc.filter(activatedForDevicePack=True)
-        [4, 36, 18, 38, 24, 13, 8, 30, ...]
+            >>> fm.sm.cc.filter(activatedForDevicePack=True)
+            [4, 36, 18, 38, 24, 13, 8, 30, ...]
         """
         #if not self._revisions:
         #    self._get_all()
@@ -1473,27 +1499,28 @@ class CollectionConfigs(object):
         Return:
             object: CollectionConfig object for your newly created config
 
-        Duplicate an existing config
-        >>> cc = fm.sm.cc.get(21)
-        >>> config = dict(cc)
-        >>> config.pop('index')
-        >>> config['name'] = 'Conan the Collector'
+        Examples:
+            Duplicate an existing config
+            >>> cc = fm.sm.cc.get(21)
+            >>> config = dict(cc)
+            >>> config.pop('index')
+            >>> config['name'] = 'Conan the Collector'
 
-        *IMPORTANT* If the following is not done you will overwrite an existing
-        config, including defaults (or go ahead and create a system devoted only
-        to Juniper collections)
-        >>> config.pop('id')
-        >>> fm.sm.cc.create(config)
+            *IMPORTANT* If the following is not done you will overwrite an existing
+            config, including defaults (or go ahead and create a system devoted only
+            to Juniper collections)
+            >>> config.pop('id')
+            >>> fm.sm.cc.create(config)
 
-        *DO NOT DO THIS*
-        >>> for cc in fm.sm.cc.all():
-        ...   config = dict(cc)
-        ...   config['changePattern'] = 'shrug'
-        ...   config['usagePattern'] = 'shrug'
-        ...   config['name'] = 'defau1t'
-        ...   config.pop('index')
-        ...   fm.sm.cc.create(config)
-        ...
+            *DO NOT DO THIS*
+            >>> for cc in fm.sm.cc.all():
+            ...   config = dict(cc)
+            ...   config['changePattern'] = 'shrug'
+            ...   config['usagePattern'] = 'shrug'
+            ...   config['name'] = 'defau1t'
+            ...   config.pop('index')
+            ...   fm.sm.cc.create(config)
+            ...
         """
         assert(isinstance(dev_config, dict)), 'Configuration needs to be a dict'
         self.session.headers.update({'Content-Type': 'application/json'})
@@ -1561,40 +1588,41 @@ class CollectionConfig(Record):
     """ Represents a collection configuration in Firemon
 
     Args:
-        api: Need that session
+        ccs: CollectionConfigs() object
         config (dict): all the things
 
     Examples:
+        Get a list of all Collection Configs
+        >>> fm.sm.cc.all()
+        [4, 36, 18, 38, 24, ...]
 
-    Get a list of all Collection Configs
-    >>> fm.sm.cc.all()
-    [4, 36, 18, 38, 24, ...]
+        Get a Collection Config by ID
+        >>> cc = fm.sm.cc.get(47)
+        >>> cc
+        47
+        >>> dict(cc)
+        {'id': 47, 'name': 'Ape Grape', 'devicePackId': 40, ...}
 
-    Get a Collection Config by ID
-    >>> cc = fm.sm.cc.get(47)
-    >>> cc
-    47
-    >>> dict(cc)
-    {'id': 47, 'name': 'Ape Grape', 'devicePackId': 40, ...}
+        Set a Device by ID to the Collection Config
+        >>> cc.set_device(21)
+        True
+        If CC is already associated with a Device()
+        >>> cc.set_device()
+        True
 
-    Set a Device by ID to the Collection Config
-    >>> cc.set_device(21)
-    True
-    If CC is already associated with a Device()
-    >>> cc.set_device()
-    True
-
-    Set this CC as the default for associate Device Pack
-    >>> cc.set_dp()
-    True
+        Set this CC as the default for associate Device Pack
+        >>> cc.set_dp()
+        True
     """
-    def __init__(self, api, config):
-        super().__init__(api, config)
-        self._deviceId = api._deviceId  # Should be 'None' unless coming through Device()
-        self._url = api.url  # cc URL
+    def __init__(self, ccs, config):
+        super().__init__(ccs, config)
+
+        self.ccs = ccs
+        self._deviceId = ccs._deviceId  # Should be 'None' unless coming through Device()
+        self.url = ccs.url  # cc URL
 
     def _reload(self):
-        url = self._url + '/{id}'.format(id=self.id)
+        url = self.url + '/{id}'.format(id=self.id)
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.get(url)
         if response.status_code == 200:
@@ -1606,7 +1634,7 @@ class CollectionConfig(Record):
 
     def set_dp(self) -> bool:
         """ Set CollectionConfig for Device Pack assignment. """
-        url = self._url + '/devicepack/{devicePackId}/assignment/{id}'.format(
+        url = self.url + '/devicepack/{devicePackId}/assignment/{id}'.format(
                                     devicePackId=self.devicePackId, id=self.id)
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.put(url)
@@ -1619,7 +1647,7 @@ class CollectionConfig(Record):
         """ Unset CollectionConfig for Device Pack assignment.
         Effectively sets back to 'default'
         """
-        url = self._url + '/devicepack/{devicePackId}/assignment'.format(
+        url = self.url + '/devicepack/{devicePackId}/assignment'.format(
                                             devicePackId=self.devicePackId)
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.delete(url)
@@ -1646,7 +1674,7 @@ class CollectionConfig(Record):
                 deviceId = args[0]
             except IndexError:
                 raise DeviceError('Error. A device Id must be passed to set.')
-        url = self._url + '/device/{deviceId}/assignment/{id}'.format(deviceId=deviceId, id=self.id)
+        url = self.url + '/device/{deviceId}/assignment/{id}'.format(deviceId=deviceId, id=self.id)
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.put(url)
         if response.status_code == 204:
@@ -1669,7 +1697,7 @@ class CollectionConfig(Record):
                 deviceId = args[0]
             except IndexError:
                 raise DeviceError('Error. A device Id must be passed to unset.')
-        url = self._url + '/device/{deviceId}/assignment'.format(deviceId=deviceId)
+        url = self.url + '/device/{deviceId}/assignment'.format(deviceId=deviceId)
         self.session.headers.update({'Content-Type': 'application/json'})
         if 'activatedDeviceIds' in self._config.keys():
             if deviceId in self._config['activatedDeviceIds']:
@@ -1688,17 +1716,18 @@ class CollectionConfig(Record):
         Return:
             bool: True on successful update
 
-        Duplicate an existing config
-        >>> cc = fm.sm.cc.duplicate(21, 'Conan the Collector')
-        >>> config = cc.template()
-        Create a new pattern
-        >>> p = {'pattern': 'my crazy grep stuff', 'retrieveOnMatch': True,
-        ... 'continueMatch': False, 'timeoutSeconds': 100}
-        >>> config['changeCriterion'].append(p)
-        >>> cc.update(config)
+        Examples:
+            Duplicate an existing config
+            >>> cc = fm.sm.cc.duplicate(21, 'Conan the Collector')
+            >>> config = cc.template()
+            Create a new pattern
+            >>> p = {'pattern': 'my crazy grep stuff', 'retrieveOnMatch': True,
+            ... 'continueMatch': False, 'timeoutSeconds': 100}
+            >>> config['changeCriterion'].append(p)
+            >>> cc.update(config)
         """
         assert(isinstance(dev_config, dict)), 'Configuration needs to be a dict'
-        url = self._url + '/{id}'.format(id=self.id)
+        url = self.url + '/{id}'.format(id=self.id)
         self.session.headers.update({'Content-Type': 'application/json'})
         # Check if a number of no-no keys are defined and get rid of them.
         #    these could break your cc if modified
@@ -1729,7 +1758,7 @@ class CollectionConfig(Record):
 
     def delete(self) -> bool:
         """ Delete this CollectionConfig.   """
-        url = self._url + '/{id}'.format(id=self.id)
+        url = self.url + '/{id}'.format(id=self.id)
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.delete(url)
         if response.status_code == 204:
@@ -1773,15 +1802,16 @@ class CollectionConfig(Record):
 
 
 class Collectors(object):
-    """ Represents the Data Collectors """
+    """ Represents the Data Collectors
 
-    def __init__(self, api):
-        self.api = api
-        self.domainId = api.domainId
-        self.sm_url = api.sm_url  # sec mgr url
-        self.domain_url = api.domain_url  # Domain URL
-        self.url = self.sm_url + '/collector'  # Collector URL
-        self.session = api.session
+    Args:
+        sm (obj): SecurityManager object
+    """
+
+    def __init__(self, sm):
+        self.sm = sm
+        self.url = sm.sm_url + '/collector'  # Collector URL
+        self.session = sm.session
 
     def all(self):
         """ Get all data collector servers
@@ -1790,9 +1820,8 @@ class Collectors(object):
             list: List of Collector(object)
 
         Examples:
-
-        >>> collectors = fm.sm.collector.all()
-        [..., ..., ..., ..., ]
+            >>> collectors = fm.sm.collector.all()
+            [..., ..., ..., ..., ]
         """
         url = self.url + '?pageSize=100'  # Note: I'm not bothering with anything beyond 100. That's crazy
         self.session.headers.update({'Content-Type': 'application/json'})
@@ -1816,10 +1845,9 @@ class Collectors(object):
             **kwargs (str): (optional) see filter() for available filters
 
         Examples:
-
-        Get by ID
-        >>> fm.sm.collectors.get(2)
-        ...
+            Get by ID
+            >>> fm.sm.collectors.get(2)
+            ...
 
         """
         try:
@@ -1862,12 +1890,11 @@ class Collectors(object):
             None: if not found
 
         Examples:
+            Partial name search return multiple devices
+            >>> fm.sm.collector.filter(name='dc')
+            [..., ]
 
-        Partial name search return multiple devices
-        >>> fm.sm.collector.filter(name='dc')
-        [..., ]
-
-        Note: did not implement multiple pages. Figured 100 collectors is extreme.
+            Note: did not implement multiple pages. Figured 100 collectors is extreme.
         """
         if not kwargs:
             raise ValueError('filter() must be passed kwargs. ')
@@ -1888,15 +1915,15 @@ class Collectors(object):
 
     #def create(self, *args, **kwargs):
     #    """ Create a new Collector
-#
+    #
     #    Args:
     #        args (dict): a dictionary of all the config settings for a Collector
-#
+    #
     #    Return:
     #        int: id for newly created Collector
-#
+    #
     #    Examples:
-#
+    #
     #    Create by dictionary
     #    >>> fm.sm.c...
     #    """
@@ -1925,21 +1952,26 @@ class Collectors(object):
 
 
 class DataCollector(Record):
-    """ Represents the Data Collector """
+    """ Represents the Data Collector
 
-    def __init__(self, api, config):
-        super().__init__(api, config)
-        self.sm_url = api.sm_url  # sec mgr url
-        self.domain_url = api.domain_url  # Domain URL
-        self.domainId = api.domainId
-        self._url = api.url  # Collectors
-        self.url = self._url + '/{id}'.format(id=self.id)  # DC URL
+    Args:
+        dcs (obj): Collectors() object
+    """
+
+    def __init__(self, dcs, config):
+        super().__init__(dcs, config)
+        self.dcs = dcs
+        self.url = dcs.url + '/{id}'.format(id=self.id)  # DC URL
+        self.session = dcs.session
 
     def delete(self):
         """ Delete Data Collector device
 
+        Raises:
+            fmapi.errors.FiremonError: if not status code 204
+
         Examples:
-        >>> dc = fm.sm.collectors.get(name='wasp.lab.firemon.com')
+            >>> dc = fm.sm.collectors.get(name='wasp.lab.firemon.com')
         """
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.delete(self.url)
@@ -1960,9 +1992,11 @@ class DataCollector(Record):
         Return:
             list: List of Device(object)
 
-        Examples:
+        Raises:
+            fmapi.errors.DeviceError: if not status code 200
 
-        >>> devices = dc.device_list()
+        Examples:
+            >>> devices = dc.device_list()
         """
         total = 0
         page = 0
@@ -2007,15 +2041,16 @@ class DataCollector(Record):
 
 
 class Users(object):
-    """ Represents the Users """
+    """ Represents the Users
 
-    def __init__(self, api):
-        self.api = api
-        self.domainId = api.domainId
-        self.sm_url = api.sm_url  # sec mgr url
-        self.domain_url = api.domain_url  # Domain URL
-        self.url = self.domain_url + '/user'  # user URL
-        self.session = api.session
+    Args:
+        sm (obj): SecurityManager object
+    """
+
+    def __init__(self, sm):
+        self.sm = sm
+        self.url = sm.domain_url + '/user'  # user URL
+        self.session = sm.session
 
     def all(self):
         """ Get all users
@@ -2023,10 +2058,12 @@ class Users(object):
         Return:
             list: List of User(object)
 
-        Examples:
+        Raises:
+            fmapi.errors.FiremonError: if not status code 200
 
-        >>> users = fm.sm.users.all()
-        [..., ..., ..., ..., ]
+        Examples:
+            >>> users = fm.sm.users.all()
+            [..., ..., ..., ..., ]
         """
         url = self.url + '?includeSystem=true&includeDisabled=true&sort=id&pageSize=100'
         self.session.headers.update({'Content-Type': 'application/json'})
@@ -2046,15 +2083,16 @@ class Users(object):
         """ Get single user
 
         Args:
-            *args (int): (optional) User id to retrieve
-            **kwargs (str): (optional) see filter() for available filters
+            *args (int, optional): User id to retrieve
+            **kwargs (str, optional): see filter() for available filters
+
+        Raises:
+            fmapi.errors.FiremonError: if not status code 200
 
         Examples:
-
-        Get by ID
-        >>> fm.sm.users.get(2)
-        ...
-
+            Get by ID
+            >>> fm.sm.users.get(2)
+            ...
         """
         try:
             id = args[0]
@@ -2096,18 +2134,19 @@ class Users(object):
             list: List of User(objects)
             None: if not found
 
+        Raises:
+            fmapi.errors.DeviceError: if not status code 200
+
         Examples:
+            Partial name search return multiple users
+            >>> fm.sm.users.filter(username='socra')
+            [<User(id='4', username=dc_socrates)>, <User(id='3', username=nd_socrates)>]
 
-        Partial name search return multiple users
-        >>> fm.sm.users.filter(username='socra')
-        [<User(id='4', username=dc_socrates)>, <User(id='3', username=nd_socrates)>]
+            >>> fm.sm.users.filter(enabled=False)
+            [<User(id='2', username=workflow)>]
 
-        >>> fm.sm.users.filter(enabled=False)
-        [<User(id='2', username=workflow)>]
-
-        >>> fm.sm.users.filter(locked=True)
-        [<User(id='2', username=workflow)>]
-
+            >>> fm.sm.users.filter(locked=True)
+            [<User(id='2', username=workflow)>]
         """
         if not kwargs:
             raise ValueError('filter() must be passed kwargs. ')
@@ -2142,15 +2181,15 @@ class Users(object):
 
     #def create(self, *args, **kwargs):
     #    """ Create a new Collector
-#
+    #
     #    Args:
     #        args (dict): a dictionary of all the config settings for a Collector
-#
+    #
     #    Return:
     #        int: id for newly created Collector
-#
+    #
     #    Examples:
-#
+    #
     #    Create by dictionary
     #    >>> fm.sm.c...
     #    """
@@ -2182,15 +2221,14 @@ class User(Record):
     """ Represents a User in Firemon
 
     Args:
-        api: Need that session
+        usrs (obj): Users() object
         config (dict): all the things
     """
-    def __init__(self, api, config):
-        super().__init__(api, config)
+    def __init__(self, usrs, config):
+        super().__init__(usrs, config)
 
-        self.sm_url = api.sm_url  # SecMgr URL
-        self.domain_url = api.domain_url  # Domain URL
-        self.url = api.domain_url + '/user/{id}'.format(id=str(config['id']))  # User id URL
+        self.usrs = usrs
+        self.url = usrs.sm.domain_url + '/user/{id}'.format(id=str(config['id']))  # User id URL
 
     def _reload(self):
         """ Todo: Get configuration info upon change """
@@ -2250,12 +2288,14 @@ class UserGroup(Record):
     """ Represents a UserGroup in Firemon
 
     Args:
-        api: Need that session
+        usrs (obj): Users() object
         config (dict): all the things
-    """
-    def __init__(self, api, config):
-        super().__init__(api, config)
 
-        self.sm_url = api.sm_url  # SecMgr URL
-        self.domain_url = api.domain_url  # Domain URL
-        self.url = api.domain_url + '/user/{id}'.format(id=str(config['id']))  # User id URL
+    Todo:
+        Finish this -
+    """
+    def __init__(self, usrs, config):
+        super().__init__(usrs, config)
+
+        self.usrs = usrs
+        self.url = usrs.sm.domain_url + '/user/{id}'.format(id=str(config['id']))  # User id URL

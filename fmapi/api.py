@@ -32,9 +32,12 @@ class FiremonAPI(object):
         host (str): host or IP.
         username (str): Firemon web username
         password (str): Firemon web password
+
+    Kwargs:
         timeout (int): timeout value for Requests Session(). (default: 20)
         verify_ssl (bool): Requests verify ssl cert. (default: False)
         domainId (int): the domain.
+        proxy (str): ip.add.re.ss:port of proxy
 
     Valid attributes currently are (see domainId setter for updates):
         * sm (Security Manager)
@@ -44,18 +47,18 @@ class FiremonAPI(object):
 
     Examples:
 
-    Import the API
-    >>> import fmapi
-    >>> fm = fmapi.api('hobbes', 'firemon', 'firemon')
-    >>> fm
-    Firemon: hobbes ver. 8.24.1
+        Import the API
+        >>> import fmapi
+        >>> fm = fmapi.api('hobbes', 'firemon', 'firemon')
+        >>> fm
+        Firemon: hobbes ver. 8.24.1
 
-    >>> fm.sm.dp.all()
+        >>> fm.sm.dp.all()
 
-    >>> fm.sm.devices.all()
+        >>> fm.sm.devices.all()
 
-    Change working domain
-    >>> fm.domainId = 2
+        Change working domain
+        >>> fm.domainId = 2
     """
 
     def __init__(
@@ -66,6 +69,7 @@ class FiremonAPI(object):
         timeout: int = 20,
         verify_ssl: bool = False,
         domainId: int = 1,
+        proxy: str = None,
     ):
         self.host = host
         self.username = username
@@ -81,6 +85,8 @@ class FiremonAPI(object):
         self.session.headers.update(self.default_headers)
         self.session.verify = self.verify_ssl  # It'd be nice to default to True. Currently defeat purpose of SSL
         self.session.timeout = self.timeout
+        if proxy:
+            self.session.proxies = {'http': proxy, 'https': proxy}
         self._auth()
 
         # Much of all the APIs requires a domain ID. There is also a fair amount
@@ -133,11 +139,14 @@ class FiremonAPI(object):
 
     @domainId.setter
     def domainId(self, id):
-        self._domain = id
-        self.sm = securitymanager.SecurityManager(self)
-        #self.gpc = globalpolicycontroller(self) # Todo: build this
-        #self.po = policyoptimizer(self) # Todo: build this
-        #self.pp = policyplanner(self) # Todo: build this
+        try:
+            self._domain = id
+            self.sm = securitymanager.SecurityManager(self)
+            #self.gpc = globalpolicycontroller(self) # Todo: build this
+            #self.po = policyoptimizer(self) # Todo: build this
+            #self.pp = policyplanner(self) # Todo: build this
+        except FiremonError:
+            raise FiremonError('Domain {} is not valid'.format(id))
 
     @property
     def base_url(self):

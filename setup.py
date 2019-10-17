@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
-# Learn more: https://www.firemon.com/
+# Learn more: https://confluence.securepassage.com/display/DEVNETSEC/FMAPI%3A+Python+Firemon+API+module
 
 from setuptools import setup, find_packages
 
 PROJECT = 'firemon-api'
 
-with open('README.rst') as f:
+with open('README.md') as f:
     readme = f.read()
 
 setup(
     name='firemon-api',
-    version='0.0.3',
+    version='0.0.4',
     description='NetSec Python Wrapper for Firemon API',
     long_description=readme,
     author='Firemon NetSec <dev-netsec@firemon.com>',
