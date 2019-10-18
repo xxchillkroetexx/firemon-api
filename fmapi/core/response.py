@@ -19,22 +19,25 @@ def get_return(lookup):
 class Record(object):
     """Create python objects for json responses from Firemon
 
+    Args:
+        obj (obj): Object
+        config (dict): dictionary of things to
+
     Example:
+        Cast object as a dictionary
 
-    Cast object as a dictionary
-
-    >>> import pprint
-    >>> pprint.pprint(dict(x))
-    {'all': the.things,
-    ...}
+        >>> import pprint
+        >>> pprint.pprint(dict(x))
+        {'all': the.things,
+        ...}
     """
 
-    def __init__(self, api, config):
+    def __init__(self, obj, config):
         self._config = config  # keeping a cache just incase bad things
         self._full_cache = []
         self._init_cache = []
-        self.api = api
-        self.session = api.session
+        self.obj = obj
+        self.session = obj.session
         self.default_ret = Record
 
         if config:
@@ -44,16 +47,16 @@ class Record(object):
 
         def list_parser(list_item):
             if isinstance(list_item, dict):
-                return self.default_ret(self.api, list_item)
+                return self.default_ret(self.obj, list_item)
             return list_item
 
         for k, v in config.items():
             if isinstance(v, dict):
                 lookup = getattr(self.__class__, k, None)
                 if lookup:
-                    v = lookup(self.api, v)
+                    v = lookup(self.obj, v)
                 else:
-                    v = self.default_ret(self.api, v)
+                    v = self.default_ret(self.obj, v)
                 self._add_cache((k, v))
             elif isinstance(v, list):
                 v = [list_parser(i) for i in v]
