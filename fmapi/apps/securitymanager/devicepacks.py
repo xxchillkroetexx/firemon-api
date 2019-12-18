@@ -184,7 +184,7 @@ class DevicePack(Record):
     """
     def __init__(self, dps, config):
         super().__init__(dps, config)
-        self.dps =  dps
+        self.dps = dps
         self.url = dps.url
 
     def template(self):

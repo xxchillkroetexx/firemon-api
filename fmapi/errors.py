@@ -8,27 +8,45 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-# Firemon API Error messages
+# Firemon API Exception messages
 
 class FiremonError(Exception):
-    """Base FiremonError class for all other errors."""
+    """Base Firemon error used by this module. """
+    pass
 
 
 class AuthenticationError(FiremonError):
     """ Raised for authentication failure when connecting to a device. """
+    pass
 
 
 class DeviceError(FiremonError):
     """ Raised for problems installing or manipulating devices. """
+    pass
 
 
 class DevicePackError(FiremonError):
     """ Raised for errors with manipulating device packs. """
+    pass
 
 
 class LicenseError(FiremonError):
     """ Raised for errors pertaining to licensing or license installation. """
+    pass
 
 
 class VersionError(FiremonError):
     """ Raised for version overlap when installing device packs. """
+    pass
+
+
+# Firemon API Warning messages
+
+class FiremonWarning(Warning):
+    """Base Firemon warning used by this module. """
+    pass
+
+
+class AuthenticationWarning(FiremonWarning):
+    """ Raised for api calls when user does not have permission """
+    pass
