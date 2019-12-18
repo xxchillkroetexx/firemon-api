@@ -13,6 +13,7 @@ import json
 # Local packages
 from fmapi.errors import AuthenticationError, FiremonError, LicenseError
 from fmapi.errors import DeviceError, DevicePackError, VersionError
+from fmapi.errors import FiremonWarning, AuthenticationWarning
 from .centralsyslogs import CentralSyslogs, CentralSyslog
 from .collectionconfigs import CollectionConfigs, CollectionConfig
 from .collectors import Collectors, DataCollector
@@ -47,8 +48,6 @@ class SecurityManager(object):
         self.sm_url = "{url}/securitymanager/api".format(url=api.base_url)
         self.domain_url = self.sm_url + "/domain/{id}".format(id=str(self.api.domainId))
 
-        #self._verify_domain(self.api.domainId)
-
         # Endpoints
         self.cc = CollectionConfigs(self)
         self.centralsyslogs = CentralSyslogs(self)
@@ -65,8 +64,10 @@ class SecurityManager(object):
         response = self.session.post(self.url)
         if response.status_code == 204:
             return True
-        else:
-            return False
+        if response.status_code == 403:
+            warnings.warn('User is not authorized for request. ',
+                          AuthenticationWarning)
+        return False
 
     def __repr__(self):
         return("<Security Manager(url='{}')>".format(self.sm_url))

@@ -156,36 +156,59 @@ class Users(object):
                                " Server response: {}".format(
                                response.status_code, response.text))
 
-    #def create(self, *args, **kwargs):
-    #    """ Create a new Collector
-    #
-    #    Args:
-    #        args (dict): a dictionary of all the config settings for a Collector
-    #
-    #    Return:
-    #        int: id for newly created Collector
-    #
-    #    Examples:
-    #
-    #    Create by dictionary
-    #    >>> fm.sm.c...
-    #    """
-    #    try:
-    #        config = args[0]
-    #        config['domainId'] = int(self.domainId)  # API is dumb to auto-fill
-    #    except IndexError:
-    #        config = None
-    #    if not config:
-    #        config = kwargs
-    #        config['domainId'] = self.domainId # API is dumb to auto-fill
-    #    self.session.headers.update({'Content-Type': 'application/json'})
-    #    response = self.session.post(self.url, json=config)
-    #    if response.status_code == 200:
-    #        return json.loads(response.content)['id']
-    #    else:
-    #        raise FiremonError("ERROR creating collector! HTTP code: {}"
-    #                           " Server response: {}".format(
-    #                           response.status_code, response.text))
+    def create(self, *args, **kwargs):
+        """ Create a new User
+
+        Args:
+            args (dict): a dictionary of all the config settings for a User
+
+        Return:
+            int: id for newly created User
+
+        Examples:
+
+        Create by dictionary
+        >>> fm.sm.c...
+        """
+        try:
+            config = args[0]
+            config['domainId'] = int(self.sm.api.domainId)  # API is dumb to auto-fill
+        except IndexError:
+            config = None
+        if not config:
+            config = kwargs
+            config['domainId'] = self.domainId # API is dumb to auto-fill
+        self.session.headers.update({'Content-Type': 'application/json'})
+        response = self.session.post(self.url, json=config)
+        if response.status_code == 200:
+            config = json.loads(response.content)
+            return self.get(config['id'])
+        else:
+            raise FiremonError("ERROR creating collector! HTTP code: {}"
+                               " Server response: {}".format(
+                               response.status_code, response.text))
+
+    def template(self):
+        """ Create a template of a simple user
+
+        Return:
+            dict: dictionary of data to pass to create
+        """
+        conf = {}
+        conf['username'] = None
+        conf['firstName'] = None
+        conf['lastName'] = None
+        conf['email'] = None
+        conf['password'] = None
+        conf['existingPassword'] = None
+        conf['passwordExpired'] = False
+        conf['locked'] = False
+        conf['expired'] = False
+        conf['enabled'] = True
+        conf['authType'] = 'LOCAL'
+        conf['authServerId'] = None  # 0
+        return conf
+
 
     def __repr__(self):
         return("<Users(url='{}')>".format(self.url))

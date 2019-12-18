@@ -9,6 +9,7 @@ limitations under the License.
 """
 # Standard packages
 import json
+import warnings
 
 # Third-Party packages
 import requests  # performing web requests
@@ -20,6 +21,7 @@ except:
 # Local packages
 from fmapi.errors import AuthenticationError, FiremonError, LicenseError
 from fmapi.errors import DeviceError, DevicePackError, VersionError
+from fmapi.errors import FiremonWarning, AuthenticationWarning
 from fmapi.apps.securitymanager import SecurityManager
 from fmapi.apps.globalpolicycontroller import GlobalPolicyController
 from fmapi.apps.policyplanner import PolicyPlanner
@@ -98,9 +100,9 @@ class FiremonAPI(object):
         #   are instantiated in the domainId setter.
         self.domainId = domainId
 
-        # This is expecting that FMOS major version 9 will move devpacks majors
+        # This translates the major release to the dev pack major.
         self._major_to_pack = { '8': '1',
-                                '9': '2',
+                                '9': '9',
                               }
 
     def _auth(self):
@@ -142,7 +144,14 @@ class FiremonAPI(object):
             self.domainName = resp['name']
             self.domainDescription = resp['description']
             return True
+        elif response.status_code == 403:
+            warnings.warn('User is not authorized for request. '
+                          'Unable to verify Domain {} exists'.format(id),
+                          AuthenticationWarning)
+            return False
         else:
+            warnings.warn('Unable to verify Domain {} exists'.format(id),
+                          FiremonWarning)
             return False
 
     def __repr__(self):
@@ -157,14 +166,12 @@ class FiremonAPI(object):
 
     @domainId.setter
     def domainId(self, id):
-        if self._verify_domain(id):
-            self._domain = id
-            self.sm = SecurityManager(self)
-            self.gpc = GlobalPolicyController(self)
-            self.po = PolicyOptimizer(self) # Todo: build this
-            self.pp = PolicyPlanner(self) # Todo: build this
-        else:
-            raise FiremonError('Domain {} is not valid'.format(id))
+        self._verify_domain(id)  # User may not be authorized to validate domain.
+        self._domain = id  # Set domain regardless and pop a warning if unable to validate
+        self.sm = SecurityManager(self)
+        self.gpc = GlobalPolicyController(self)
+        self.po = PolicyOptimizer(self) # Todo: build this
+        self.pp = PolicyPlanner(self) # Todo: build this
 
     @property
     def base_url(self):

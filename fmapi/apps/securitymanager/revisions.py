@@ -73,7 +73,7 @@ class Revisions(object):
                     page += 1
                     if self.deviceId:
                         url = self.sm.domain_url + \
-                            'device/{deviceId}/rev?sort=id&page={page}&pageSize=100'.format(
+                            '/device/{deviceId}/rev?sort=id&page={page}&pageSize=100'.format(
                             deviceId=self.deviceId, page=page)
                     else:
                         url = self.sm.domain_url + \
