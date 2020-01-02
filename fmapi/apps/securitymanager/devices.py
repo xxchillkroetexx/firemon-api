@@ -13,8 +13,10 @@ from urllib.parse import urlencode, quote
 import uuid
 
 # Local packages
-from fmapi.errors import AuthenticationError, FiremonError, LicenseError
-from fmapi.errors import DeviceError, DevicePackError, VersionError
+from fmapi.errors import (
+    AuthenticationError, FiremonError, LicenseError,
+    DeviceError, DevicePackError, VersionError
+)
 from fmapi.core.response import Record
 from .collectionconfigs import CollectionConfigs, CollectionConfig
 from .revisions import Revisions, Revision, ParsedRevision

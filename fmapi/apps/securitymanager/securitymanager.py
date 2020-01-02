@@ -11,9 +11,11 @@ limitations under the License.
 import json
 
 # Local packages
-from fmapi.errors import AuthenticationError, FiremonError, LicenseError
-from fmapi.errors import DeviceError, DevicePackError, VersionError
-from fmapi.errors import FiremonWarning, AuthenticationWarning
+from fmapi.errors import (
+    AuthenticationError, FiremonError, LicenseError,
+    DeviceError, DevicePackError, VersionError,
+    FiremonWarning, AuthenticationWarning
+)
 from .centralsyslogs import CentralSyslogs, CentralSyslog
 from .collectionconfigs import CollectionConfigs, CollectionConfig
 from .collectors import Collectors, DataCollector

@@ -9,24 +9,29 @@ limitations under the License.
 """
 # Standard packages
 import json
+#import logging
+from typing import Optional
 import warnings
 
 # Third-Party packages
 import requests  # performing web requests
-try:
-    requests.packages.urllib3.disable_warnings()
-except:
-    pass
+#try:
+#    requests.packages.urllib3.disable_warnings()
+#except:
+#    pass
 
 # Local packages
-from fmapi.errors import AuthenticationError, FiremonError, LicenseError
-from fmapi.errors import DeviceError, DevicePackError, VersionError
-from fmapi.errors import FiremonWarning, AuthenticationWarning
+from fmapi.errors import (
+    AuthenticationError, FiremonError, LicenseError,
+    DeviceError, DevicePackError, VersionError,
+    FiremonWarning, AuthenticationWarning
+)
 from fmapi.apps.securitymanager import SecurityManager
 from fmapi.apps.globalpolicycontroller import GlobalPolicyController
 from fmapi.apps.policyplanner import PolicyPlanner
 from fmapi.apps.policyoptimizer import PolicyOptimizer
 
+#log = logging.getLogger(__name__)
 
 class FiremonAPI(object):
     """ The FiremonAPI object is the entry point to fmapi
@@ -41,7 +46,13 @@ class FiremonAPI(object):
 
     Kwargs:
         timeout (int): timeout value for Requests Session(). (default: 20)
-        verify_ssl (bool): Requests verify ssl cert. (default: False)
+        verify (Optional): Requests verify ssl cert (bool) or a path (str) to
+            PEM certificate. (default: ``True``)
+            hint: get the cert for fmos instance or append it to the CA bundle.
+            -----BEGIN CERTIFICATE-----
+            <base64>
+            -----END CERTIFICATE-----
+            ex: export REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
         domainId (int): the domain.
         proxy (str): ip.add.re.ss:port of proxy
 
@@ -72,7 +83,7 @@ class FiremonAPI(object):
         username: str,
         password: str,
         timeout: int = 20,
-        verify_ssl: bool = False,
+        verify: Optional = True,
         domainId: int = 1,
         proxy: str = None,
     ):
@@ -80,7 +91,7 @@ class FiremonAPI(object):
         self.username = username
         self.password = password
         self.timeout = timeout
-        self.verify_ssl = verify_ssl
+        self.verify = verify
 
         self.session = requests.Session()
         self.session.auth = (self.username, self.password)  # Basic auth is used
@@ -88,7 +99,7 @@ class FiremonAPI(object):
                                 'Accept-Encoding': 'gzip, deflate', 'Accept': '*/*',
                                 'Connection': 'keep-alive'}
         self.session.headers.update(self.default_headers)
-        self.session.verify = self.verify_ssl  # It'd be nice to default to True. Currently defeat purpose of SSL
+        self.session.verify = self.verify
         self.session.timeout = self.timeout
         if proxy:
             self.session.proxies = {'http': proxy, 'https': proxy}
@@ -107,6 +118,10 @@ class FiremonAPI(object):
 
     def _auth(self):
         """ Initial check for access and version information """
+        #log.debug(
+        #    "Authenticating Firemon connection: %s",
+        #    self.host
+        #)
         url = self._base_url + '/securitymanager/api/authentication/login'
         payload = {'username': self.username, 'password': self.password}
         self.session.headers.update({'Content-Type': 'application/json'})
