@@ -12,8 +12,10 @@ import json
 from urllib.parse import urlencode, quote
 
 # Local packages
-from fmapi.errors import AuthenticationError, FiremonError, LicenseError
-from fmapi.errors import DeviceError, DevicePackError, VersionError
+from fmapi.errors import (
+    AuthenticationError, FiremonError, LicenseError,
+    DeviceError, DevicePackError, VersionError
+)
 from fmapi.core.response import Record
 
 

@@ -1,7 +1,34 @@
 """
-(c) 2019 Firemon
+Firemon API - (firemon-api)
 
-Unless required by applicable law or agreed to in writing, software
+firemon-api is a library to assist in writing Python scripts using Firemon.
+
+    Import the API
+    >>> import fmapi
+    >>> fm = fmapi.api('hobbes', 'firemon', 'firemon')
+    >>> fm
+    <Firemon(host='hobbes', version='8.25.9')>
+
+    A list of all device packs installed
+    >>> fm.sm.dp.all()
+
+    A list of all devices
+    >>> fm.sm.devices.all()
+
+    Get a device
+    >>> dev = fm.sm.devices.get(name='my-asa')
+
+    Change working domain
+    >>> fm.domainId = 2
+
+    Logging for debugging. via urllib3
+    >>> import logging
+    >>> logging.basicConfig(level=logging.DEBUG)
+
+
+:copyright: (c) 2019 Firemon
+
+:license: Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
@@ -21,24 +48,24 @@ from fmapi.api import FiremonAPI as api
 logging.getLogger(__name__).addHandler(NullHandler())
 
 
-def add_stderr_logger(level=logging.DEBUG):
-    """
-    Helper for quickly adding a StreamHandler to the logger. Useful for
-    debugging.
-    Returns the handler after adding it.
-    """
-    # This method needs to be in this __init__.py to get the __name__ correct
-    # even if fmapi is vendored within another package.
-    logger = logging.getLogger(__name__)
-    handler = logging.StreamHandler()
-    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
-    logger.addHandler(handler)
-    logger.setLevel(level)
-    logger.debug("Added a stderr logging handler to logger: %s", __name__)
-    return handler
+#def add_stderr_logger(level=logging.DEBUG):
+#    """
+#    Helper for quickly adding a StreamHandler to the logger. Useful for
+#    debugging.
+#    Returns the handler after adding it.
+#    """
+#    # This method needs to be in this __init__.py to get the __name__ correct
+#    # even if fmapi is vendored within another package.
+#    logger = logging.getLogger(__name__)
+#    handler = logging.StreamHandler()
+#    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+#    logger.addHandler(handler)
+#    logger.setLevel(level)
+#    logger.debug("Added a stderr logging handler to logger: %s", __name__)
+#    return handler
 
 # ... Clean up.
-del NullHandler
+#del NullHandler
 
 
 # All warning filters *must* be appended unless you're really certain that they

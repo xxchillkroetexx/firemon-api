@@ -11,7 +11,7 @@ with open('README.md') as f:
 
 setup(
     name='firemon-api',
-    version='0.0.4',
+    version='0.0.5',
     description='NetSec Python Wrapper for Firemon API',
     long_description=readme,
     author='Firemon NetSec <dev-netsec@firemon.com>',
