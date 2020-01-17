@@ -9,14 +9,17 @@ limitations under the License.
 """
 # Standard packages
 import json
+import logging
 from urllib.parse import urlencode, quote
 
 # Local packages
-from fmapi.errors import (
+from firemon_api.errors import (
     AuthenticationError, FiremonError, LicenseError,
     DeviceError, DevicePackError, VersionError
 )
-from fmapi.core.response import Record
+from firemon_api.core.response import Record
+
+log = logging.getLogger(__name__)
 
 
 class Users(object):
@@ -38,13 +41,14 @@ class Users(object):
             list: List of User(object)
 
         Raises:
-            fmapi.errors.FiremonError: if not status code 200
+            firemon_api.errors.FiremonError: if not status code 200
 
         Examples:
             >>> users = fm.sm.users.all()
             [..., ..., ..., ..., ]
         """
-        url = self.url + '?includeSystem=true&includeDisabled=true&sort=id&pageSize=100'
+        url = self.url + ('?includeSystem=true&includeDisabled=true&sort'
+                            '=id&pageSize=100')
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.get(url)
         if response.status_code == 200:
@@ -56,7 +60,8 @@ class Users(object):
         else:
             raise FiremonError("ERROR retrieving user! HTTP code: {}"
                                " Server response: {}".format(
-                               response.status_code, response.text))
+                                                        response.status_code,
+                                                        response.text))
 
     def get(self, *args, **kwargs):
         """ Get single user
@@ -66,7 +71,7 @@ class Users(object):
             **kwargs (str, optional): see filter() for available filters
 
         Raises:
-            fmapi.errors.FiremonError: if not status code 200
+            firemon_api.errors.FiremonError: if not status code 200
 
         Examples:
             Get by ID
@@ -114,7 +119,7 @@ class Users(object):
             None: if not found
 
         Raises:
-            fmapi.errors.DeviceError: if not status code 200
+            firemon_api.errors.DeviceError: if not status code 200
 
         Examples:
             Partial name search return multiple users
@@ -238,7 +243,7 @@ class User(Record):
         response = self.session.get(self.url)
         if response.status_code == 200:
             config = response.json()
-            self._config = config
+            self._config = config.copy()
             self.__init__(self.api, self._config)
         else:
             raise FiremonError('Error! unable to reload User')

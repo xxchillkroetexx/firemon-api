@@ -9,19 +9,22 @@ limitations under the License.
 """
 # Standard packages
 import json
+import logging
 
 # Local packages
-from fmapi.errors import (
+from firemon_api.errors import (
     AuthenticationError, FiremonError, LicenseError,
     DeviceError, DevicePackError, VersionError
 )
-from fmapi.core.response import Record
-from fmapi.core.utils import _build_dict, _find_dicts_with_key
+from firemon_api.core.response import Record
+from firemon_api.core.utils import _build_dict, _find_dicts_with_key
+
+log = logging.getLogger(__name__)
 
 
 class DevicePacks(object):
-    """ Represents the Device Packs. There is no API to query individual Device Packs
-    so this is a kludge. Retrieve all DPs and query from there.
+    """ Represents the Device Packs. There is no API to query individual Device
+    Packs so this is a kludge. Retrieve all DPs and query from there.
 
     Args:
         sm (obj): SecurityManager
@@ -48,7 +51,8 @@ class DevicePacks(object):
         Returns:
             list: a list of dictionary objects that contain device pack info
         """
-        url = self.url + '/list/DEVICE_PACK/?sort=artifactId&pageSize=100&showHidden=true'
+        url = self.url + ('/list/DEVICE_PACK/?sort=artifactId&pageSize='
+                        '100&showHidden=true')
         response = self.session.get(url)
         if response.status_code == 200:
             dps = response.json()['results']
@@ -56,7 +60,8 @@ class DevicePacks(object):
         else:
             raise FiremonError("ERROR retrieving list of device packs! HTTP "
                                "code: {}  Server response: ".format(
-                                response.status_code, response.text))
+                                                        response.status_code,
+                                                        response.text))
 
     def all(self):
         """ Get all device packs
@@ -71,7 +76,8 @@ class DevicePacks(object):
         #if not self.device_packs:
         #    self._get_all()
         self._get_all()
-        return [DevicePack(self, self.device_packs[dp]) for dp in self.device_packs]
+        return [DevicePack(self, self.device_packs[dp])
+                for dp in self.device_packs]
 
     def get(self, *args, **kwargs):
         """ Query and retrieve individual DevicePack
@@ -136,7 +142,8 @@ class DevicePacks(object):
             raise ValueError("filter must have kwargs")
 
         return [DevicePack(self, self.device_packs[dp]) for dp in
-                self.device_packs if kwargs.items() <= self.device_packs[dp].items()]
+                self.device_packs if kwargs.items()
+                <= self.device_packs[dp].items()]
 
     def upload(self, file: bytes):
         """ Upload device pack
@@ -199,8 +206,10 @@ class DevicePack(Record):
         Return:
             dict: template information for a device with defaults included
         """
-        url = self.url + '/{groupId}/{artifactId}/layout?layoutName=layout.json'.format(
-                            groupId=self.groupId, artifactId=self.artifactId)
+        url = self.url + ('/{groupId}/{artifactId}/layout?'
+                        'layoutName=layout.json'.format(
+                                                groupId=self.groupId,
+                                                artifactId=self.artifactId))
         self.session.headers.update({'Content-Type': 'application/json'})
         r = self.session.post(url)
         template = {}

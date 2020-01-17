@@ -4,8 +4,8 @@ Firemon API - (firemon-api)
 firemon-api is a library to assist in writing Python scripts using Firemon.
 
     Import the API
-    >>> import fmapi
-    >>> fm = fmapi.api('hobbes', 'firemon', 'firemon')
+    >>> import firemon_api
+    >>> fm = firemon_api.api('hobbes', 'firemon', 'firemon')
     >>> fm
     <Firemon(host='hobbes', version='8.25.9')>
 
@@ -42,31 +42,29 @@ import warnings
 
 # Local
 from . import errors
-from fmapi.api import FiremonAPI as api
-
+from firemon_api.api import FiremonAPI as api
 
 logging.getLogger(__name__).addHandler(NullHandler())
 
-
-#def add_stderr_logger(level=logging.DEBUG):
-#    """
-#    Helper for quickly adding a StreamHandler to the logger. Useful for
-#    debugging.
-#    Returns the handler after adding it.
-#    """
-#    # This method needs to be in this __init__.py to get the __name__ correct
-#    # even if fmapi is vendored within another package.
-#    logger = logging.getLogger(__name__)
-#    handler = logging.StreamHandler()
-#    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
-#    logger.addHandler(handler)
-#    logger.setLevel(level)
-#    logger.debug("Added a stderr logging handler to logger: %s", __name__)
-#    return handler
+def add_stderr_logger(level=logging.DEBUG):
+    """
+    Helper for quickly adding a StreamHandler to the logger. Useful for
+    debugging.
+    Returns the handler after adding it.
+    """
+    # This method needs to be in this __init__.py to get the __name__ correct
+    # even if firemon_api is vendored within another package.
+    logger = logging.getLogger(__name__)
+    handler = logging.StreamHandler()
+    handler.setFormatter(
+                    logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+    logger.addHandler(handler)
+    logger.setLevel(level)
+    logger.debug("Added a stderr logging handler to logger: %s", __name__)
+    return handler
 
 # ... Clean up.
-#del NullHandler
-
+del NullHandler
 
 # All warning filters *must* be appended unless you're really certain that they
 # shouldn't be: otherwise, it's very hard for users to use most Python
@@ -79,6 +77,6 @@ warnings.simplefilter("always", errors.AuthenticationWarning, append=True)
 
 def disable_warnings(category=errors.FiremonWarning):
     """
-    Helper for quickly disabling all fmapi warnings.
+    Helper for quickly disabling all firemon_api warnings.
     """
     warnings.simplefilter("ignore", category)

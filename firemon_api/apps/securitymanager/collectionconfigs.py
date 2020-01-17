@@ -9,21 +9,24 @@ limitations under the License.
 """
 # Standard packages
 import json
+import logging
 
 # Local packages
-from fmapi.errors import (
+from firemon_api.errors import (
     AuthenticationError, FiremonError, LicenseError,
     DeviceError, DevicePackError, VersionError
 )
-from fmapi.core.response import Record
-from fmapi.core.utils import _build_dict
+from firemon_api.core.response import Record
+from firemon_api.core.utils import _build_dict
+
+log = logging.getLogger(__name__)
 
 
 class CollectionConfigs(object):
     """ Represents the Collection Configs
     Filtering is terrible given the API.
-    As a kludge I just injest all collectionconfigs (like the device packs) and create
-    get() and filter() functions to parse a dictionary.
+    As a kludge I just injest all collectionconfigs (like the device packs)
+    and create get() and filter() functions to parse a dictionary.
 
     Args:
         sm (obj): SecurityManager() object
@@ -34,7 +37,9 @@ class CollectionConfigs(object):
 
     Examples:
         >>> cc = fm.sm.cc.get(46)
-        >>> cc = fm.sm.cc.filter(activatedForDevicePack=True, devicePackArtifactId='juniper_srx')[0]
+        >>> cc = fm.sm.cc.filter(
+                activatedForDevicePack=True,
+                devicePackArtifactId='juniper_srx')[0]
     """
     def __init__(self, sm, devicePackId: int=None, deviceId: int=None):
         self.sm = sm
@@ -57,8 +62,9 @@ class CollectionConfigs(object):
         page = 0
         count = 0
         if self.devicePackId:
-            url = self.url + '?devicePackId={devicePackId}&page={page}&pageSize=100'.format(
-                                        devicePackId=self.devicePackId, page=page)
+            url = self.url + ('?devicePackId={devicePackId}&page={page}&'
+                'pageSize=100'.format(
+                                devicePackId=self.devicePackId, page=page))
         else:
             url = self.url + '?page={page}&pageSize=100'.format(page=page)
         self.session.headers.update({'Content-Type': 'application/json'})
@@ -71,7 +77,8 @@ class CollectionConfigs(object):
                 count = resp['count']
                 while total > count:
                     page += 1
-                    url = url = self.url + '?sort=devicePack.vendor&page={page}&pageSize=100'.format(page=page)
+                    url = self.url + ('?sort=devicePack.vendor&page={page}&'
+                                    'pageSize=100'.format(page=page))
                     response = self.session.get(url)
                     resp = response.json()
                     count += resp['count']
@@ -92,7 +99,8 @@ class CollectionConfigs(object):
             >>> configs = fm.sm.cc.all()
         """
         self._get_all()
-        return [CollectionConfig(self, self._collectionconfigs[id]) for id in self._collectionconfigs]
+        return [CollectionConfig(self, self._collectionconfigs[id])
+                for id in self._collectionconfigs]
 
     def get(self, *args, **kwargs):
         """ Query and retrieve individual CollectionConfig
@@ -109,7 +117,7 @@ class CollectionConfigs(object):
             8
             >>> cc = fm.sm.cc.get(8)
             >>> type(cc)
-            <class 'fmapi.apps.securitymanager.CollectionConfig'>
+            <class 'firemon_api.apps.securitymanager.CollectionConfig'>
             >>> cc = fm.sm.cc.get(name='Grape Ape')
             >>> cc
             46
@@ -123,7 +131,8 @@ class CollectionConfigs(object):
                 cc = self._collectionconfigs[id]
                 return CollectionConfig(self, cc)
             except KeyError:
-                raise FiremonError("ERROR retrieving collectionconfig. CC does not exist")
+                raise FiremonError("ERROR retrieving collectionconfig. "
+                                    "CC does not exist")
         except (KeyError, IndexError):
             id = None
 
@@ -169,7 +178,8 @@ class CollectionConfigs(object):
             raise ValueError("filter must have kwargs")
 
         return [CollectionConfig(self, self._collectionconfigs[id]) for id in
-                self._collectionconfigs if kwargs.items() <= self._collectionconfigs[id].items()]
+                self._collectionconfigs if kwargs.items()
+                <= self._collectionconfigs[id].items()]
 
     def create(self, dev_config: dict):
         """ WARNING! This is dangerous as you can overwrite 'default' configs
@@ -213,9 +223,10 @@ class CollectionConfigs(object):
             config = json.loads(response.content)
             return self.get(config['id'])
         else:
-            raise DeviceError("ERROR creating Collection Config! HTTP code: {}  "
+            raise DeviceError("ERROR creating Collection Config! HTTP code: {} "
                               "Server response: {}".format(
-                              response.status_code, response.text))
+                                                    response.status_code,
+                                                    response.text))
 
     def duplicate(self, id: int, name: str):
         """ Duplicate an existing Collection Config. Safer method than create.
@@ -241,8 +252,8 @@ class CollectionConfigs(object):
             config = json.loads(response.content)
             return self.get(config['id'])
         else:
-            raise FiremonError("ERROR creating Collection Config! HTTP code: {}  "
-                              "Server response: {}".format(
+            raise FiremonError("ERROR creating Collection Config! HTTP code: {}"
+                              " Server response: {}".format(
                               response.status_code, response.text))
 
     @property
@@ -311,7 +322,7 @@ class CollectionConfig(Record):
         response = self.session.get(url)
         if response.status_code == 200:
             config = response.json()
-            self._config = config
+            self._config = config.copy()
             self.__init__(self.api, self._config)
         else:
             raise FiremonError('Error! unable to reload collection config')
@@ -319,7 +330,8 @@ class CollectionConfig(Record):
     def set_dp(self) -> bool:
         """ Set CollectionConfig for Device Pack assignment. """
         url = self.url + '/devicepack/{devicePackId}/assignment/{id}'.format(
-                                    devicePackId=self.devicePackId, id=self.id)
+                                            devicePackId=self.devicePackId,
+                                            id=self.id)
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.put(url)
         if response.status_code == 204:
@@ -358,7 +370,9 @@ class CollectionConfig(Record):
                 deviceId = args[0]
             except IndexError:
                 raise DeviceError('Error. A device Id must be passed to set.')
-        url = self.url + '/device/{deviceId}/assignment/{id}'.format(deviceId=deviceId, id=self.id)
+        url = self.url + '/device/{deviceId}/assignment/{id}'.format(
+                                                        deviceId=deviceId,
+                                                        id=self.id)
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.put(url)
         if response.status_code == 204:
@@ -381,7 +395,8 @@ class CollectionConfig(Record):
                 deviceId = args[0]
             except IndexError:
                 raise DeviceError('Error. A device Id must be passed to unset.')
-        url = self.url + '/device/{deviceId}/assignment'.format(deviceId=deviceId)
+        url = self.url + '/device/{deviceId}/assignment'.format(
+                                                            deviceId=deviceId)
         self.session.headers.update({'Content-Type': 'application/json'})
         if 'activatedDeviceIds' in self._config.keys():
             if deviceId in self._config['activatedDeviceIds']:
@@ -437,8 +452,10 @@ class CollectionConfig(Record):
             self._reload()
             return True
         else:
-            raise FiremonError("ERROR updating Collection Config! HTTP code: {}  \
-                            Content {}".format(response.status_code, response.text))
+            raise FiremonError("ERROR updating Collection Config! HTTP code: {}"
+                            " Content {}".format(
+                                            response.status_code,
+                                            response.text))
 
     def delete(self) -> bool:
         """ Delete this CollectionConfig.   """
@@ -479,7 +496,8 @@ class CollectionConfig(Record):
         return template
 
     def __repr__(self):
-        return("<CollectionConfig(id='{}', name='{}')>".format(self.id, self.name))
+        return("<CollectionConfig(id='{}', name='{}')>".format(
+                                                        self.id, self.name))
 
     def __str__(self):
         return("{}".format(self.name))

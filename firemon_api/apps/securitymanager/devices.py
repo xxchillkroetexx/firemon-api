@@ -9,28 +9,40 @@ limitations under the License.
 """
 # Standard packages
 import json
+import logging
 from urllib.parse import urlencode, quote
 import uuid
 
 # Local packages
-from fmapi.errors import (
+from firemon_api.errors import (
     AuthenticationError, FiremonError, LicenseError,
     DeviceError, DevicePackError, VersionError
 )
-from fmapi.core.response import Record
+from firemon_api.core.response import Record
 from .collectionconfigs import CollectionConfigs, CollectionConfig
 from .revisions import Revisions, Revision, ParsedRevision
 
+log = logging.getLogger(__name__)
 
 class Devices(object):
     """ Represents the Devices
 
     Args:
         sm (obj): SecurityManager()
+
+    Kwargs:
+        collectorId (int): Data Collector id
+        collectorGroupId (str): Data Collector Group Id (uuid)
     """
 
-    def __init__(self, sm):
+    def __init__(self, sm,
+                collectorId: int = None,
+                collectorGroupId: str = None):
         self.sm = sm
+        # Use setter. Intended for use when Devices is called from
+        #   Collector(object) or CollectorGroup(object)
+        self.collectorId: int = collectorId
+        self.collectorGroupId: str = collectorGroupId
         self.url = sm.domain_url + '/device'  # Devices URL
         self.session = sm.session
 
@@ -49,7 +61,20 @@ class Devices(object):
         total = 0
         page = 0
         count = 0
-        url = self.url + '?page={page}&pageSize=100'.format(page=page)
+        if self.collectorId:
+            url = self.sm.sm_url + ('/collector/{id}/device?page={page}&'
+                                    'pageSize=100'.format(
+                                                    id=self.collectorId,
+                                                    page=page))
+        elif self.collectorGroupId:
+            url = self.sm.sm_url + ('/collector/group/{id}/assigned?page={page}'
+                                    '&pageSize=100'.format(
+                                                    id=self.collectorGroupId,
+                                                    page=page))
+        else:
+            url = self.url + '?page={page}&pageSize=100'.format(page=page)
+
+        log.debug(url)
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.get(url)
         if response.status_code == 200:
@@ -60,17 +85,23 @@ class Devices(object):
                 count = resp['count']
                 while total > count:
                     page += 1
-                    url = self.url + '?page={page}&pageSize=100'.format(page=page)
+                    url = self.url + '?page={page}&pageSize=100'.format(
+                                                                    page=page)
                     response = self.session.get(url)
                     resp = response.json()
                     count += resp['count']
                     results.extend(resp['results'])
-                return [Device(self, dev) for dev in results]
+                if self.collectorId:
+                    return [Device(self, dev) for dev in results]
+                elif self.collectorGroupId:
+                    return [self.sm.devices.get(dev['id']) for dev in results]
+                else:
+                    return [Device(self, dev) for dev in results]
             else:
                 return []
         else:
-            raise DeviceError("ERROR retrieving device! HTTP code: {}"
-                               " Server response: {}".format(
+            raise DeviceError("ERROR retrieving device! HTTP code: {} "
+                               "Server response: {}".format(
                                response.status_code, response.text))
 
     def get(self, *args, **kwargs):
@@ -122,9 +153,9 @@ class Devices(object):
             **kwargs (str): filter parameters
 
         Available Filters:
-            name, description, mgmtip, vendors, products, datacosllectors,
+            name, description, mgmtip, vendors, products, datacollectors,
             devicegroups, devicetypes, centralsyslogs, retrieval, change,
-            log, parentids, devicepackids
+            log, parentids, devicepackids, datacollectorgroups
 
         Return:
             list: List of Device() Records
@@ -144,8 +175,10 @@ class Devices(object):
         total = 0
         page = 0
         count = 0
-        url = self.url + '/filter?page={page}&pageSize=100&filter={filters}'.format(
-                            page=page, filters=urlencode(kwargs, quote_via=quote))
+        url = self.url + ('/filter?page={page}&pageSize=100&filter={filters}'
+                            .format(page=page, filters=urlencode(
+                                                            kwargs,
+                                                            quote_via=quote)))
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.get(url)
         if response.status_code == 200:
@@ -156,8 +189,12 @@ class Devices(object):
                 count = resp['count']
                 while total > count:
                     page += 1
-                    url = self.url + '/filter?page={page}&pageSize=100&filter={filters}'.format(
-                                    page=page, filters=urlencode(kwargs, quote_via=quote))
+                    url = self.url + ('/filter?page={page}&pageSize=100&filter'
+                                    '={filters}'.format(
+                                                        page=page,
+                                                        filters=urlencode(
+                                                            kwargs,
+                                                            quote_via=quote)))
                     response = self.session.get(url)
                     resp = response.json()
                     count += resp['count']
@@ -193,7 +230,8 @@ class Devices(object):
         page = 0
         count = 0
         url = self.url + '?page={page}&pageSize=100&search={filter}'.format(
-                            page=page, filter=arg)
+                                                        page=page,
+                                                        filter=arg)
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.get(url)
         if response.status_code == 200:
@@ -204,8 +242,10 @@ class Devices(object):
                 count = resp['count']
                 while total > count:
                     page += 1
-                    url = url = self.url + '?page={page}&pageSize=100&search={filter}'.format(
-                                    page=page, filter=arg)
+                    url = self.url + ('?page={page}&pageSize=100&search'
+                                        '={filter}'.format(
+                                                    page=page,
+                                                    filter=arg))
                     response = self.session.get(url)
                     resp = response.json()
                     count += resp['count']
@@ -216,7 +256,8 @@ class Devices(object):
         else:
             raise DeviceError("ERROR retrieving device! HTTP code: {}"
                                " Server response: {}".format(
-                               response.status_code, response.text))
+                                            response.status_code,
+                                            response.text))
 
     def create(self, dev_config, retrieve: bool=False):
         """  Create a new device
@@ -237,7 +278,8 @@ class Devices(object):
             Conan
         """
         assert(isinstance(dev_config, dict)), 'Configuration needs to be a dict'
-        url = self.url + '?manualRetrieval={debug}'.format(debug=str(retrieve))
+        url = self.url + '?manualRetrieval={retrieve}'.format(
+                                                        retrieve=str(retrieve))
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.post(url, json=dev_config)
         if response.status_code == 200:
@@ -246,7 +288,24 @@ class Devices(object):
         else:
             raise DeviceError("ERROR installing device! HTTP code: {}  "
                               "Server response: {}".format(
-                              response.status_code, response.text))
+                                            response.status_code,
+                                            response.text))
+
+    @property
+    def collectorId(self):
+        return self._collectorId
+
+    @collectorId.setter
+    def collectorId(self, id):
+        self._collectorId = id
+
+    @property
+    def collectorGroupId(self):
+        return self._collectorGroupId
+
+    @collectorGroupId.setter
+    def collectorGroupId(self, id):
+        self._collectorGroupId = id
 
     def __repr__(self):
         return("<Devices(url='{}')>".format(self.url))
@@ -274,7 +333,8 @@ class Device(Record):
 
         Show configuration data
         >>> dict(dev)
-        {'id': 21, 'domainId': 1, 'name': 'vSRX-2', 'description': 'regression test SRX', ...}
+        {'id': 21, 'domainId': 1, 'name': 'vSRX-2',
+            'description': 'regression test SRX', ...}
 
         List all collection configs that device can use
         >>> dev.cc.all()
@@ -293,7 +353,8 @@ class Device(Record):
         super().__init__(devs, config)
 
         self.devs = devs
-        self.url = devs.sm.domain_url + '/device/{id}'.format(id=str(config['id']))  # Device id URL
+        self.url = devs.sm.domain_url + '/device/{id}'.format(
+                                        id=str(config['id']))  # Device id URL
 
         # Add attributes to Record() so we can get more info
         self.revisions = Revisions(self.devs.sm, self.id)
@@ -305,7 +366,7 @@ class Device(Record):
         response = self.session.get(self.url)
         if response.status_code == 200:
             config = response.json()
-            self._config = config
+            self._config = config.copy()
             self.__init__(self.devs, self._config)
         else:
             raise FiremonError('Error! unable to reload Device')
@@ -331,13 +392,16 @@ class Device(Record):
         """
 
         kwargs = {'deleteChildren': deleteChildren, 'async': a_sync,
-                  'sendNotification': sendNotification, 'postProcessing': postProcessing}
-        url = self.url + '?{filters}'.format(filters=urlencode(kwargs, quote_via=quote))
+                  'sendNotification': sendNotification,
+                  'postProcessing': postProcessing}
+        url = self.url + '?{filters}'.format(
+                                    filters=urlencode(kwargs, quote_via=quote))
         response = self.session.delete(url)
         if response.status_code == 200:
             return True
         else:
-            raise DeviceError("ERROR deleting device(s)! Code {}".format(response.status_code))
+            raise DeviceError("ERROR deleting device(s)! "
+                    "Code {}".format(response.status_code))
 
     def import_config(self, f_list: list) -> bool:
         """ Import config files for device to create a new revision
@@ -345,7 +409,8 @@ class Device(Record):
         Args:
             f_list (list): a list of tuples. Tuples are intended to uploaded
                 as a multipart form using 'requests'. format of the data in the
-                tuple is ('file', ('<file-name>', open(<path_to_file>, 'rb'), 'text/plain'))
+                tuple is ('file', ('<file-name>',
+                            open(<path_to_file>, 'rb'), 'text/plain'))
 
         Example:
             >>> dev = fm.sm.devices.get(name='vsrx-2')
@@ -359,15 +424,18 @@ class Device(Record):
         self.session.headers.update({'Content-Type': 'multipart/form-data'})
         changeUser = self.devs.sm.api.username  # Not really needed
         correlationId = str(uuid.uuid1())  # Not really needed
-        url = self.url + '/rev?action=IMPORT&changeUser={}&correlationId={}'.format(
-            changeUser, correlationId)  # changeUser and corId not need
+        url = self.url + ('/rev?action=IMPORT&changeUser={}'
+                        '&correlationId={}'.format(
+                                            changeUser,
+                                            correlationId))
         response = self.session.post(url, files=f_list)
         if response.status_code == 200:
             self.session.headers.pop('Content-type', None)
             return True
         else:
-            raise FiremonError('Error: unable to upload configuration files! HTTP code: {} \
-                            Content {}'.format(response.status_code, response.text))
+            raise FiremonError('Error: unable to upload configuration files! '
+                'HTTP code: {} Content {}'.format(
+                    response.status_code, response.text))
 
     def import_support(self, zip_file: bytes, renormalize: bool=False):
         """ Todo: Import a 'support' file, a zip file with the expected device
@@ -398,8 +466,10 @@ class Device(Record):
             self.session.headers.pop('Content-type', None)
             return True
         else:
-            raise FiremonError('Error: unable to upload zip file! HTTP code: {} \
-                            Content {}'.format(response.status_code, response.text))
+            raise FiremonError('Error: unable to upload zip file! HTTP code: {}'
+                            ' Content {}'.format(
+                                            response.status_code,
+                                            response.text))
 
     def update(self, dev_config: dict, retrieve: bool=False) -> bool:
         """ Pass configuration information to update Device.
@@ -432,22 +502,25 @@ class Device(Record):
         assert(isinstance(dev_config, dict)), 'Configuration needs to be a dict'
         dev_config['id'] = self._config['id']  # make sure this is set appropriately
         dev_config['devicePack'] = self._config['devicePack']  # Put all this redundant shit back in
-        url = self.url + '?manualRetrieval={retrieval}'.format(retrieval=str(retrieve))
+        url = self.url + '?manualRetrieval={retrieval}'.format(
+            retrieval=str(retrieve))
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.put(url, json=dev_config)
         if response.status_code == 204:
             self._reload()
             return True
         else:
-            raise DeviceError("ERROR updating Device! HTTP code: {}  \
-                            Content {}".format(response.status_code, response.text))
+            raise DeviceError("ERROR updating Device! HTTP code: {}"
+                            "Content {}".format(
+                            response.status_code, response.text))
 
     def template(self) -> dict:
         """ Dump out current config information that can be modified and sent
         to update() current device
 
         Return:
-            dict: current device configuration minus things that should not be touched
+            dict: current device configuration minus things that should not
+                  be touched
         """
         config = self._config.copy()
         no_no_keys = ['devicePack',
@@ -460,7 +533,8 @@ class Device(Record):
         for k in no_no_keys:
             config.pop(k)
 
-        config['devicePack'] = {'artifactId': self._config['devicePack']['artifactId']}
+        config['devicePack'] = {
+                        'artifactId': self._config['devicePack']['artifactId']}
         return config
 
     def do_retrieval(self, debug: bool=False):
@@ -469,7 +543,8 @@ class Device(Record):
         Kwargs:
             debug (bool): ???
         """
-        url = self.url + '/manualretrieval?debug={debug}'.format(debug=str(debug))
+        url = self.url + '/manualretrieval?debug={debug}'.format(
+                                                            debug=str(debug))
         response = self.session.post(url)
         if response.status_code == 204:
             return True
@@ -481,7 +556,7 @@ class Device(Record):
         total hits for all rules on the device.
 
         Kwargs:
-            total (str): either 'total' or 'daily'
+            type (str): either 'total' or 'daily'
 
         Return:
             json: daily == {'hitDate': '....', 'totalHits': int}
@@ -493,7 +568,8 @@ class Device(Record):
         if response.status_code == 200:
             return response.json()
         else:
-            raise FiremonError('Error: Unable to retrieve device rule usage info')
+            raise FiremonError('Error: Unable to retrieve device rule usage '
+                                'info')
 
     def get_nd_latest(self):
         """Gets the latest revision as a fully parsed object """
@@ -503,7 +579,8 @@ class Device(Record):
         if response.status_code == 200:
             return ParsedRevision(self.devs, response.json())
         else:
-            raise FiremonError('Error: Unable to retrieve latest parsed revision')
+            raise FiremonError('Error: Unable to retrieve latest parsed '
+                                'revision')
 
     def __repr__(self):
         return("<Device(id='{}', name={})>".format(self.id, self.name))

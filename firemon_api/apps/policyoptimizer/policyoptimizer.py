@@ -11,14 +11,14 @@ limitations under the License.
 import json
 
 # Local packages
-from fmapi.errors import (
+from firemon_api.errors import (
     AuthenticationError, FiremonError, LicenseError,
     DeviceError, DevicePackError, VersionError
 )
 
 
-class PolicyPlanner(object):
-    """ Represents Policy Planner in Firemon
+class PolicyOptimizer(object):
+    """ Represents Policy Optimizer in Firemon
 
     Args:
         api (obj): FiremonAPI()
@@ -30,14 +30,14 @@ class PolicyPlanner(object):
     def __init__(self, api):
         self.api = api
         self.session = api.session
-        self.pp_url = "{url}/policyplanner/api".format(url=api.base_url)
-        self.domain_url = self.pp_url + "/domain/{id}".format(id=str(self.api.domainId))
+        self.po_url = "{url}/policyoptimizer/api".format(url=api.base_url)
+        self.domain_url = self.po_url + "/domain/{id}".format(id=str(self.api.domainId))
 
         # Endpoints
         #self.xx = EndPoint(self)
 
     def __repr__(self):
-        return("<Policy Planner(url='{}')>".format(self.pp_url))
+        return("<Policy Optimizer(url='{}')>".format(self.po_url))
 
     def __str__(self):
-        return('{}'.format(self.pp_url))
+        return('{}'.format(self.po_url))

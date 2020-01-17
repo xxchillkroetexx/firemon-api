@@ -9,13 +9,16 @@ limitations under the License.
 """
 # Standard packages
 import json
+import logging
 
 # Local packages
-from fmapi.errors import (
+from firemon_api.errors import (
     AuthenticationError, FiremonError, LicenseError,
     DeviceError, DevicePackError, VersionError
 )
-from fmapi.core.response import Record
+from firemon_api.core.response import Record
+
+log = logging.getLogger(__name__)
 
 
 class CentralSyslogs(object):

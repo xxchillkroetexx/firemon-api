@@ -9,7 +9,7 @@ limitations under the License.
 """
 # Standard packages
 import json
-#import logging
+import logging
 from typing import Optional
 import warnings
 
@@ -21,20 +21,20 @@ import requests  # performing web requests
 #    pass
 
 # Local packages
-from fmapi.errors import (
+from firemon_api.errors import (
     AuthenticationError, FiremonError, LicenseError,
     DeviceError, DevicePackError, VersionError,
     FiremonWarning, AuthenticationWarning
 )
-from fmapi.apps.securitymanager import SecurityManager
-from fmapi.apps.globalpolicycontroller import GlobalPolicyController
-from fmapi.apps.policyplanner import PolicyPlanner
-from fmapi.apps.policyoptimizer import PolicyOptimizer
+from firemon_api.apps.securitymanager import SecurityManager
+from firemon_api.apps.globalpolicycontroller import GlobalPolicyController
+from firemon_api.apps.policyplanner import PolicyPlanner
+from firemon_api.apps.policyoptimizer import PolicyOptimizer
 
-#log = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 class FiremonAPI(object):
-    """ The FiremonAPI object is the entry point to fmapi
+    """ The FiremonAPI object is the entry point to firemon_api
 
     Instantiate FiremonAPI() with the appropriate named arguments then
     specify which app and endpoint with which to interact.
@@ -46,13 +46,17 @@ class FiremonAPI(object):
 
     Kwargs:
         timeout (int): timeout value for Requests Session(). (default: 20)
-        verify (Optional): Requests verify ssl cert (bool) or a path (str) to
+        verify (optional): Requests verify ssl cert (bool) or a path (str) to
             PEM certificate. (default: ``True``)
             hint: get the cert for fmos instance or append it to the CA bundle.
             -----BEGIN CERTIFICATE-----
             <base64>
             -----END CERTIFICATE-----
             ex: export REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+        cert (optional): if String, path to ssl client cert file (.pem).
+            If Tuple, ('cert', 'key') pair.
+            ex: openssl x509 -in <(openssl s_client -connect {SERVER}:{PORT} \
+                -prexit 2>/dev/null) > {SERVER}.pem
         domainId (int): the domain.
         proxy (str): ip.add.re.ss:port of proxy
 
@@ -64,7 +68,7 @@ class FiremonAPI(object):
 
     Examples:
         Import the API
-        >>> import fmapi
+        >>> import firemon_api as fmapi
         >>> fm = fmapi.api('hobbes', 'firemon', 'firemon')
         >>> fm
         Firemon: hobbes ver. 8.24.1
@@ -84,6 +88,7 @@ class FiremonAPI(object):
         password: str,
         timeout: int = 20,
         verify: Optional = True,
+        cert: Optional = None,
         domainId: int = 1,
         proxy: str = None,
     ):
@@ -92,14 +97,17 @@ class FiremonAPI(object):
         self.password = password
         self.timeout = timeout
         self.verify = verify
+        self.cert = cert
 
         self.session = requests.Session()
         self.session.auth = (self.username, self.password)  # Basic auth is used
         self.default_headers = {'User-Agent': 'dev-netsec/0.0.1',
-                                'Accept-Encoding': 'gzip, deflate', 'Accept': '*/*',
+                                'Accept-Encoding': 'gzip, deflate',
+                                'Accept': '*/*',
                                 'Connection': 'keep-alive'}
         self.session.headers.update(self.default_headers)
         self.session.verify = self.verify
+        self.session.cert = self.cert
         self.session.timeout = self.timeout
         if proxy:
             self.session.proxies = {'http': proxy, 'https': proxy}
@@ -118,17 +126,21 @@ class FiremonAPI(object):
 
     def _auth(self):
         """ Initial check for access and version information """
-        #log.debug(
-        #    "Authenticating Firemon connection: %s",
-        #    self.host
-        #)
+        log.debug(
+            "Authenticating Firemon connection: %s",
+            self.host
+        )
         url = self._base_url + '/securitymanager/api/authentication/login'
         payload = {'username': self.username, 'password': self.password}
         self.session.headers.update({'Content-Type': 'application/json'})
-        response = self.session.post(url, data=json.dumps(payload))
+        response = self.session.post(url,
+                                    data=json.dumps(payload),
+                                    verify=self.verify,
+                                    cert=self.cert)
         if (response.status_code != 200):
             raise AuthenticationError("HTTP code: {}  Server response: "
-                                      " {}".format(str(response.status_code), response.text))
+                                      " {}".format(str(response.status_code),
+                                      response.text))
         else:
             self.version = self._get_version()
             self.major_version = self.version.split('.')[0]
@@ -151,7 +163,8 @@ class FiremonAPI(object):
         """ Verify that requested domain Id exists.
         Set the domainId that will be used.
         """
-        url = self.base_url + "/securitymanager/api/domain/{id}".format(id=str(id))
+        url = self.base_url + "/securitymanager/api/domain/{id}".format(
+                                                                    id=str(id))
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.get(url)
         if response.status_code == 200:
@@ -170,7 +183,8 @@ class FiremonAPI(object):
             return False
 
     def __repr__(self):
-        return("<Firemon(host='{}', version='{}')>".format(self.host, self.version))
+        return("<Firemon(host='{}', "
+            "version='{}')>".format(self.host, self.version))
 
     def __str__(self):
         return("FMOS: {} ver. {}".format(self.host, self.version))

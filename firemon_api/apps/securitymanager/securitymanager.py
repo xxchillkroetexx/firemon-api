@@ -9,21 +9,23 @@ limitations under the License.
 """
 # Standard packages
 import json
+import logging
 
 # Local packages
-from fmapi.errors import (
+from firemon_api.errors import (
     AuthenticationError, FiremonError, LicenseError,
     DeviceError, DevicePackError, VersionError,
     FiremonWarning, AuthenticationWarning
 )
 from .centralsyslogs import CentralSyslogs, CentralSyslog
 from .collectionconfigs import CollectionConfigs, CollectionConfig
-from .collectors import Collectors, DataCollector
+from .collectors import Collectors, Collector, CollectorGroups, CollectorGroup
 from .devicepacks import DevicePacks, DevicePack
 from .devices import Devices, Device
 from .revisions import Revisions, Revision, ParsedRevision
 from .users import Users, User, UserGroup
 
+log = logging.getLogger(__name__)
 
 class SecurityManager(object):
     """ Represents Security Manager in Firemon
@@ -35,6 +37,7 @@ class SecurityManager(object):
         * cc: CollectionConfigs()
         * centralsyslogs: CentralSyslogs()
         * collectors: Collectors()
+        * collectorgroups: CollectorGroups()
         * devices: Devices()
         * dp: DevicePacks()
         * revisions: Revisions()
@@ -48,12 +51,14 @@ class SecurityManager(object):
         #self.domainId = api.domainId
         #self._url = api.base_url  # Prevoius level URL
         self.sm_url = "{url}/securitymanager/api".format(url=api.base_url)
-        self.domain_url = self.sm_url + "/domain/{id}".format(id=str(self.api.domainId))
+        self.domain_url = self.sm_url + "/domain/{id}".format(
+                                                    id=str(self.api.domainId))
 
         # Endpoints
         self.cc = CollectionConfigs(self)
         self.centralsyslogs = CentralSyslogs(self)
         self.collectors = Collectors(self)
+        self.collectorgroups = CollectorGroups(self)
         self.devices = Devices(self)
         self.dp = DevicePacks(self)  # Todo: create the other /plugins
         self.revisions = Revisions(self)

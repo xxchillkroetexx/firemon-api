@@ -10,5 +10,5 @@ Learn more on the [Confluence page.](https://confluence.securepassage.com/displa
 From the command line execute `pip` pointing at the repository.
 
 ```
-$ pip install git+https://stash.securepassage.com/scm/nsu/fmapi#egg=firemon-api
+$ pip install git+https://stash.securepassage.com/scm/nsu/firemon-api#egg=firemon-api
 ```
