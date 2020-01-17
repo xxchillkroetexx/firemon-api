@@ -11,14 +11,14 @@ with open('README.md') as f:
 
 setup(
     name='firemon-api',
-    version='0.0.5',
+    version='0.0.6',
     description='NetSec Python Wrapper for Firemon API',
     long_description=readme,
     author='Firemon NetSec <dev-netsec@firemon.com>',
     author_email='dev-netsec@firemon.com',
     url='https://www.firemon.com/',
     project_urls = {
-        'Repository': 'https://stash.securepassage.com/scm/nsu/fmapi',
+        'Repository': 'https://stash.securepassage.com/scm/nsu/firemon-api',
     },
     packages=find_packages(exclude=('tests', 'docs')),
     include_package_data=True,
