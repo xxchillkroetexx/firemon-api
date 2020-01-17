@@ -38,6 +38,7 @@ limitations under the License.
 # Standard Modules
 import logging
 from logging import NullHandler
+import urllib3
 import warnings
 
 # Local
@@ -80,3 +81,4 @@ def disable_warnings(category=errors.FiremonWarning):
     Helper for quickly disabling all firemon_api warnings.
     """
     warnings.simplefilter("ignore", category)
+    urllib3.disable_warnings()
