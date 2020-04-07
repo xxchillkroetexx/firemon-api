@@ -9,6 +9,7 @@ limitations under the License.
 """
 # Standard packages
 import json
+import logging
 
 # Local packages
 from firemon_api.errors import (
@@ -16,6 +17,7 @@ from firemon_api.errors import (
     DeviceError, DevicePackError, VersionError
 )
 
+log = logging.getLogger(__name__)
 
 class PolicyPlanner(object):
     """ Represents Policy Planner in Firemon

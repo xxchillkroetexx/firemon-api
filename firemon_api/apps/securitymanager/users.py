@@ -50,6 +50,7 @@ class Users(object):
         url = self.url + ('?includeSystem=true&includeDisabled=true&sort'
                             '=id&pageSize=100')
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('GET {}'.format(self.url))
         response = self.session.get(url)
         if response.status_code == 200:
             resp = response.json()
@@ -82,6 +83,7 @@ class Users(object):
             id = args[0]
             url = self.url + '/{id}'.format(id=str(id))
             self.session.headers.update({'Content-Type': 'application/json'})
+            log.debug('GET {}'.format(self.url))
             response = self.session.get(url)
             if response.status_code == 200:
                 return User(self, response.json())
@@ -140,6 +142,7 @@ class Users(object):
         url = self.url + '/filter?page={page}&pageSize=100&filter={filters}'.format(
                             page=page, filters=urlencode(kwargs, quote_via=quote))
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('GET {}'.format(self.url))
         response = self.session.get(url)
         if response.status_code == 200:
             resp = response.json()
@@ -151,6 +154,7 @@ class Users(object):
                     page += 1
                     url = self.url + '/filter?page={page}&pageSize=100&filter={filters}'.format(
                                     page=page, filters=urlencode(kwargs, quote_via=quote))
+                    log.debug('GET {}'.format(self.url))
                     response = self.session.get(url)
                     resp = response.json()
                     count += resp['count']
@@ -186,6 +190,7 @@ class Users(object):
             config = kwargs
             config['domainId'] = self.domainId # API is dumb to auto-fill
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('POST {}'.format(self.url))
         response = self.session.post(self.url, json=config)
         if response.status_code == 200:
             config = json.loads(response.content)
@@ -240,6 +245,7 @@ class User(Record):
     def _reload(self):
         """ Todo: Get configuration info upon change """
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('GET {}'.format(self.url))
         response = self.session.get(self.url)
         if response.status_code == 200:
             config = response.json()
@@ -251,6 +257,7 @@ class User(Record):
     def enable(self):
         url = self.url + '/enable'
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('PUT {}'.format(self.url))
         response = self.session.put(url)
         if response.status_code == 204:
             self._reload()
@@ -262,6 +269,7 @@ class User(Record):
     def disable(self):
         url = self.url + '/disable'
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('PUT {}'.format(self.url))
         response = self.session.put(url)
         if response.status_code == 204:
             self._reload()
@@ -273,6 +281,7 @@ class User(Record):
     def unlock(self):
         url = self.url + '/unlock'
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('PUT {}'.format(self.url))
         response = self.session.put(url)
         if response.status_code == 204:
             self._reload()

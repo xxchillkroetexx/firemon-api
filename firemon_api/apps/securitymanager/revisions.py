@@ -69,6 +69,7 @@ class Revisions(object):
         else:
             url = self.sm.domain_url + ('/rev?sort=id&page={page}&pageSize'
                                         '=100'.format(page=page))
+        log.debug('GET {}'.format(self.url))
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.get(url)
         if response.status_code == 200:
@@ -87,6 +88,7 @@ class Revisions(object):
                     else:
                         url = self.sm.domain_url + ('/rev?sort=id&page'
                                     '={page}&pageSize=100'.format(page=page))
+                    log.debug('GET {}'.format(self.url))
                     response = self.session.get(url)
                     resp = response.json()
                     count += resp['count']
@@ -255,6 +257,7 @@ class Revision(Record):
         url = self.url2 + '/changelog?page={page}&pageSize=100'.format(
                                                                     page=page)
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('GET {}'.format(self.url))
         response = self.session.get(url)
         if response.status_code == 200:
             resp = response.json()
@@ -266,6 +269,7 @@ class Revision(Record):
                     page += 1
                     url = self.url2 + ('/changelog?page={page}&pageSize=100'
                                         .format(page=page))
+                    log.debug('GET {}'.format(self.url))
                     response = self.session.get(url)
                     resp = response.json()
                     count += resp['count']
@@ -294,6 +298,7 @@ class Revision(Record):
             url = self.url + '/export'
         else:
             url = self.url + '/export/config'
+        log.debug('GET {}'.format(self.url))
         response = self.session.get(url)
         if response.status_code == 200:
             return response.content
@@ -312,6 +317,7 @@ class Revision(Record):
         url = self.revs.sm.domain_url + \
             '/device/{deviceId}/rev/{revId}'.format(
                 deviceId=str(self.deviceId), revId=str(self.id))
+        log.debug('DELETE {}'.format(self.url))
         response = self.session.delete(url)
         if response.status_code == 204:
             return True
@@ -322,6 +328,7 @@ class Revision(Record):
         """Get normalized data as a fully parsed object """
         url = self.url + '/nd/all'
         self.session.headers.update({'Accept': 'application/json'})
+        log.debug('GET {}'.format(self.url))
         response = self.session.get(url)
         if response.status_code == 200:
             return ParsedRevision(self.revs, response.json())

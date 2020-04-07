@@ -67,6 +67,7 @@ class CollectionConfigs(object):
                                 devicePackId=self.devicePackId, page=page))
         else:
             url = self.url + '?page={page}&pageSize=100'.format(page=page)
+        log.debug('GET {}'.format(self.url))
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.get(url)
         if response.status_code == 200:
@@ -79,6 +80,7 @@ class CollectionConfigs(object):
                     page += 1
                     url = self.url + ('?sort=devicePack.vendor&page={page}&'
                                     'pageSize=100'.format(page=page))
+                    log.debug('GET {}'.format(self.url))
                     response = self.session.get(url)
                     resp = response.json()
                     count += resp['count']
@@ -218,6 +220,7 @@ class CollectionConfigs(object):
         """
         assert(isinstance(dev_config, dict)), 'Configuration needs to be a dict'
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('POST {}'.format(self.url))
         response = self.session.post(self.url, json=dev_config)
         if response.status_code == 200:
             config = json.loads(response.content)
@@ -247,6 +250,7 @@ class CollectionConfigs(object):
 
         config['name'] = name
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('POST {}'.format(self.url))
         response = self.session.post(self.url, json=config)
         if response.status_code == 200:
             config = json.loads(response.content)
@@ -319,6 +323,7 @@ class CollectionConfig(Record):
     def _reload(self):
         url = self.url + '/{id}'.format(id=self.id)
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('GET {}'.format(self.url))
         response = self.session.get(url)
         if response.status_code == 200:
             config = response.json()
@@ -333,6 +338,7 @@ class CollectionConfig(Record):
                                             devicePackId=self.devicePackId,
                                             id=self.id)
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('PUT {}'.format(self.url))
         response = self.session.put(url)
         if response.status_code == 204:
             self._reload()
@@ -346,6 +352,7 @@ class CollectionConfig(Record):
         url = self.url + '/devicepack/{devicePackId}/assignment'.format(
                                             devicePackId=self.devicePackId)
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('DELETE {}'.format(self.url))
         response = self.session.delete(url)
         if response.status_code == 204:
             self._reload()
@@ -374,6 +381,7 @@ class CollectionConfig(Record):
                                                         deviceId=deviceId,
                                                         id=self.id)
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('PUT {}'.format(self.url))
         response = self.session.put(url)
         if response.status_code == 204:
             self._reload()
@@ -400,6 +408,7 @@ class CollectionConfig(Record):
         self.session.headers.update({'Content-Type': 'application/json'})
         if 'activatedDeviceIds' in self._config.keys():
             if deviceId in self._config['activatedDeviceIds']:
+                log.debug('DELETE {}'.format(self.url))
                 response = self.session.delete(url)
                 if response.status_code == 204:
                     self._reload()
@@ -442,11 +451,13 @@ class CollectionConfig(Record):
 			'lastModifiedBy',
 			'lastModifiedDate'
 			]
+        log.debug('popping no_no_keys: {}'.format(no_no_keys))
         for k in no_no_keys:
             if k in dev_config.keys():
                 dev_config.pop(k)
         dev_config['id'] = self._config['id']  # for good measure make sure this is correct
         dev_config['devicePackId'] = self._config['devicePackId']  # This is required. Make sure it's correct
+        log.debug('PUT {}'.format(self.url))
         response = self.session.put(url, json=dev_config)
         if response.status_code == 204:
             self._reload()
@@ -461,6 +472,7 @@ class CollectionConfig(Record):
         """ Delete this CollectionConfig.   """
         url = self.url + '/{id}'.format(id=self.id)
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('DELETE {}'.format(self.url))
         response = self.session.delete(url)
         if response.status_code == 204:
             return True
@@ -488,6 +500,7 @@ class CollectionConfig(Record):
 			'lastModifiedBy',
 			'lastModifiedDate'
 			]
+        log.debug('popping no_no_keys: {}'.format(no_no_keys))
         try:
             for k in no_no_keys:
                 template.pop(k)
