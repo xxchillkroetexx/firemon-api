@@ -328,7 +328,7 @@ class CollectionConfig(Record):
         if response.status_code == 200:
             config = response.json()
             self._config = config.copy()
-            self.__init__(self.api, self._config)
+            self.__init__(self.ccs, self._config)
         else:
             raise FiremonError('Error! unable to reload collection config')
 
