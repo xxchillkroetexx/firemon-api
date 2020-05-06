@@ -53,6 +53,7 @@ class DevicePacks(object):
         """
         url = self.url + ('/list/DEVICE_PACK/?sort=artifactId&pageSize='
                         '100&showHidden=true')
+        log.debug('GET {}'.format(self.url))
         response = self.session.get(url)
         if response.status_code == 200:
             dps = response.json()['results']
@@ -156,6 +157,7 @@ class DevicePacks(object):
         """
         url = self.url + '/?overwrite=true'
         self.session.headers.pop('Content-type', None)  # If "content-type" exists get rid.
+        log.debug('POST {}'.format(self.url))
         response = self.session.post(url, files={'devicepack.jar': file})
         if response.status_code == 200:
             self._get_all()  # Update the current listing
@@ -211,6 +213,7 @@ class DevicePack(Record):
                                                 groupId=self.groupId,
                                                 artifactId=self.artifactId))
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('POST {}'.format(self.url))
         r = self.session.post(url)
         template = {}
         template['name'] = None

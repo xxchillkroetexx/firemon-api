@@ -9,12 +9,15 @@ limitations under the License.
 """
 # Standard packages
 import json
+import logging
 
 # Local packages
 from firemon_api.errors import (
     AuthenticationError, FiremonError, LicenseError,
     DeviceError, DevicePackError, VersionError
 )
+
+log = logging.getLogger(__name__)
 
 
 class GlobalPolicyController(object):

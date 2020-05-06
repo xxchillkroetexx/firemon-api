@@ -68,6 +68,7 @@ class SecurityManager(object):
         """ Mark Elastic Search for reindex """
         url = self.sm_url + '/es/reindex'
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('POST {}'.format(self.url))
         response = self.session.post(self.url)
         if response.status_code == 204:
             return True

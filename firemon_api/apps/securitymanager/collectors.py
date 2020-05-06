@@ -50,6 +50,7 @@ class Collectors(object):
         count = 0
         url = self.url + '?page={page}&pageSize=100'.format(page=page)
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('GET {}'.format(self.url))
         response = self.session.get(url)
         if response.status_code == 200:
             resp = response.json()
@@ -61,6 +62,7 @@ class Collectors(object):
                     page += 1
                     url = self.url + '?page={page}&pageSize=100'.format(
                                                                     page=page)
+                    log.debug('GET {}'.format(self.url))
                     response = self.session.get(url)
                     resp = response.json()
                     count += resp['count']
@@ -92,6 +94,7 @@ class Collectors(object):
             id = args[0]
             url = self.url + '/{id}'.format(id=str(id))
             self.session.headers.update({'Content-Type': 'application/json'})
+            log.debug('GET {}'.format(self.url))
             response = self.session.get(url)
             if response.status_code == 200:
                 return Collector(self, response.json())
@@ -140,6 +143,7 @@ class Collectors(object):
         url = self.url + '?pageSize=100&search={filters}'.format(
                                 filters=next(iter(kwargs.values())))  # just takeing the first kwarg value meh
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('GET {}'.format(self.url))
         response = self.session.get(url)
         if response.status_code == 200:
             resp = response.json()
@@ -168,13 +172,14 @@ class Collectors(object):
     #    """
     #    try:
     #        config = args[0]
-    #        config['domainId'] = int(self.domainId)  # API is dumb to auto-fill
+    #        config['domainId'] = int(self.domainId)  # API will not auto-fill
     #    except IndexError:
     #        config = None
     #    if not config:
     #        config = kwargs
-    #        config['domainId'] = self.domainId # API is dumb to auto-fill
+    #        config['domainId'] = self.domainId # API will not to auto-fill
     #    self.session.headers.update({'Content-Type': 'application/json'})
+    #    log.debug('POST {}'.format(self.url))
     #    response = self.session.post(self.url, json=config)
     #    if response.status_code == 200:
     #        return json.loads(response.content)['id']
@@ -221,6 +226,7 @@ class Collector(Record):
             >>> dc.delete()
         """
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('DELETE {}'.format(self.url))
         response = self.session.delete(self.url)
         if response.status_code == 204:
             return True
@@ -246,7 +252,7 @@ class Collector(Record):
                                             deviceId=id,
                                             retrieve=str(retrieve))
         self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug(url)
+        log.debug('POST {}'.format(self.url))
         response = self.session.post(url)
         if response.status_code == 204:
             return True
@@ -263,7 +269,7 @@ class Collector(Record):
         """
         url = self.url + '/device/{deviceId}'.format(deviceId=id)
         self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug(url)
+        log.debug('DELETE {}'.format(self.url))
         response = self.session.delete(url)
         if response.status_code == 204:
             return True
@@ -298,16 +304,32 @@ class CollectorGroups(object):
             list: List of CollectorGroup(object)
 
         Examples:
-            >>> cg = fm.sm.collectorgroups.all()
+            >>> fm.sm.collectorgroups.all()
             [..., ..., ..., ..., ]
         """
-        url = self.url + '?pageSize=100'
+        total = 0
+        page = 0
+        count = 0
+        url = self.url + '?page={page}&pageSize=100'.format(page=page)
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('GET {}'.format(self.url))
         response = self.session.get(url)
         if response.status_code == 200:
             resp = response.json()
             if resp['results']:
-                return [CollectorGroup(self, cg) for cg in resp['results']]
+                results = resp['results']
+                total = resp['total']
+                count = resp['count']
+                while total > count:
+                    page += 1
+                    url = self.url + '?page={page}&pageSize=100'.format(
+                                                                    page=page)
+                    log.debug('GET {}'.format(self.url))
+                    response = self.session.get(url)
+                    resp = response.json()
+                    count += resp['count']
+                    results.extend(resp['results'])
+                return [CollectorGroup(self, cg) for cg in results]
             else:
                 return []
         else:
@@ -332,6 +354,7 @@ class CollectorGroups(object):
             id = args[0]
             url = self.url + '/{id}'.format(id=str(id))
             self.session.headers.update({'Content-Type': 'application/json'})
+            log.debug('GET {}'.format(self.url))
             response = self.session.get(url)
             if response.status_code == 200:
                 return CollectorGroup(self, response.json())
@@ -373,13 +396,14 @@ class CollectorGroups(object):
             [..., ]
 
             Note: did not implement multiple pages.
-                  Figured 100 collectors is extreme.
+                  Figured 100 collector groups is extreme.
         """
         if not kwargs:
             raise ValueError('filter() must be passed kwargs. ')
         url = self.url + '?pageSize=100&search={filters}'.format(
                                 filters=next(iter(kwargs.values())))  # just takeing the first kwarg value meh
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('GET {}'.format(self.url))
         response = self.session.get(url)
         if response.status_code == 200:
             resp = response.json()
@@ -392,22 +416,56 @@ class CollectorGroups(object):
                                " Server response: {}".format(
                                response.status_code, response.text))
 
-    def create(self, *args, **kwargs):
+    def create(self, group_conf):
         """ Create a new CollectorGroup
 
         Args:
-            args (dict): a dictionary of all the config settings
+            group_conf (dict): a dictionary of all the config settings
                          for a CollectorGroup
 
         Return:
             CollectorGroup()
 
         Examples:
+        It is probably best to just create the 'name' and a 'description'
+        Entire format
+        {
+          "id": "string",
+          "sharedSecret": "string",
+          "assignedDeviceCount": 0,
+          "memberCount": 0,
+          "members": [
+            {
+              "id": 0,
+              "name": "string",
+              "username": "string",
+              "ipAddress": "string"
+            }
+          ],
+          "name": "string",
+          "description": "string"
+        }
 
-        Create by dictionary
-        >>> fm.sm.c...
+        Create by dictionary.
+        >>> config = {}
+        >>> config['name'] = 'Conan'
+        >>> config['description'] = 'A test of the API'
+        >>> dev = fm.sm.collectorgroups.create(config)
+        Conan
         """
-    pass
+        assert(isinstance(group_conf, dict)), 'Configuration needs to be a dict'
+        url = self.url
+        self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('POST {}'.format(self.url))
+        response = self.session.post(url, json=group_conf)
+        if response.status_code == 200:
+            config = json.loads(response.content)
+            return self.get(config['id'])
+        else:
+            raise DeviceError("ERROR installing device! HTTP code: {}  "
+                              "Server response: {}".format(
+                                            response.status_code,
+                                            response.text))
 
     def __repr__(self):
         return("<CollectorGroups(url='{}')>".format(self.url))
@@ -439,6 +497,7 @@ class CollectorGroup(Record):
     def _reload(self):
         """ Todo: Get configuration info upon change """
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('GET {}'.format(self.url))
         response = self.session.get(self.url)
         if response.status_code == 200:
             config = response.json()
@@ -463,13 +522,13 @@ class CollectorGroup(Record):
         """
         return Collectors(self.sm).get(cid)
 
-    def member_add(self, cid):
+    def member_assign(self, cid):
         """
         Args:
             cid (int): Collector ID
         """
-        url = self.url + '/member/{collectorId}'.format(cid)
-        log.debug(url)
+        url = self.url + '/member/{collectorId}'.format(collectorId=cid)
+        log.debug('PUT {}'.format(self.url))
         response = self.session.put(url)
         if response.status_code == 200:
             self._reload()
@@ -485,11 +544,12 @@ class CollectorGroup(Record):
         config = self._config.copy()
         for member in config['members']:
             if member['id'] == cid:
+                log.debug('removing member: {}'.format(member))
                 config['members'].remove(member)
 
         config['id'] = self._config['id']  # make sure this is set appropriately
         self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('PUT ' + self.url)
+        log.debug('PUT {}'.format(self.url))
         response = self.session.put(self.url, json=config)
         if response.status_code == 200:
             self._reload()
@@ -507,7 +567,7 @@ class CollectorGroup(Record):
         """
         url = self.url + '/assigned/{deviceId}'.format(deviceId=id)
         self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('PUT ' + url)
+        log.debug('PUT {}'.format(self.url))
         response = self.session.put(url)
         if response.status_code == 200:
             return True
@@ -563,7 +623,7 @@ class CGMembers(object):
             cid (int): Collector ID
         """
         url = self.url + '/{id}/member/{collectorId}'.format(self.id, cid)
-        log.debug(url)
+        log.debug('PUT {}'.format(self.url))
         response = self.session.put(url)
         if response.status_code == 200:
             return True
@@ -576,7 +636,7 @@ class CGMembers(object):
             cid (int): Collector ID
         """
         url = self.url + '/{id}'.format(self)
-        log.debug(url)
+        log.debug('PUT {}'.format(self.url))
         response = self.session.put(url)
         if response.status_code == 200:
             return True

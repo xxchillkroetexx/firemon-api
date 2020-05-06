@@ -74,8 +74,8 @@ class Devices(object):
         else:
             url = self.url + '?page={page}&pageSize=100'.format(page=page)
 
-        log.debug(url)
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('GET {}'.format(self.url))
         response = self.session.get(url)
         if response.status_code == 200:
             resp = response.json()
@@ -87,6 +87,7 @@ class Devices(object):
                     page += 1
                     url = self.url + '?page={page}&pageSize=100'.format(
                                                                     page=page)
+                    log.debug('GET {}'.format(self.url))
                     response = self.session.get(url)
                     resp = response.json()
                     count += resp['count']
@@ -124,6 +125,7 @@ class Devices(object):
             id = args[0]
             url = self.url + '/{id}'.format(id=str(id))
             self.session.headers.update({'Content-Type': 'application/json'})
+            log.debug('GET {}'.format(self.url))
             response = self.session.get(url)
             if response.status_code == 200:
                 return Device(self, response.json())
@@ -180,6 +182,7 @@ class Devices(object):
                                                             kwargs,
                                                             quote_via=quote)))
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('GET {}'.format(self.url))
         response = self.session.get(url)
         if response.status_code == 200:
             resp = response.json()
@@ -195,6 +198,7 @@ class Devices(object):
                                                         filters=urlencode(
                                                             kwargs,
                                                             quote_via=quote)))
+                    log.debug('GET {}'.format(self.url))
                     response = self.session.get(url)
                     resp = response.json()
                     count += resp['count']
@@ -233,6 +237,7 @@ class Devices(object):
                                                         page=page,
                                                         filter=arg)
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('GET {}'.format(self.url))
         response = self.session.get(url)
         if response.status_code == 200:
             resp = response.json()
@@ -246,6 +251,7 @@ class Devices(object):
                                         '={filter}'.format(
                                                     page=page,
                                                     filter=arg))
+                    log.debug('GET {}'.format(self.url))
                     response = self.session.get(url)
                     resp = response.json()
                     count += resp['count']
@@ -281,6 +287,7 @@ class Devices(object):
         url = self.url + '?manualRetrieval={retrieve}'.format(
                                                         retrieve=str(retrieve))
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('POST {}'.format(self.url))
         response = self.session.post(url, json=dev_config)
         if response.status_code == 200:
             config = json.loads(response.content)
@@ -363,6 +370,7 @@ class Device(Record):
     def _reload(self):
         """ Todo: Get configuration info upon change """
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('GET {}'.format(self.url))
         response = self.session.get(self.url)
         if response.status_code == 200:
             config = response.json()
@@ -396,6 +404,7 @@ class Device(Record):
                   'postProcessing': postProcessing}
         url = self.url + '?{filters}'.format(
                                     filters=urlencode(kwargs, quote_via=quote))
+        log.debug('DELETE {}'.format(self.url))
         response = self.session.delete(url)
         if response.status_code == 200:
             return True
@@ -417,8 +426,8 @@ class Device(Record):
             >>> dir = '/path/to/config/files/'
             >>> f_list = []
             >>> for fn in os.listdir(dir):
-            ... 	path = os.path.join(dir, fn)
-            ... 	f_list.append(('file', (fn, open(path, 'rb'), 'text/plain')))
+            ...     path = os.path.join(dir, fn)
+            ...     f_list.append(('file', (fn, open(path, 'rb'), 'text/plain')))
             >>> dev.import_config(f_list)
         """
         self.session.headers.update({'Content-Type': 'multipart/form-data'})
@@ -428,6 +437,7 @@ class Device(Record):
                         '&correlationId={}'.format(
                                             changeUser,
                                             correlationId))
+        log.debug('POST {}'.format(self.url))
         response = self.session.post(url, files=f_list)
         if response.status_code == 200:
             self.session.headers.pop('Content-type', None)
@@ -461,6 +471,7 @@ class Device(Record):
         self.session.headers.update({'Content-Type': 'multipart/form-data'})
         url = self.url + '/import?renormalize={}'.format(str(renormalize))
         files = {'file': zip_file}
+        log.debug('POST {}'.format(self.url))
         response = self.session.post(url, files=files)
         if response.status_code == 200:
             self.session.headers.pop('Content-type', None)
@@ -504,6 +515,7 @@ class Device(Record):
         dev_config['devicePack'] = self._config['devicePack']  # Put all this redundant shit back in
         url = self.url + '?manualRetrieval={retrieval}'.format(
             retrieval=str(retrieve))
+        log.debug('PUT {}'.format(self.url))
         self.session.headers.update({'Content-Type': 'application/json'})
         response = self.session.put(url, json=dev_config)
         if response.status_code == 204:
@@ -530,6 +542,7 @@ class Device(Record):
         'gpcImplementDate',
         'gpcStatus'
         ]
+        log.debug('popping no no keys: {}'.format(no_no_keys))
         for k in no_no_keys:
             config.pop(k)
 
@@ -545,6 +558,7 @@ class Device(Record):
         """
         url = self.url + '/manualretrieval?debug={debug}'.format(
                                                             debug=str(debug))
+        log.debug('POST {}'.format(self.url))
         response = self.session.post(url)
         if response.status_code == 204:
             return True
@@ -564,6 +578,7 @@ class Device(Record):
         """
         url = self.url + '/ruleusagestat/{type}'.format(type=type)
         self.session.headers.update({'Accept': 'application/json'})
+        log.debug('GET {}'.format(self.url))
         response = self.session.get(url)
         if response.status_code == 200:
             return response.json()
@@ -575,12 +590,28 @@ class Device(Record):
         """Gets the latest revision as a fully parsed object """
         url = self.url + '/rev/latest/nd/all'
         self.session.headers.update({'Accept': 'application/json'})
+        log.debug('GET {}'.format(self.url))
         response = self.session.get(url)
         if response.status_code == 200:
             return ParsedRevision(self.devs, response.json())
         else:
             raise FiremonError('Error: Unable to retrieve latest parsed '
                                 'revision')
+
+    def ssh_key_remove(self):
+        """Remove ssh key from all Collectors for Device.
+
+        Notes:
+            SSH Key location: /var/lib/firemon/dc/.ssh/known_hosts
+        """
+        url = self.url + '/sshhostkey'
+        self.session.headers.update({'Accept': 'application/json'})
+        log.debug('PUT {}'.format(self.url))
+        response = self.session.put(url)
+        if response.status_code == 204:
+            return True
+        else:
+            raise FiremonError('Error: Unable to remove SSH key')
 
     def __repr__(self):
         return("<Device(id='{}', name={})>".format(self.id, self.name))

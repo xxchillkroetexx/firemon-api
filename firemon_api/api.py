@@ -15,10 +15,6 @@ import warnings
 
 # Third-Party packages
 import requests  # performing web requests
-#try:
-#    requests.packages.urllib3.disable_warnings()
-#except:
-#    pass
 
 # Local packages
 from firemon_api.errors import (
@@ -133,6 +129,7 @@ class FiremonAPI(object):
         url = self._base_url + '/securitymanager/api/authentication/login'
         payload = {'username': self.username, 'password': self.password}
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('POST {}'.format(url))
         response = self.session.post(url,
                                     data=json.dumps(payload),
                                     verify=self.verify,
@@ -151,6 +148,7 @@ class FiremonAPI(object):
         """ Retrieve fmos version for display and filter device packs """
         url = self._base_url + '/securitymanager/api/version'
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('GET {}'.format(url))
         response = self.session.get(url)
         if response.status_code == 200:
             return response.json()['fmosVersion']
@@ -166,6 +164,7 @@ class FiremonAPI(object):
         url = self.base_url + "/securitymanager/api/domain/{id}".format(
                                                                     id=str(id))
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('GET {}'.format(url))
         response = self.session.get(url)
         if response.status_code == 200:
             resp = response.json()

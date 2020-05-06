@@ -48,6 +48,7 @@ class CentralSyslogs(object):
         """
         url = self.url + '?pageSize=100'  # Note: I'm not bothering with anything beyond 100. That's crazy
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('GET ' + url)
         response = self.session.get(url)
         if response.status_code == 200:
             resp = response.json()
@@ -80,6 +81,7 @@ class CentralSyslogs(object):
             id = args[0]
             url = self.url + '/{id}'.format(id=str(id))
             self.session.headers.update({'Content-Type': 'application/json'})
+            log.debug('GET ' + url)
             response = self.session.get(url)
             if response.status_code == 200:
                 return CentralSyslog(self, response.json())
@@ -127,6 +129,7 @@ class CentralSyslogs(object):
         url = self.url + '?pageSize=100&search={filters}'.format(
                                 filters=next(iter(kwargs.values())))  # just takeing the first kwarg value meh
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('GET ' + url)
         response = self.session.get(url)
         if response.status_code == 200:
             resp = response.json()
@@ -167,6 +170,7 @@ class CentralSyslogs(object):
             config = kwargs
             config['domainId'] = self.sm.api.domainId # API is dumb to auto-fill
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('POST ' + url)
         response = self.session.post(self.url, json=config)
         if response.status_code == 200:
             return json.loads(response.content)['id']
@@ -205,6 +209,7 @@ class CentralSyslog(Record):
             True
         """
         self.session.headers.update({'Content-Type': 'application/json'})
+        log.debug('DELETE ' + url)
         response = self.session.delete(self.url)
         if response.status_code == 204:
             return True
