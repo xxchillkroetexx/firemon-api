@@ -220,7 +220,7 @@ class DevicePack(Record):
         template['description'] = None
         template['managementIp'] = None
         template['domainId'] = self.dps.sm.api.domainId
-        template['dataCollectorId'] = 1  # Assuming
+        #template['dataCollectorId'] = 1  # Assuming
         template['devicePack'] = {}
         template['devicePack']['artifactId'] = self.artifactId
         template['devicePack']['deviceName'] = self.deviceName
