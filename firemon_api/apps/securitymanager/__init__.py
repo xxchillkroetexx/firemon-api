@@ -8,6 +8,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from .centralsyslogconfigs import CentralSyslogConfigs, CentralSyslogConfig
 from .centralsyslogs import CentralSyslogs, CentralSyslog
 from .collectionconfigs import CollectionConfigs, CollectionConfig
 from .collectors import Collectors, Collector, CollectorGroups, CollectorGroup
@@ -18,6 +19,8 @@ from .users import Users, User, UserGroup
 
 __all__ = ['CentralSyslogs',
            'CentralSyslog',
+           'CentralSyslogConfigs',
+           'CentralSyslogConfig',
            'CollectionConfigs',
            'CollectionConfig',
            'Collectors',

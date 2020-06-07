@@ -66,10 +66,16 @@ class SecurityManager(App):
         super().__init__(api, name)
 
         # Endpoints
-        self.cc = CollectionConfigs(self.api, self, 'collectionconfig')
-        self.centralsyslogs = CentralSyslogs(self.api, self, 'central-syslog')
-        self.collectors = Collectors(self.api, self, 'collector')
-        self.collectorgroups = CollectorGroups(self.api, self, 'collector')
+        self.collectionconfigs = CollectionConfigs(
+                                self.api, self, 'collectionconfig')
+        self.centralsyslogconfigs = CentralSyslogConfigs(
+                                self.api, self, 'centralsyslogconfig')
+        self.centralsyslogs = CentralSyslogs(
+                                self.api, self, 'central-syslog')
+        self.collectors = Collectors(
+                                self.api, self, 'collector')
+        self.collectorgroups = CollectorGroups(
+                                self.api, self, 'collector')
         self.devices = Devices(self.api, self, 'device')
         self.dp = DevicePacks(self.api, self, 'plugins')  # Todo: create the other /plugins
         self.revisions = Revisions(self.api, self, 'rev')

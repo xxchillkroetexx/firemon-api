@@ -66,26 +66,26 @@ class RequestError(Exception):
         self.error = req.text
 
 
-class ContentError(Exception):
-    """Content Exception
-    If the API URL does not point to a valid Firemon API, the server may
-    return a valid response code, but the content is not json. This
-    exception is raised in those cases.
-    """
-
-    def __init__(self, message):
-        req = message
-
-        message = (
-            "The server returned invalid (non-json) data. Maybe not "
-            "a Firemon server?"
-        )
-
-        super(ContentError, self).__init__(message)
-        self.req = req
-        self.request_body = req.request.body
-        self.base = req.url
-        self.error = message
+#class ContentError(Exception):
+#    """Content Exception
+#    If the API URL does not point to a valid Firemon API, the server may
+#    return a valid response code, but the content is not json. This
+#    exception is raised in those cases.
+#    """
+#
+#    def __init__(self, message):
+#        req = message
+#
+#        message = (
+#            "The server returned invalid (non-json) data. Maybe not "
+#            "a Firemon server?"
+#        )
+#
+#        super(ContentError, self).__init__(message)
+#        self.req = req
+#        self.request_body = req.request.body
+#        self.base = req.url
+#        self.error = message
 
 
 class Request(object):
@@ -161,7 +161,8 @@ class Request(object):
             try:
                 return req.json()
             except json.JSONDecodeError:
-                raise ContentError(req)
+                # Assuming an empty body but all is good.
+                return True
         else:
             raise RequestError(req)
 
@@ -237,19 +238,22 @@ class Request(object):
         """Makes DELETE request.
         Makes a DELETE request to Firemon API.
         Returns:
-            True if successful.
+            (bool) True if successful.
         Raises:
             RequestError if req.ok doesn't return True.
         """
         return self._make_call(verb="delete")
 
-    def get_count(self, *args, **kwargs):
+    def get_count(self):
         """Returns object count for query
-        Makes a query to the endpoint with ``limit=1`` set and only
         returns the value of the "count" field.
-        :raises: RequestError if req.ok returns false.
-        :raises: ContentError if response is not json.
-        :returns: Int of number of objects query returned.
+
+        Return:
+            (int): number of objects query returned
+
+        Raise:
+            RequestError if req.ok returns false.
+            ContentError if response is not json.
         """
 
-        return self._make_call(add_params={"limit": 1})["count"]
+        return self._make_call()["count"]

@@ -53,7 +53,8 @@ class Endpoint(object):
         """ Get single Record
 
         Args:
-            *args (int): (optional) id to retrieve
+            *args (int): (optional) id to retrieve. If this is not type(int)
+                        dump it into filter and grind it up there.
             **kwargs (str): (optional) see filter() for available filters
 
         Examples:
@@ -67,13 +68,17 @@ class Endpoint(object):
         """
         url = self.ep_url
         try:
-            id = args[0]
+            # Might need to try UUID later?
+            id = int(args[0])
             url = '{ep}/{id}'.format(ep=self.ep_url, id=str(id))
-        except IndexError:
+        except (IndexError, ValueError) as e:
             id = None
 
         if not id:
-            filter_lookup = self.filter(**kwargs)
+            if kwargs:
+                filter_lookup = self.filter(**kwargs)
+            else:
+                filter_lookup = self.filter(*args)
             if filter_lookup:
                 if len(filter_lookup) > 1:
                     raise ValueError(
@@ -93,10 +98,12 @@ class Endpoint(object):
         return self._response_loader(req.get())
 
     def filter(self, *args, **kwargs):
-        """ Attempt to use the filter.
+        """Attempt to use the filter options. This is the generic
+        Endpoint filter.
         """
 
         if args:
+            # Hopefully this doesn't backfire.
             kwargs.update({"name": args[0]})
 
         if not kwargs:
@@ -104,7 +111,8 @@ class Endpoint(object):
                 "filter must be passed kwargs. Perhaps use all() instead."
             )
 
-        # Our filter is the screwiest <sigh>
+        # Our filter is the screwiest <sigh>. Seems non-standard
+        # revist if our filter style is different at each EP
         filters = ''
         for k in kwargs.keys():
             d = {'filter': '{}={}'.format(k, kwargs[k])}
@@ -123,6 +131,15 @@ class Endpoint(object):
 
     def create(self, *args, **kwargs):
         """Creates an object on an endpoint.
+
+        Args:
+            args (dict): optional. a dictionary of all the needed options
+
+        Kwargs:
+            (str): keywords and args to create a new record
+
+        Return:
+            (obj): Record
         """
 
         req = Request(
@@ -135,16 +152,15 @@ class Endpoint(object):
 
         return self._response_loader(req)
 
-    def count(self, *args, **kwargs):
-        """Returns the count of objects in a query.
+    def count(self):
+        """Returns the count of objects available.
+        If there is a 'count' at an endpoint that is used.
+        Remember that this is domain dependant and if an Endpoint
+        requires a domain we are using that.
         """
-
-        if args:
-            kwargs.update({"q": args[0]})
-
+        url = '{ep}/count'.format(ep=self.ep_url)
         ret = Request(
-            filters=kwargs,
-            base=self.ep_url,
+            base=url,
             session=self.api.session,
         )
 

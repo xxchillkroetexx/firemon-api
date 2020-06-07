@@ -13,9 +13,10 @@ import logging
 
 # Local packages
 from firemon_api.core.endpoint import Endpoint
-from firemon_api.core.response import Record
+from firemon_api.core.response import Record, JsonField
 from firemon_api.core.utils import _build_dict
 from firemon_api.core.query import Request, url_param_builder
+from .centralsyslogconfigs import CentralSyslogConfig
 
 log = logging.getLogger(__name__)
 
@@ -24,37 +25,53 @@ class CentralSyslog(Record):
     """ Represents the Central Syslog
 
     Args:
-        cs (obj): CentralSyslogs()
+        api (obj): FiremonAPI()
+        endpoint (obj): Endpoint()
     """
+    centralSyslogConfig = CentralSyslogConfig
 
     def __init__(self, api, endpoint, config):
         super().__init__(api, endpoint, config)
-        self.id = config['id']
         self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url, 
-                                      id=self.id)  # CS URL
+                                      id=config['id'])
 
-    def delete(self):
-        """ Delete Central Syslog device
+        # not needed for `serialize` update using ep function
+        self.no_no_keys = ['centralSyslogConfig']
 
-        Examples:
-            >>> cs = fm.sm.centralsyslog.get(13)
-            >>> cs
-            detroit
-            >>> cs.delete()
-            True
+    def device_assign(self, id: int):
+        """Assign a device to this Central Syslog
+
+        Args:
+            id (int): device id to assign
+        
+        Returns:
+            (bool): True if assigned
         """
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('DELETE ' + url)
-        response = self.session.delete(self.url)
-        if response.status_code == 204:
-            return True
-        else:
-            raise FiremonError("ERROR deleting central-syslog! HTTP code: {}"
-                               " Server response: {}".format(
-                               response.status_code, response.text))
+        url = '{ep}/devices/{id}'.format(ep=self.url, id=id)
+        req = Request(
+            base=url,
+            session=self.api.session,
+        )
+        return self._response_loader(req.post())
 
-    def update(self):
-        """ Todo: send update config to CS """
+    def device_remove(self, id: int):
+        """Remove a device to this Central Syslog
+
+        Args:
+            id (int): device id to assign
+        
+        Returns:
+            (bool): True if assigned
+        """
+        url = '{ep}/devices/{id}'.format(ep=self.url, id=id)
+        req = Request(
+            base=url,
+            session=self.api.session,
+        )
+        return self._response_loader(req.delete())
+
+    def devices(self):
+        # todo: return all devices assigned to this CS
         pass
 
     def __repr__(self):
@@ -78,7 +95,7 @@ class CentralSyslogs(Endpoint):
         self.ep_url = "{url}/{ep}".format(url=app.domain_url,
                                           ep=name)
 
-    def filter(self, arg):
+    def filter(self, *args, **kwargs):
         """Filter devices based on search parameters.
         central-syslog only has a single search. :shrug:
 
@@ -90,7 +107,6 @@ class CentralSyslogs(Endpoint):
 
         Return:
             list: List of CentralSyslog(objects)
-            None: if not found
 
         Examples:
             Partial name search return multiple devices
@@ -98,8 +114,18 @@ class CentralSyslogs(Endpoint):
             [miami, miami-2]
         """
 
-        url = '{ep}?&search={arg}'.format(ep=self.ep_url,
-                                                        arg=arg)
+        srch = None
+        if args:
+            srch = args[0]
+        elif kwargs:
+            # Just get the value of first kwarg.
+            srch = kwargs[next(iter(kwargs))]
+        if not srch:
+            log.debug('No filter provided. Here is an empty list.')
+            return []
+        url = '{ep}?&search={srch}'.format(ep=self.ep_url,
+                                                srch=srch)
+        
         req = Request(
             base=url,
             session=self.api.session,
@@ -107,43 +133,4 @@ class CentralSyslogs(Endpoint):
 
         ret = [self._response_loader(i) for i in req.get()]
         return ret
-
-    def create(self, *args, **kwargs):
-        """ Create a new Central Syslog
-
-        Args:
-            args (dict/optional): a dictionary of all the config settings for a CS
-            kwargs (optional): name and settings for a CS. minimum need 'name', 'ip'
-
-        Return:
-            int: id for newly created CS
-
-        Examples:
-            Create by dictionary
-            >>> fm.sm.centralsyslogs.create({'name': 'miami', 'ip': '10.2.2.2'})
-            11
-
-            Create by keyword
-            >>> fm.sm.centralsyslogs.create(name='new york', ip='10.2.2.3')
-            12
-        """
-        try:
-            config = args[0]
-            config['domainId'] = int(self.sm.api.domainId)  # API is dumb to auto-fill
-        except IndexError:
-            config = None
-        if not config:
-            config = kwargs
-            config['domainId'] = self.sm.api.domainId # API is dumb to auto-fill
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('POST ' + url)
-        response = self.session.post(self.url, json=config)
-        if response.status_code == 200:
-            return json.loads(response.content)['id']
-        else:
-            raise FiremonError("ERROR creating central-syslog! HTTP code: {}"
-                               " Server response: {}".format(
-                               response.status_code, response.text))
-
-
 
