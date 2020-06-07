@@ -12,22 +12,22 @@ import json
 import logging
 
 # Local packages
-from firemon_api.errors import (
-    AuthenticationError, FiremonError, LicenseError,
-    DeviceError, DevicePackError, VersionError
-)
+from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
+from firemon_api.core.query import Request, url_param_builder
 from firemon_api.core.utils import _build_dict, _find_dicts_with_key
 
 log = logging.getLogger(__name__)
 
 
-class DevicePacks(object):
+class DevicePacks(Endpoint):
     """ Represents the Device Packs. There is no API to query individual Device
     Packs so this is a kludge. Retrieve all DPs and query from there.
 
     Args:
-        sm (obj): SecurityManager
+        api (obj): FiremonAPI()
+        app (obj): App()
+        name (str): name of the endpoint
 
     Examples:
         Get a list of all device packs
@@ -39,10 +39,8 @@ class DevicePacks(object):
         Get a list of device packs by config options
         >>> fm.sm.dp.filter(ssh=True)
     """
-    def __init__(self, sm):
-        self.sm = sm
-        self.session = sm.session
-        self.url = "{sm_url}/plugin".format(sm_url=sm.sm_url)
+    def __init__(self, api, app, name):
+        super().__init__(api, app, name)
         self.device_packs = {}
 
     def _get_all(self) -> list:
@@ -164,12 +162,6 @@ class DevicePacks(object):
             return True
         else:
             return False
-
-    def __repr__(self):
-        return("<Device Packs(url='{}')>".format(self.url))
-
-    def __str__(self):
-        return("{}".format(self.url))
 
 
 class DevicePack(Record):

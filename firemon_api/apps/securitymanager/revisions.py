@@ -12,20 +12,18 @@ import json
 import logging
 
 # Local packages
-from firemon_api.errors import (
-    AuthenticationError, FiremonError, LicenseError,
-    DeviceError, DevicePackError, VersionError
-)
+from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
+from firemon_api.core.query import Request, url_param_builder
 from firemon_api.core.utils import _build_dict
 
 log = logging.getLogger(__name__)
 
 
-class Revisions(object):
+class Revisions(Endpoint):
     """ Represents the Revisions.
     Filtering is terrible given the API. It is a mixture of revID,
-    static domain requirements and deviceID, or searching by a weird subset
+    static domain requirements and device_id, or searching by a weird subset
     of our internal SIQL (but you cannot search by name or anything in SIQL).
     As a kludge I just ingest all revisions (like the device packs) and create
     get() and filter() functions to parse a dictionary. This may be problematic
@@ -33,21 +31,28 @@ class Revisions(object):
     *meh*.
 
     Args:
-        sm (object): SecurityManager()
+        api (obj): FiremonAPI()
+        app (obj): App()
+        name (str): name of the endpoint
 
     Kwargs:
-        deviceId (int): Device id
+        device_id (int): Device id
 
     Examples:
         >>> rev = fm.sm.revisions.get(34)
         >>> rev = fm.sm.revisions.filter(latest=True, deviceName='vSRX-2')[0]
     """
-    def __init__(self, sm, deviceId: int=None):
-        self.sm = sm
-        self.session = sm.session
-        self.url = "{sm_url}/rev".format(sm_url=sm.sm_url)
-        # Use setter. Intended for use when Revisions is called from Device(objects)
-        self._deviceId = deviceId
+    def __init__(self, api, app, name, device_id: int=None):
+        super().__init__(api, app, name)
+        self._device_id = device_id
+        if self.device_id:
+            self.ep_url = "{url}/device/{id}/{ep}".format(
+                                                    url=app.domain_url,
+                                                    id=device_id,
+                                                    ep=name)
+        else:
+            self.ep_url = "{url}/{ep}".format(url=app.domain_url,
+                                              ep=name)
         self._revisions = {}
 
     def _get_all(self):
@@ -61,10 +66,10 @@ class Revisions(object):
         total = 0
         page = 0
         count = 0
-        if self.deviceId:
-            url = self.sm.domain_url + ('/device/{deviceId}/rev?sort=id&page'
+        if self.device_id:
+            url = self.sm.domain_url + ('/device/{device_id}/rev?sort=id&page'
                                         '={page}&pageSize=100'.format(
-                                                        deviceId=self.deviceId,
+                                                        device_id=self.device_id,
                                                         page=page))
         else:
             url = self.sm.domain_url + ('/rev?sort=id&page={page}&pageSize'
@@ -80,10 +85,10 @@ class Revisions(object):
                 count = resp['count']
                 while total > count:
                     page += 1
-                    if self.deviceId:
-                        url = self.sm.domain_url + ('/device/{deviceId}/rev?'
+                    if self.device_id:
+                        url = self.sm.domain_url + ('/device/{device_id}/rev?'
                                 'sort=id&page={page}&pageSize=100'.format(
-                                            deviceId=self.deviceId,
+                                            device_id=self.device_id,
                                             page=page))
                     else:
                         url = self.sm.domain_url + ('/rev?sort=id&page'
@@ -197,18 +202,12 @@ class Revisions(object):
                 <= self._revisions[id].items()]
 
     @property
-    def deviceId(self):
-        return self._deviceId
+    def device_id(self):
+        return self._device_id
 
-    @deviceId.setter
-    def deviceId(self, id):
-        self._deviceId = id
-
-    def __repr__(self):
-        return("<Revisions(url='{}')>".format(self.url))
-
-    def __str__(self):
-        return("{}".format(self.url))
+    @device_id.setter
+    def device_id(self, id):
+        self._device_id = id
 
 
 class Revision(Record):
@@ -241,9 +240,9 @@ class Revision(Record):
                                                         revId=str(config['id']))
         # Because instead of just operating on the revision they needed another
         # path <sigh>
-        self.url2 = revs.sm.domain_url + ('/device/{deviceId}/rev/{revId}'
+        self.url2 = revs.sm.domain_url + ('/device/{device_id}/rev/{revId}'
                                         .format(
-                                            deviceId=str(config['deviceId']),
+                                            device_id=str(config['device_id']),
                                             revId=str(config['id'])))
 
     def summary(self):
@@ -315,8 +314,8 @@ class Revision(Record):
             bool: True if deleted
         """
         url = self.revs.sm.domain_url + \
-            '/device/{deviceId}/rev/{revId}'.format(
-                deviceId=str(self.deviceId), revId=str(self.id))
+            '/device/{device_id}/rev/{revId}'.format(
+                device_id=str(self.device_id), revId=str(self.id))
         log.debug('DELETE {}'.format(self.url))
         response = self.session.delete(url)
         if response.status_code == 204:
@@ -338,7 +337,7 @@ class Revision(Record):
     def __repr__(self):
         return("<Revision(id='{}', device='{}')>".format(
                                                     self.id,
-                                                    self.deviceId))
+                                                    self.device_id))
 
     def __str__(self):
         return("{}".format(self.id))

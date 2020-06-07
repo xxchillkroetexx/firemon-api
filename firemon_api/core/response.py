@@ -20,8 +20,9 @@ class Record(object):
     """Create python objects for json responses from Firemon
 
     Args:
-        obj (obj): Object
-        config (dict): dictionary of things to
+        api (obj): FiremonAPI()
+        endpoint (obj): Endpoint()
+        config (dict): dictionary of things values from json
 
     Example:
         Cast object as a dictionary
@@ -32,12 +33,15 @@ class Record(object):
         ...}
     """
 
-    def __init__(self, obj, config):
+    url = None
+
+    def __init__(self, api, endpoint, config):
         self._config = config  # keeping a cache just incase bad things
         self._full_cache = []
         self._init_cache = []
-        self.obj = obj
-        self.session = obj.session
+        self.api = api
+        self.session = api.session
+        self.endpoint = endpoint
         self.default_ret = Record
 
         if config:
@@ -47,16 +51,16 @@ class Record(object):
 
         def list_parser(list_item):
             if isinstance(list_item, dict):
-                return self.default_ret(self.obj, list_item)
+                return self.default_ret(self.api, self.endpoint, list_item)
             return list_item
 
         for k, v in config.items():
             if isinstance(v, dict):
                 lookup = getattr(self.__class__, k, None)
                 if lookup:
-                    v = lookup(self.obj, v)
+                    v = lookup(self.endpoint, v)
                 else:
-                    v = self.default_ret(self.obj, v)
+                    v = self.default_ret(self.api, self.endpoint, v)
                 self._add_cache((k, v))
             elif isinstance(v, list):
                 v = [list_parser(i) for i in v]
@@ -97,3 +101,9 @@ class Record(object):
 
     def __setstate__(self, d):
         self.__dict__.update(d)
+
+    def __key__(self):
+        if hasattr(self, "id"):
+            return (self.endpoint.name, self.id)
+        else:
+            return (self.endpoint.name)

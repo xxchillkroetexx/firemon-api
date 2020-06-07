@@ -13,27 +13,25 @@ import logging
 import uuid
 
 # Local packages
-from firemon_api.errors import (
-    AuthenticationError, FiremonError, LicenseError,
-    DeviceError, DevicePackError, VersionError
-)
+from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
+from firemon_api.core.query import Request, url_param_builder
 from .devices import Devices, Device
 
 log = logging.getLogger(__name__)
 
 
-class Collectors(object):
+class Collectors(Endpoint):
     """ Represents the Data Collectors
 
     Args:
-        sm (obj): SecurityManager object
+        api (obj): FiremonAPI()
+        app (obj): App()
+        name (str): name of the endpoint
     """
 
-    def __init__(self, sm):
-        self.sm = sm
-        self.url = sm.sm_url + '/collector'  # Collector URL
-        self.session = sm.session
+    def __init__(self, api, app, name):
+        super().__init__(api, app, name)
 
     def all(self):
         """ Get all data collector servers
@@ -188,12 +186,6 @@ class Collectors(object):
     #                           " Server response: {}".format(
     #                           response.status_code, response.text))
 
-    def __repr__(self):
-        return("<Collectors(url='{}')>".format(self.url))
-
-    def __str__(self):
-        return("{}".format(self.url))
-
 
 class Collector(Record):
     """ Represents the Data Collector
@@ -278,24 +270,20 @@ class Collector(Record):
                                " Server response: {}".format(
                                response.status_code, response.text))
 
-    def __repr__(self):
-        return("<Collector(id='{}', name='{}')>".format(self.id, self.name))
 
-    def __str__(self):
-        return("{}".format(self.name))
-
-
-class CollectorGroups(object):
+class CollectorGroups(Endpoint):
     """ Represents the Data Collector Groups
 
     Args:
-        sm (obj): SecurityManager object
+        api (obj): FiremonAPI()
+        app (obj): App()
+        name (str): name of the endpoint
     """
 
-    def __init__(self, sm):
-        self.sm = sm
-        self.url = sm.sm_url + '/collector/group'  # Collector Groups URL
-        self.session = sm.session
+    def __init__(self, api, app, name):
+        super().__init__(api, app, name)
+        self.ep_url = "{url}/{ep}/group".format(url=app.app_url,
+                                        ep=name)
 
     def all(self):
         """ Get all data collector groups
@@ -466,12 +454,6 @@ class CollectorGroups(object):
                               "Server response: {}".format(
                                             response.status_code,
                                             response.text))
-
-    def __repr__(self):
-        return("<CollectorGroups(url='{}')>".format(self.url))
-
-    def __str__(self):
-        return("{}".format(self.url))
 
 
 class CollectorGroup(Record):

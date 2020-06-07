@@ -12,28 +12,28 @@ import json
 import logging
 
 # Local packages
-from firemon_api.errors import (
-    AuthenticationError, FiremonError, LicenseError,
-    DeviceError, DevicePackError, VersionError
-)
+from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
 from firemon_api.core.utils import _build_dict
+from firemon_api.core.query import Request, url_param_builder
 
 log = logging.getLogger(__name__)
 
 
-class CollectionConfigs(object):
+class CollectionConfigs(Endpoint):
     """ Represents the Collection Configs
     Filtering is terrible given the API.
-    As a kludge I just injest all collectionconfigs (like the device packs)
+    As a kludge I just ingest all collectionconfigs (like the device packs)
     and create get() and filter() functions to parse a dictionary.
 
     Args:
-        sm (obj): SecurityManager() object
+        api (obj): FiremonAPI()
+        app (obj): App()
+        name (str): name of the endpoint
 
     Kwargs:
-        devicePackId (int): Device Pack id
-        deviceId (int): Device id
+        devicepack_id (int): Device Pack id
+        device_id (int): Device id
 
     Examples:
         >>> cc = fm.sm.cc.get(46)
@@ -41,13 +41,15 @@ class CollectionConfigs(object):
                 activatedForDevicePack=True,
                 devicePackArtifactId='juniper_srx')[0]
     """
-    def __init__(self, sm, devicePackId: int=None, deviceId: int=None):
-        self.sm = sm
-        self.url = sm.sm_url + '/collectionconfig'  # Collection Config URL
-        self.session = sm.session
+    def __init__(self, 
+                api, app, 
+                name,
+                devicepack_id: int=None, 
+                device_id: int=None):
+        super().__init__(api, app, name)
         # Use setter. Intended for use when CollectionConfigs() is called from Device()
-        self._devicePackId = devicePackId
-        self._deviceId = deviceId
+        self._devicepack_id = devicepack_id
+        self._device_id = device_id
 
         # dictionary of all the configs so we can search and filter
         self._collectionconfigs = {}
@@ -61,10 +63,10 @@ class CollectionConfigs(object):
         total = 0
         page = 0
         count = 0
-        if self.devicePackId:
-            url = self.url + ('?devicePackId={devicePackId}&page={page}&'
+        if self.devicepack_id:
+            url = self.url + ('?devicePackId={devicepack_id}&page={page}&'
                 'pageSize=100'.format(
-                                devicePackId=self.devicePackId, page=page))
+                                devicepack_id=self.devicepack_id, page=page))
         else:
             url = self.url + '?page={page}&pageSize=100'.format(page=page)
         log.debug('GET {}'.format(self.url))
@@ -163,7 +165,7 @@ class CollectionConfigs(object):
             >>> fm.sm.cc.filter(devicePackArtifactId='juniper_srx')
             [47, 21, 46]
 
-            >>> fm.sm.cc.filter(activatedForDevicePack=True, devicePackId=40)
+            >>> fm.sm.cc.filter(activatedForDevicePack=True, devicepack_id=40)
             [21]
 
             >>> fm.sm.cc.filter(devicePackDeviceType='FIREWALL')
@@ -261,26 +263,20 @@ class CollectionConfigs(object):
                               response.status_code, response.text))
 
     @property
-    def devicePackId(self):
-        return self._devicePackId
+    def devicepack_id(self):
+        return self._devicepack_id
 
-    @devicePackId.setter
-    def deviceId(self, id):
-        self._devicePackId = id
+    @devicepack_id.setter
+    def devicepack_id(self, id):
+        self._devicepack_id = id
 
     @property
-    def deviceId(self):
-        return self._deviceId
+    def device_id(self):
+        return self._device_id
 
-    @deviceId.setter
-    def deviceId(self, id):
-        self._deviceId = id
-
-    def __repr__(self):
-        return("<CollectionConfigs(url='{}')>".format(self.url))
-
-    def __str__(self):
-        return("{}".format(self.url))
+    @device_id.setter
+    def device_id(self, id):
+        self._device_id = id
 
 
 class CollectionConfig(Record):
@@ -300,7 +296,7 @@ class CollectionConfig(Record):
         >>> cc
         47
         >>> dict(cc)
-        {'id': 47, 'name': 'Ape Grape', 'devicePackId': 40, ...}
+        {'id': 47, 'name': 'Ape Grape', 'devicepack_id': 40, ...}
 
         Set a Device by ID to the Collection Config
         >>> cc.set_device(21)
@@ -317,7 +313,7 @@ class CollectionConfig(Record):
         super().__init__(ccs, config)
 
         self.ccs = ccs
-        self._deviceId = ccs._deviceId  # Should be 'None' unless coming through Device()
+        self._device_id = ccs._device_id  # Should be 'None' unless coming through Device()
         self.url = ccs.url  # cc URL
 
     def _reload(self):
@@ -334,8 +330,8 @@ class CollectionConfig(Record):
 
     def set_dp(self) -> bool:
         """ Set CollectionConfig for Device Pack assignment. """
-        url = self.url + '/devicepack/{devicePackId}/assignment/{id}'.format(
-                                            devicePackId=self.devicePackId,
+        url = self.url + '/devicepack/{devicepack_id}/assignment/{id}'.format(
+                                            devicepack_id=self.devicepack_id,
                                             id=self.id)
         self.session.headers.update({'Content-Type': 'application/json'})
         log.debug('PUT {}'.format(self.url))
@@ -349,8 +345,8 @@ class CollectionConfig(Record):
         """ Unset CollectionConfig for Device Pack assignment.
         Effectively sets back to 'default'
         """
-        url = self.url + '/devicepack/{devicePackId}/assignment'.format(
-                                            devicePackId=self.devicePackId)
+        url = self.url + '/devicepack/{devicepack_id}/assignment'.format(
+                                            devicepack_id=self.devicepack_id)
         self.session.headers.update({'Content-Type': 'application/json'})
         log.debug('DELETE {}'.format(self.url))
         response = self.session.delete(url)
@@ -370,15 +366,15 @@ class CollectionConfig(Record):
         Return:
             bool: True if device set, False otherwise
         """
-        if self._deviceId:
-            deviceId = self._deviceId
+        if self._device_id:
+            device_id = self._device_id
         else:
             try:
-                deviceId = args[0]
+                device_id = args[0]
             except IndexError:
                 raise DeviceError('Error. A device Id must be passed to set.')
-        url = self.url + '/device/{deviceId}/assignment/{id}'.format(
-                                                        deviceId=deviceId,
+        url = self.url + '/device/{device_id}/assignment/{id}'.format(
+                                                        device_id=device_id,
                                                         id=self.id)
         self.session.headers.update({'Content-Type': 'application/json'})
         log.debug('PUT {}'.format(self.url))
@@ -396,15 +392,15 @@ class CollectionConfig(Record):
         Return:
             bool: True if device unset, False otherwise
         """
-        if self._deviceId:
-            deviceId = self._deviceId
+        if self._device_id:
+            device_id = self._device_id
         else:
             try:
-                deviceId = args[0]
+                device_id = args[0]
             except IndexError:
                 raise DeviceError('Error. A device Id must be passed to unset.')
-        url = self.url + '/device/{deviceId}/assignment'.format(
-                                                            deviceId=deviceId)
+        url = self.url + '/device/{device_id}/assignment'.format(
+                                                            device_id=device_id)
         self.session.headers.update({'Content-Type': 'application/json'})
         if 'activatedDeviceIds' in self._config.keys():
             if deviceId in self._config['activatedDeviceIds']:

@@ -13,26 +13,24 @@ import logging
 from urllib.parse import urlencode, quote
 
 # Local packages
-from firemon_api.errors import (
-    AuthenticationError, FiremonError, LicenseError,
-    DeviceError, DevicePackError, VersionError
-)
+from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
+from firemon_api.core.query import Request, url_param_builder
 
 log = logging.getLogger(__name__)
 
 
-class Users(object):
+class Users(Endpoint):
     """ Represents the Users
 
     Args:
-        sm (obj): SecurityManager object
+        api (obj): FiremonAPI()
+        app (obj): App()
+        name (str): name of the endpoint
     """
 
-    def __init__(self, sm):
-        self.sm = sm
-        self.url = sm.domain_url + '/user'  # user URL
-        self.session = sm.session
+    def __init__(self, api, app, name):
+        super().__init__(api, app, name)
 
     def all(self):
         """ Get all users
@@ -220,13 +218,6 @@ class Users(object):
         conf['authType'] = 'LOCAL'
         conf['authServerId'] = None  # 0
         return conf
-
-
-    def __repr__(self):
-        return("<Users(url='{}')>".format(self.url))
-
-    def __str__(self):
-        return("{}".format(self.url))
 
 
 class User(Record):

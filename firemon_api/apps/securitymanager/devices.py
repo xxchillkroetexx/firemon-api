@@ -14,37 +14,38 @@ from urllib.parse import urlencode, quote
 import uuid
 
 # Local packages
-from firemon_api.errors import (
-    AuthenticationError, FiremonError, LicenseError,
-    DeviceError, DevicePackError, VersionError
-)
+from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
+from firemon_api.core.query import Request, url_param_builder
 from .collectionconfigs import CollectionConfigs, CollectionConfig
 from .revisions import Revisions, Revision, ParsedRevision
 
 log = logging.getLogger(__name__)
 
-class Devices(object):
+class Devices(Endpoint):
     """ Represents the Devices
 
     Args:
-        sm (obj): SecurityManager()
+        api (obj): FiremonAPI()
+        app (obj): App()
+        name (str): name of the endpoint
 
     Kwargs:
-        collectorId (int): Data Collector id
-        collectorGroupId (str): Data Collector Group Id (uuid)
+        collector_id (int): Data Collector id
+        collectorgroup_id (str): Data Collector Group Id (uuid)
     """
 
-    def __init__(self, sm,
-                collectorId: int = None,
-                collectorGroupId: str = None):
-        self.sm = sm
+    def __init__(self, api, app, name,
+                collector_id: int = None,
+                collectorgroup_id: str = None):
+        super().__init__(api, app, name)
+        self.ep_url = "{url}/{ep}".format(url=app.domain_url,
+                                        ep=name)
+
         # Use setter. Intended for use when Devices is called from
         #   Collector(object) or CollectorGroup(object)
-        self.collectorId: int = collectorId
-        self.collectorGroupId: str = collectorGroupId
-        self.url = sm.domain_url + '/device'  # Devices URL
-        self.session = sm.session
+        self.collector_id: int = collector_id
+        self.collectorgroup_id: str = collectorgroup_id
 
     def all(self):
         """ Get all devices
@@ -61,15 +62,15 @@ class Devices(object):
         total = 0
         page = 0
         count = 0
-        if self.collectorId:
+        if self.collector_id:
             url = self.sm.sm_url + ('/collector/{id}/device?page={page}&'
                                     'pageSize=100'.format(
-                                                    id=self.collectorId,
+                                                    id=self.collector_id,
                                                     page=page))
-        elif self.collectorGroupId:
+        elif self.collectorgroup_id:
             url = self.sm.sm_url + ('/collector/group/{id}/assigned?page={page}'
                                     '&pageSize=100'.format(
-                                                    id=self.collectorGroupId,
+                                                    id=self.collectorgroup_id,
                                                     page=page))
         else:
             url = self.url + '?page={page}&pageSize=100'.format(page=page)
@@ -92,9 +93,9 @@ class Devices(object):
                     resp = response.json()
                     count += resp['count']
                     results.extend(resp['results'])
-                if self.collectorId:
+                if self.collector_id:
                     return [Device(self, dev) for dev in results]
-                elif self.collectorGroupId:
+                elif self.collectorgroup_id:
                     return [self.sm.devices.get(dev['id']) for dev in results]
                 else:
                     return [Device(self, dev) for dev in results]
@@ -299,26 +300,20 @@ class Devices(object):
                                             response.text))
 
     @property
-    def collectorId(self):
-        return self._collectorId
+    def collector_id(self):
+        return self._collector_id
 
-    @collectorId.setter
-    def collectorId(self, id):
-        self._collectorId = id
+    @collector_id.setter
+    def collector_id(self, id):
+        self._collector_id = id
 
     @property
-    def collectorGroupId(self):
-        return self._collectorGroupId
+    def collectorgroup_id(self):
+        return self._collectorgroup_id
 
-    @collectorGroupId.setter
-    def collectorGroupId(self, id):
-        self._collectorGroupId = id
-
-    def __repr__(self):
-        return("<Devices(url='{}')>".format(self.url))
-
-    def __str__(self):
-        return("{}".format(self.url))
+    @collectorgroup_id.setter
+    def collectorgroup_id(self, id):
+        self._collectorgroup_id = id
 
 
 class Device(Record):
