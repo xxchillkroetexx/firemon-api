@@ -21,6 +21,45 @@ from .devices import Devices, Device
 log = logging.getLogger(__name__)
 
 
+class Collector(Record):
+    """ Represents the Data Collector
+
+    Args:
+        api (obj): FiremonAPI()
+        endpoint (obj): Endpoint()
+        config (dict): dictionary of things values from json
+    """
+
+    def __init__(self, api, endpoint, config):
+        super().__init__(api, endpoint, config)
+        self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url, 
+                                      id=config['id'])
+
+        # add attributes to Record() for more info
+        #self.devices = Devices(self.dcs.sm, collectorId=self.id)
+
+    def status(self):
+        """Get status of Collector"""
+        url = '{ep}/status/{id}'.format(ep=self.endpoint.ep_url,
+                                    id=self.id)
+        req = Request(
+            base=url,
+            session=self.api.session,
+        )
+        return req.get()
+
+    def devices(self):
+        """Get a list of devices assigned to Collector
+        """
+        url = "{ep}/device".format(ep=self.url)
+        req = Request(
+            base=url,
+            session=self.api.session,
+        )
+        return [Device(self.api, 
+                Devices(self.api, self.endpoint.app, 'device'
+                record=Device), config) for config in req.get()]
+
 class Collectors(Endpoint):
     """ Represents the Data Collectors
 
@@ -30,463 +69,24 @@ class Collectors(Endpoint):
         name (str): name of the endpoint
     """
 
-    def __init__(self, api, app, name):
-        super().__init__(api, app, name)
-
-    def all(self):
-        """ Get all data collector servers
-
-        Return:
-            list: List of Collector(object)
-
-        Examples:
-            >>> collectors = fm.sm.collectors.all()
-            [..., ..., ..., ..., ]
-        """
-        total = 0
-        page = 0
-        count = 0
-        url = self.url + '?page={page}&pageSize=100'.format(page=page)
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('GET {}'.format(self.url))
-        response = self.session.get(url)
-        if response.status_code == 200:
-            resp = response.json()
-            if resp['results']:
-                results = resp['results']
-                total = resp['total']
-                count = resp['count']
-                while total > count:
-                    page += 1
-                    url = self.url + '?page={page}&pageSize=100'.format(
-                                                                    page=page)
-                    log.debug('GET {}'.format(self.url))
-                    response = self.session.get(url)
-                    resp = response.json()
-                    count += resp['count']
-                    results.extend(resp['results'])
-            if resp['results']:
-                return [Collector(self, col) for col in resp['results']]
-            else:
-                return []
-        else:
-            raise DeviceError("ERROR retrieving device! HTTP code: {}"
-                               " Server response: {}".format(
-                                                        response.status_code,
-                                                        response.text))
-
-    def get(self, *args, **kwargs):
-        """ Get single collector
-
-        Args:
-            *args (int): (optional) Collector id to retrieve
-            **kwargs (str): (optional) see filter() for available filters
-
-        Examples:
-            Get by ID
-            >>> fm.sm.collectors.get(2)
-            ...
-
-        """
-        try:
-            id = args[0]
-            url = self.url + '/{id}'.format(id=str(id))
-            self.session.headers.update({'Content-Type': 'application/json'})
-            log.debug('GET {}'.format(self.url))
-            response = self.session.get(url)
-            if response.status_code == 200:
-                return Collector(self, response.json())
-            else:
-                raise DeviceError("ERROR retrieving device! HTTP code: {}"
-                                   " Server response: {}".format(
-                                                        response.status_code,
-                                                        response.text))
-        except IndexError:
-            id = None
-        if not id:
-            filter_lookup = self.filter(**kwargs)
-            if filter_lookup:
-                if len(filter_lookup) > 1:
-                    raise ValueError(
-                            "get() returned more than one result. "
-                            "Check that the kwarg(s) passed are valid for this "
-                            "or use filter() or all() instead."
-                        )
-                else:
-                    return filter_lookup[0]
-            return None
-
-    def filter(self, **kwargs):
-        """ Filter devices based on search parameters
-
-        Args:
-            **kwargs (str): filter parameters
-
-        Available Filters:
-            name (you read that correct, name is the only one)
-
-        Return:
-            list: List of Collector(objects)
-            None: if not found
-
-        Examples:
-            Partial name search return multiple devices
-            >>> fm.sm.collectors.filter(name='dc')
-            [..., ]
-
-            Note: did not implement multiple pages. Figured 100 collectors is extreme.
-        """
-        if not kwargs:
-            raise ValueError('filter() must be passed kwargs. ')
-        url = self.url + '?pageSize=100&search={filters}'.format(
-                                filters=next(iter(kwargs.values())))  # just takeing the first kwarg value meh
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('GET {}'.format(self.url))
-        response = self.session.get(url)
-        if response.status_code == 200:
-            resp = response.json()
-            if resp['results']:
-                return[Collector(self, col) for col in resp['results']]
-            else:
-                return []
-        else:
-            raise DeviceError("ERROR retrieving device! HTTP code: {}"
-                               " Server response: {}".format(
-                               response.status_code, response.text))
-
-    #def create(self, *args, **kwargs):
-    #    """ Create a new Collector
-    #
-    #    Args:
-    #        args (dict): a dictionary of all the config settings for a Collector
-    #
-    #    Return:
-    #        int: id for newly created Collector
-    #
-    #    Examples:
-    #
-    #    Create by dictionary
-    #    >>> fm.sm.c...
-    #    """
-    #    try:
-    #        config = args[0]
-    #        config['domainId'] = int(self.domainId)  # API will not auto-fill
-    #    except IndexError:
-    #        config = None
-    #    if not config:
-    #        config = kwargs
-    #        config['domainId'] = self.domainId # API will not to auto-fill
-    #    self.session.headers.update({'Content-Type': 'application/json'})
-    #    log.debug('POST {}'.format(self.url))
-    #    response = self.session.post(self.url, json=config)
-    #    if response.status_code == 200:
-    #        return json.loads(response.content)['id']
-    #    else:
-    #        raise FiremonError("ERROR creating collector! HTTP code: {}"
-    #                           " Server response: {}".format(
-    #                           response.status_code, response.text))
-
-
-class Collector(Record):
-    """ Represents the Data Collector
-
-    Args:
-        dcs (obj): Collectors() object
-
-    Attributes:
-        devices
-    """
-
-    def __init__(self, dcs, config):
-        super().__init__(dcs, config)
-        self.dcs = dcs
-        self.url = dcs.url + '/{id}'.format(id=self.id)  # DC URL
-        self.session = dcs.session
-        self.sm = dcs.sm
-
-        # add attributes to Record() for more info
-        self.devices = Devices(self.dcs.sm, collectorId=self.id)
-
-    def delete(self):
-        """ Delete Data Collector device
-
-        Raises:
-            firemon_api.errors.FiremonError: if not status code 204
-
-        Examples:
-            >>> dc = fm.sm.collectors.get(name='wasp.lab.firemon.com')
-            >>> dc.delete()
-        """
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('DELETE {}'.format(self.url))
-        response = self.session.delete(self.url)
-        if response.status_code == 204:
-            return True
-        else:
-            raise FiremonError("ERROR deleting data collector! HTTP code: {}"
-                               " Server response: {}".format(
-                               response.status_code, response.text))
-
-    def update(self):
-        """ Todo: send update config to Data Collector """
-        pass
-
-    def device_assign(self, id, retrieve: bool=False):
-        """ Assign a device to Data Collector
-
-        Args:
-            id (int): Device Id
-
-        Kwargs:
-            retrieve (bool): Perform manual retrieval after successful change
-        """
-        url = self.url + '/device/{deviceId}?manualRetrieval={retrieve}'.format(
-                                            deviceId=id,
-                                            retrieve=str(retrieve))
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('POST {}'.format(self.url))
-        response = self.session.post(url)
-        if response.status_code == 204:
-            return True
-        else:
-            raise FiremonError("ERROR assigning device to DC! HTTP code: {}"
-                               " Server response: {}".format(
-                               response.status_code, response.text))
-
-    def device_remove(self, id):
-        """ Delete a device from a Data Collector
-
-        Args:
-            id (int): Device Id
-        """
-        url = self.url + '/device/{deviceId}'.format(deviceId=id)
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('DELETE {}'.format(self.url))
-        response = self.session.delete(url)
-        if response.status_code == 204:
-            return True
-        else:
-            raise FiremonError("ERROR assigning device to DC! HTTP code: {}"
-                               " Server response: {}".format(
-                               response.status_code, response.text))
-
-
-class CollectorGroups(Endpoint):
-    """ Represents the Data Collector Groups
-
-    Args:
-        api (obj): FiremonAPI()
-        app (obj): App()
-        name (str): name of the endpoint
-    """
-
-    def __init__(self, api, app, name):
-        super().__init__(api, app, name)
-        self.ep_url = "{url}/{ep}/group".format(url=app.app_url,
-                                        ep=name)
-
-    def all(self):
-        """ Get all data collector groups
-
-        Return:
-            list: List of CollectorGroup(object)
-
-        Examples:
-            >>> fm.sm.collectorgroups.all()
-            [..., ..., ..., ..., ]
-        """
-        total = 0
-        page = 0
-        count = 0
-        url = self.url + '?page={page}&pageSize=100'.format(page=page)
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('GET {}'.format(self.url))
-        response = self.session.get(url)
-        if response.status_code == 200:
-            resp = response.json()
-            if resp['results']:
-                results = resp['results']
-                total = resp['total']
-                count = resp['count']
-                while total > count:
-                    page += 1
-                    url = self.url + '?page={page}&pageSize=100'.format(
-                                                                    page=page)
-                    log.debug('GET {}'.format(self.url))
-                    response = self.session.get(url)
-                    resp = response.json()
-                    count += resp['count']
-                    results.extend(resp['results'])
-                return [CollectorGroup(self, cg) for cg in results]
-            else:
-                return []
-        else:
-            raise DeviceError("ERROR retrieving device! HTTP code: {}"
-                               " Server response: {}".format(
-                               response.status_code, response.text))
-
-    def get(self, *args, **kwargs):
-        """ Get single collector group
-
-        Args:
-            *args (uuid): (optional) CollectorGroup id to retrieve
-            **kwargs (str): (optional) see filter() for available filters
-
-        Examples:
-            Get by ID
-            >>> fm.sm.collectorgroups.get(2)
-            ...
-
-        """
-        try:
-            id = args[0]
-            url = self.url + '/{id}'.format(id=str(id))
-            self.session.headers.update({'Content-Type': 'application/json'})
-            log.debug('GET {}'.format(self.url))
-            response = self.session.get(url)
-            if response.status_code == 200:
-                return CollectorGroup(self, response.json())
-            else:
-                raise DeviceError("ERROR retrieving device! HTTP code: {}"
-                                   " Server response: {}".format(
-                                   response.status_code, response.text))
-        except IndexError:
-            id = None
-        if not id:
-            filter_lookup = self.filter(**kwargs)
-            if filter_lookup:
-                if len(filter_lookup) > 1:
-                    raise ValueError(
-                            "get() returned more than one result. "
-                            "Check that the kwarg(s) passed are valid for this "
-                            "or use filter() or all() instead."
-                        )
-                else:
-                    return filter_lookup[0]
-            return None
-
-    def filter(self, **kwargs):
-        """ Filter collector groups based on search parameters
-
-        Args:
-            **kwargs (str): filter parameters
-
-        Available Filters:
-            ?
-
-        Return:
-            list: List of CollectorGroup(objects)
-            None: if not found
-
-        Examples:
-            Partial name search return multiple devices
-            >>> fm.sm.collector.filter(name='dc')
-            [..., ]
-
-            Note: did not implement multiple pages.
-                  Figured 100 collector groups is extreme.
-        """
-        if not kwargs:
-            raise ValueError('filter() must be passed kwargs. ')
-        url = self.url + '?pageSize=100&search={filters}'.format(
-                                filters=next(iter(kwargs.values())))  # just takeing the first kwarg value meh
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('GET {}'.format(self.url))
-        response = self.session.get(url)
-        if response.status_code == 200:
-            resp = response.json()
-            if resp['results']:
-                return[CollectorGroup(self, cg) for cg in resp['results']]
-            else:
-                return []
-        else:
-            raise DeviceError("ERROR retrieving device! HTTP code: {}"
-                               " Server response: {}".format(
-                               response.status_code, response.text))
-
-    def create(self, group_conf):
-        """ Create a new CollectorGroup
-
-        Args:
-            group_conf (dict): a dictionary of all the config settings
-                         for a CollectorGroup
-
-        Return:
-            CollectorGroup()
-
-        Examples:
-        It is probably best to just create the 'name' and a 'description'
-        Entire format
-        {
-          "id": "string",
-          "sharedSecret": "string",
-          "assignedDeviceCount": 0,
-          "memberCount": 0,
-          "members": [
-            {
-              "id": 0,
-              "name": "string",
-              "username": "string",
-              "ipAddress": "string"
-            }
-          ],
-          "name": "string",
-          "description": "string"
-        }
-
-        Create by dictionary.
-        >>> config = {}
-        >>> config['name'] = 'Conan'
-        >>> config['description'] = 'A test of the API'
-        >>> dev = fm.sm.collectorgroups.create(config)
-        Conan
-        """
-        assert(isinstance(group_conf, dict)), 'Configuration needs to be a dict'
-        url = self.url
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('POST {}'.format(self.url))
-        response = self.session.post(url, json=group_conf)
-        if response.status_code == 200:
-            config = json.loads(response.content)
-            return self.get(config['id'])
-        else:
-            raise DeviceError("ERROR installing device! HTTP code: {}  "
-                              "Server response: {}".format(
-                                            response.status_code,
-                                            response.text))
+    def __init__(self, api, app, name, record=Collector):
+        super().__init__(api, app, name, record=Collector)
 
 
 class CollectorGroup(Record):
     """ Represents the Collector Group
 
     Args:
-        dcgs (obj): CollectorGroups() object
-
-    Attributes:
-        * devices
+        api (obj): FiremonAPI()
+        endpoint (obj): Endpoint()
+        config (dict): dictionary of things values from json
     """
 
-    def __init__(self, dcgs, config):
-        super().__init__(dcgs, config)
-        self.dcgs = dcgs
-        self.url = dcgs.url + '/{id}'.format(id=self.id)  # DC URL
-        self.session = dcgs.session
-        self.sm = dcgs.sm
+    def __init__(self, api, endpoint, config):
+        super().__init__(api, endpoint, config)
+        self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url, 
+                                      id=config['id'])
 
-        # add attributes to Record() for more info
-        self.devices = Devices(self.dcgs.sm, collectorGroupId=self.id)
-
-    def _reload(self):
-        """ Todo: Get configuration info upon change """
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('GET {}'.format(self.url))
-        response = self.session.get(self.url)
-        if response.status_code == 200:
-            config = response.json()
-            self._config = config.copy()
-            self.__init__(self.dcgs, self._config)
-        else:
-            raise FiremonError('Error! unable to reload CollectorGroup')
 
     def member_list(self):
         """ Get all data collector objects
@@ -568,63 +168,14 @@ class CollectorGroup(Record):
         return("{}".format(self.name))
 
 
-class CGMembers(object):
-    """ Represents the Data Collectors
+class CollectorGroups(Endpoint):
+    """ Represents the Data Collector Groups
 
     Args:
-        sm (obj): SecurityManager object
-        id (str): uuid for Collector Group
-        members (list): a list dictionary objects
+        api (obj): FiremonAPI()
+        app (obj): App()
+        name (str): name of the endpoint
     """
 
-    def __init__(self, sm, id, members):
-        self.sm = sm
-        self.id = id
-        self.members = members
-        self.url = sm.sm_url + '/collector/group'  # Collector Groups URL
-        self.session = sm.session
-
-    def all(self):
-        """ Get all data collector objects
-
-        Return:
-            list: List of Collector(object)
-        """
-        return [Collectors(self.sm).get(mem['id']) for mem in self.members]
-
-    def get(self, cid):
-        """
-        Args:
-            cid (int): Collector ID
-        """
-        return Collectors(self.sm).get(cid)
-
-    def add(self, cid):
-        """
-        Args:
-            cid (int): Collector ID
-        """
-        url = self.url + '/{id}/member/{collectorId}'.format(self.id, cid)
-        log.debug('PUT {}'.format(self.url))
-        response = self.session.put(url)
-        if response.status_code == 200:
-            return True
-        else:
-            return False
-
-    def remove(self, cid):
-        """
-        Args:
-            cid (int): Collector ID
-        """
-        url = self.url + '/{id}'.format(self)
-        log.debug('PUT {}'.format(self.url))
-        response = self.session.put(url)
-        if response.status_code == 200:
-            return True
-        else:
-            return False
-
-
-class CGDevices(object):
-    pass
+    def __init__(self, api, app, name, record=CollectorGroup):
+        super().__init__(api, app, name, record=CollectorGroup)

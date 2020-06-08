@@ -26,6 +26,7 @@ class CentralSyslogConfig(Record):
     Args:
         api (obj): FiremonAPI()
         endpoint (obj): Endpoint()
+        config (dict): dictionary of things values from json
     """
 
     def __init__(self, api, endpoint, config):

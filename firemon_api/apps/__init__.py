@@ -66,12 +66,12 @@ class SecurityManager(App):
         super().__init__(api, name)
 
         # Endpoints
-        self.collectionconfigs = CollectionConfigs(
-                                self.api, self, 'collectionconfig')
         self.centralsyslogconfigs = CentralSyslogConfigs(
                                 self.api, self, 'centralsyslogconfig')
         self.centralsyslogs = CentralSyslogs(
                                 self.api, self, 'central-syslog')
+        self.collectionconfigs = CollectionConfigs(
+                                self.api, self, 'collectionconfig')
         self.collectors = Collectors(
                                 self.api, self, 'collector')
         self.collectorgroups = CollectorGroups(

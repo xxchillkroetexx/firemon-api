@@ -27,6 +27,7 @@ class CentralSyslog(Record):
     Args:
         api (obj): FiremonAPI()
         endpoint (obj): Endpoint()
+        config (dict): dictionary of things values from json
     """
     centralSyslogConfig = CentralSyslogConfig
 
@@ -38,8 +39,8 @@ class CentralSyslog(Record):
         # not needed for `serialize` update using ep function
         self.no_no_keys = ['centralSyslogConfig']
 
-    def device_assign(self, id: int):
-        """Assign a device to this Central Syslog
+    def device_set(self, id: int):
+        """Set a device to this Central Syslog
 
         Args:
             id (int): device id to assign
@@ -52,10 +53,10 @@ class CentralSyslog(Record):
             base=url,
             session=self.api.session,
         )
-        return self._response_loader(req.post())
+        return req.post(None)
 
-    def device_remove(self, id: int):
-        """Remove a device to this Central Syslog
+    def device_unset(self, id: int):
+        """Unset a device to this Central Syslog
 
         Args:
             id (int): device id to assign
@@ -68,7 +69,23 @@ class CentralSyslog(Record):
             base=url,
             session=self.api.session,
         )
-        return self._response_loader(req.delete())
+        return req.delete()
+
+    def csc_set(self, id: int):
+        """Set a Central Syslog Config to this CS
+
+        Args:
+            id (int): Central Syslog Config id to assign
+        
+        Returns:
+            (bool): True if assigned
+        """
+        url = '{ep}/config/{id}'.format(ep=self.url, id=id)
+        req = Request(
+            base=url,
+            session=self.api.session,
+        )
+        return req.put(None)
 
     def devices(self):
         # todo: return all devices assigned to this CS

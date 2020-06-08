@@ -7,6 +7,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+# Standard modules
+from urllib.parse import urlencode, quote
 
 # Local packages
 from firemon_api.core.query import Request, url_param_builder
@@ -30,6 +32,7 @@ class Endpoint(object):
             self.return_obj = Record
         self.api = api
         self.session = api.session
+        self.app = app
         self.name = name
         self.base_url = api.base_url
         self.app_url = app.app_url

@@ -26,9 +26,9 @@ def url_param_builder(param_dict):
     """
     return "?{}".format(urlencode(param_dict))
 
-def calc_pages(limit, count):
+def calc_pages(pageSize, total):
     """ Calculate number of pages required for full results set. """
-    return int(count / limit) + (limit % count > 0)
+    return int(total / pageSize) + (pageSize % total > 0)
 
 
 class RequestError(Exception):
@@ -147,6 +147,7 @@ class Request(object):
                 params.update(add_params)
 
         log.debug('{}: {}'.format(verb.upper(), url_override or self.url))
+        #log.debug(params)
         req = getattr(self.session, verb)(
             url_override or self.url, headers=headers,
             params=params, json=data
@@ -166,11 +167,11 @@ class Request(object):
         else:
             raise RequestError(req)
 
-    def concurrent_get(self, ret, page_size, page_offsets):
+    def concurrent_get(self, ret, page_size, page_range):
         futures_to_results = []
         with cf.ThreadPoolExecutor(max_workers=4) as pool:
-            for offset in page_offsets:
-                new_params = {"offset": offset, "limit": page_size}
+            for page in page_range:
+                new_params = {"page": page, "pageSize": page_size}
                 futures_to_results.append(
                     pool.submit(self._make_call, add_params=new_params)
                 )
@@ -197,17 +198,21 @@ class Request(object):
         req = self._make_call(add_params=add_params)
         if isinstance(req, dict) and req.get("results") is not None:
             ret = req["results"]
-            if req.get("next"):
-                page_size = len(req["results"])
-                pages = calc_pages(page_size, req["count"])
-                page_offsets = [
-                    increment * page_size for increment in range(1, pages)
-                ]
+            if req.get("total"):
+                #page_size = len(req["results"])
+                page_size = req['pageSize']
+                pages = calc_pages(page_size, req["total"])
+                #page_offsets = [
+                #    increment * page_size for increment in range(1, pages)
+                #]
+                page_range = range(1, pages)
                 if pages == 1:
-                    req = self._make_call(url_override=req.get("next"))
-                    ret.extend(req["results"])
+                    #req = self._make_call(url_override=req.get("next"))
+                    #ret.extend(req["results"])
+                    return ret
                 else:
-                    self.concurrent_get(ret, page_size, page_offsets)
+                    self.concurrent_get(ret, page_size, page_range)
+                return ret
             return ret
         else:
             return req
