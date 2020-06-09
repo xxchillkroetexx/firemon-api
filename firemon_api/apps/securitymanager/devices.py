@@ -243,17 +243,17 @@ class Device(Record):
         Kwargs:
             debug (bool): ???
         """
-        url = self.url + '/manualretrieval?debug={debug}'.format(
-                                                            debug=str(debug))
-        log.debug('POST {}'.format(self.url))
-        response = self.session.post(url)
-        if response.status_code == 204:
+        url = '{url}/manualretrieval?debug={debug}'.format(url=self.url,
+                                                           debug=str(debug))
+        req = Request(
+            base=url,
+            session=self.session,
+        )
+        if req.post(None):
             return True
-        else:
-            return False
 
     def rule_usage(self, type: str='total'):
-        """ This appears to be a very generic bit of information. Purely the
+        """Get rule usage for device.
         total hits for all rules on the device.
 
         Kwargs:
@@ -263,27 +263,25 @@ class Device(Record):
             json: daily == {'hitDate': '....', 'totalHits': int}
                   total == {'totalHits': int}
         """
-        url = self.url + '/ruleusagestat/{type}'.format(type=type)
-        self.session.headers.update({'Accept': 'application/json'})
-        log.debug('GET {}'.format(self.url))
-        response = self.session.get(url)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            raise FiremonError('Error: Unable to retrieve device rule usage '
-                                'info')
+        url = '{url}/ruleusagestat/{type}'.format(url=self.url,
+                                                    type=type)
+        req = Request(
+            base=url,
+            session=self.session,
+        )
+        return req.get():
 
-    def get_nd_latest(self):
-        """Gets the latest revision as a fully parsed object """
-        url = self.url + '/rev/latest/nd/all'
-        self.session.headers.update({'Accept': 'application/json'})
-        log.debug('GET {}'.format(self.url))
-        response = self.session.get(url)
-        if response.status_code == 200:
-            return ParsedRevision(self.devs, response.json())
-        else:
-            raise FiremonError('Error: Unable to retrieve latest parsed '
-                                'revision')
+    #def get_nd_latest(self):
+    #    """Gets the latest revision as a fully parsed object """
+    #    url = self.url + '/rev/latest/nd/all'
+    #    self.session.headers.update({'Accept': 'application/json'})
+    #    log.debug('GET {}'.format(self.url))
+    #    response = self.session.get(url)
+    #    if response.status_code == 200:
+    #        return ParsedRevision(self.devs, response.json())
+    #    else:
+    #        raise FiremonError('Error: Unable to retrieve latest parsed '
+    #                            'revision')
 
     def ssh_key_remove(self):
         """Remove ssh key from all Collectors for Device.
@@ -291,14 +289,13 @@ class Device(Record):
         Notes:
             SSH Key location: /var/lib/firemon/dc/.ssh/known_hosts
         """
-        url = self.url + '/sshhostkey'
-        self.session.headers.update({'Accept': 'application/json'})
-        log.debug('PUT {}'.format(self.url))
-        response = self.session.put(url)
-        if response.status_code == 204:
+        url = '{url}/sshhostkey'.format(url=self.url)
+        req = Request(
+            base=url,
+            session=self.session,
+        )
+        if req.put(None):
             return True
-        else:
-            raise FiremonError('Error: Unable to remove SSH key')
 
     def __repr__(self):
         if len(str(self.id)) > 10:

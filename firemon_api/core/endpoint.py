@@ -36,6 +36,7 @@ class Endpoint(object):
         self.name = name
         self.base_url = api.base_url
         self.app_url = app.app_url
+        self.domain_url = app.domain_url
         self.ep_url = "{url}/{ep}".format(url=app.app_url,
                                           ep=name)
 
