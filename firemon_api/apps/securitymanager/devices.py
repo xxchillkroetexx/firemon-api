@@ -170,8 +170,16 @@ class Device(Record):
         if req.delete():
             return True
 
+    def export_config(self):
+        """Export latest raw config files"""
+        pass
+
+    def export_support(self):
+        """Export latest support file"""
+        pass
+
     def import_config(self, f_list: list) -> bool:
-        """ Import config files for device to create a new revision
+        """Import config files for device to create a new revision
 
         Args:
             f_list (list): a list of tuples. Tuples are intended to uploaded
@@ -237,8 +245,8 @@ class Device(Record):
         else:
             raise RequestError(response)
 
-    def do_retrieval(self, debug: bool=False):
-        """ Have current device begin a manual retrieval.
+    def exec_retrieval(self, debug: bool=False):
+        """Have current device begin a manual retrieval.
 
         Kwargs:
             debug (bool): ???
@@ -269,7 +277,18 @@ class Device(Record):
             base=url,
             session=self.session,
         )
-        return req.get():
+        return req.get()
+
+    def nd_problem(self):
+        """Retrieve problems with latest normalization
+        """
+        url = '{url}/device/{id}/nd/problem'.format(url=self.app_url,
+                                                    id=self.id)
+        req = Request(
+            base=url,
+            session=self.session,
+        )
+        return req.get()
 
     #def get_nd_latest(self):
     #    """Gets the latest revision as a fully parsed object """

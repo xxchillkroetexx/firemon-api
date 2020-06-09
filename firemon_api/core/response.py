@@ -59,6 +59,9 @@ class Record(object):
         self.api = api
         self.session = api.session
         self.endpoint = endpoint
+        self.base_url = endpoint.base_url
+        self.app_url = endpoint.app_url
+        self.domain_url = endpoint.domain_url
         self.default_ret = Record
 
         # These are, from what I can see, bad mojo and will always

@@ -21,10 +21,8 @@ log = logging.getLogger(__name__)
 
 
 class Revision(Record):
-    """ Represents a Revision in Firemon
-    The API is painful to use. In some cases the info needed is under
-    'ndrevisions' and it other cases it is under 'normalization'. And different
-    paths can get the exact same information.
+    """Revision `Record`
+    'ndrevisions' and it other cases it is under 'normalization'.
 
     (change configuration &/or normalization state)
 
@@ -44,6 +42,12 @@ class Revision(Record):
         >>> rev.delete()
         True
     """
+    def __init__(self, api, endpoint, config):
+        super().__init__(api, endpoint, config)
+        self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url, 
+                                      id=config['id'])
+
+
     def __init__(self, revs, config):
         super().__init__(revs, config)
         self.revs = revs
@@ -155,14 +159,11 @@ class Revision(Record):
 
 
 class Revisions(Endpoint):
-    """ Represents the Revisions.
-    Filtering is terrible given the API. It is a mixture of revID,
-    static domain requirements and device_id, or searching by a weird subset
+    """Revisions Endpoint.
+    Combining 'ndrevisions' and 'normalization'.
+    Filtering is what it is. It is a mixture of revID,
+    static domain requirements and device_id, or searching by a subset
     of our internal SIQL (but you cannot search by name or anything in SIQL).
-    As a kludge I just ingest all revisions (like the device packs) and create
-    get() and filter() functions to parse a dictionary. This may be problematic
-    if there are crazy number of revisions but since this is for interal use
-    *meh*.
 
     Args:
         api (obj): FiremonAPI()
@@ -345,12 +346,15 @@ class Revisions(Endpoint):
 
 
 class ParsedRevision(Record):
-    """A dynamic representation of all the NORMALIZED things
-
-    Todo:
-        Document the JSON/Record information and key values purpose
-            or at least some of the major ones
+    """A NORMALIZED Revision. All the things.
     """
+    def __init__(self, api, endpoint, config):
+        super().__init__(api, endpoint, config)
+        self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url, 
+                                      id=config['id'])
+
+        self.no_no_keys = []
+
     def __repr__(self):
         return("ParsedRevision<(id='{}')>".format(self.revisionId))
 
