@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 
 
 class CentralSyslog(Record):
-    """ Represents the Central Syslog
+    """Central Syslog Record
 
     Args:
         api (obj): FiremonAPI()
@@ -99,12 +99,15 @@ class CentralSyslog(Record):
 
 
 class CentralSyslogs(Endpoint):
-    """ Represents the Central Syslogs
+    """Central Syslogs Endpoint
     
     Args:
         api (obj): FiremonAPI()
         app (obj): App()
         name (str): name of the endpoint
+
+    Kwargs:
+        record (obj): default `Record` object
     """
 
     def __init__(self, api, app, name, record=CentralSyslog):
@@ -127,7 +130,7 @@ class CentralSyslogs(Endpoint):
 
         Examples:
             Partial name search return multiple devices
-            >>> fm.sm.centralsyslog.filter('mia')
+            >>> fm.sm.centralsyslogs.filter('mia')
             [miami, miami-2]
         """
 

@@ -195,6 +195,9 @@ class Request(object):
         #if add_params is None:
         #    # Limit must be 0 to discover the max page size
         #    add_params = {"limit": 0}
+        if add_params is None:
+            # Hopefully this will cut down on queries without breaking things
+            add_params = {'pageSize': 100}
         req = self._make_call(add_params=add_params)
         if isinstance(req, dict) and req.get("results") is not None:
             ret = req["results"]

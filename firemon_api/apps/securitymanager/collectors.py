@@ -37,6 +37,7 @@ class Collector(Record):
 
         # add attributes to Record() for more info
         #self.devices = Devices(self.dcs.sm, collectorId=self.id)
+        self.devices = Devices(self.api, self.endpoint.app, 'device')
 
     def status(self):
         """Get status of Collector"""
@@ -48,17 +49,19 @@ class Collector(Record):
         )
         return req.get()
 
-    def devices(self):
-        """Get a list of devices assigned to Collector
-        """
-        url = "{ep}/device".format(ep=self.url)
-        req = Request(
-            base=url,
-            session=self.api.session,
-        )
-        return [Device(self.api, 
-                Devices(self.api, self.endpoint.app, 'device'
-                record=Device), config) for config in req.get()]
+    def __repr__(self):
+        if len(str(self.id)) > 10:
+            id = '{}...'.format(self.id[0:9])
+        else:
+            id = self.id
+        if len(self.name) > 10:
+            name = '{}...'.format(self.name[0:9])
+        else:
+            name = self.name
+        return("<Collector(id='{}', name='{}')>".format(id, name))
+
+    def __str__(self):
+        return("{}".format(self.name))
 
 class Collectors(Endpoint):
     """ Represents the Data Collectors
@@ -67,11 +70,37 @@ class Collectors(Endpoint):
         api (obj): FiremonAPI()
         app (obj): App()
         name (str): name of the endpoint
+
+    Kwargs:
+        record (obj): default `Record` object
     """
 
     def __init__(self, api, app, name, record=Collector):
         super().__init__(api, app, name, record=Collector)
 
+    def filter(self, *args, **kwargs):
+        """Filter devices based on search parameters.
+        collector only has a single search. :shrug:
+        """
+        srch = None
+        if args:
+            srch = args[0]
+        elif kwargs:
+            # Just get the value of first kwarg.
+            srch = kwargs[next(iter(kwargs))]
+        if not srch:
+            log.debug('No filter provided. Here is an empty list.')
+            return []
+        url = '{ep}?&search={srch}'.format(ep=self.ep_url,
+                                                srch=srch)
+        
+        req = Request(
+            base=url,
+            session=self.api.session,
+        )
+
+        ret = [self._response_loader(i) for i in req.get()]
+        return ret
 
 class CollectorGroup(Record):
     """ Represents the Collector Group
@@ -86,7 +115,6 @@ class CollectorGroup(Record):
         super().__init__(api, endpoint, config)
         self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url, 
                                       id=config['id'])
-
 
     def member_list(self):
         """ Get all data collector objects
@@ -104,7 +132,7 @@ class CollectorGroup(Record):
         """
         return Collectors(self.sm).get(cid)
 
-    def member_assign(self, cid):
+    def member_set(self, cid):
         """
         Args:
             cid (int): Collector ID
@@ -118,7 +146,7 @@ class CollectorGroup(Record):
         else:
             return False
 
-    def member_remove(self, cid):
+    def member_unset(self, cid):
         """
         Args:
             cid (int): Collector ID
@@ -142,7 +170,7 @@ class CollectorGroup(Record):
                                             response.status_code,
                                             response.text))
 
-    def device_assign(self, id):
+    def device_set(self, id):
         """ Assign a Device
         Args:
             id (int): Device id
@@ -160,9 +188,15 @@ class CollectorGroup(Record):
                                             response.text))
 
     def __repr__(self):
-        return("<CollectorGroup(id='{}', name='{}')>".format(
-                                                        self.id,
-                                                        self.name))
+        if len(str(self.id)) > 10:
+            id = '{}...'.format(self.id[0:9])
+        else:
+            id = self.id
+        if len(self.name) > 10:
+            name = '{}...'.format(self.name[0:9])
+        else:
+            name = self.name
+        return("<CollectorGroup(id='{}', name='{}')>".format(id, name))
 
     def __str__(self):
         return("{}".format(self.name))
@@ -175,7 +209,37 @@ class CollectorGroups(Endpoint):
         api (obj): FiremonAPI()
         app (obj): App()
         name (str): name of the endpoint
+
+    Kwargs:
+        record (obj): default `Record` object
     """
 
     def __init__(self, api, app, name, record=CollectorGroup):
         super().__init__(api, app, name, record=CollectorGroup)
+
+    def filter(self, *args, **kwargs):
+        """Filter devices based on search parameters.
+        collectorgroup only has a single search. :shrug:
+        """
+        srch = None
+        if args:
+            srch = args[0]
+        elif kwargs:
+            # Just get the value of first kwarg.
+            srch = kwargs[next(iter(kwargs))]
+        if not srch:
+            log.debug('No filter provided. Here is an empty list.')
+            return []
+        url = '{ep}?&search={srch}'.format(ep=self.ep_url,
+                                                srch=srch)
+        
+        req = Request(
+            base=url,
+            session=self.api.session,
+        )
+
+        ret = [self._response_loader(i) for i in req.get()]
+        return ret
+
+    def count(self):
+        return len(self.all())

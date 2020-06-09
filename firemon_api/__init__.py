@@ -39,10 +39,8 @@ limitations under the License.
 import logging
 from logging import NullHandler
 import urllib3
-import warnings
 
 # Local
-from . import errors
 from firemon_api.api import FiremonAPI as api
 
 logging.getLogger(__name__).addHandler(NullHandler())
@@ -67,18 +65,8 @@ def add_stderr_logger(level=logging.DEBUG):
 # ... Clean up.
 del NullHandler
 
-# All warning filters *must* be appended unless you're really certain that they
-# shouldn't be: otherwise, it's very hard for users to use most Python
-# mechanisms to silence them.
-# AuthenticationWarning's always go off by default.
-warnings.simplefilter("always", errors.AuthenticationWarning, append=True)
-# Once per host
-#warnings.simplefilter("default", errors.SomeWarning, append=True)
-
-
-def disable_warnings(category=errors.FiremonWarning):
+def disable_warnings():
     """
-    Helper for quickly disabling all firemon_api warnings.
+    Hate urllib3 warnings? disable them
     """
-    warnings.simplefilter("ignore", category)
     urllib3.disable_warnings()

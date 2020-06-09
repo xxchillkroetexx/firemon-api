@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 
 
 class CentralSyslogConfig(Record):
-    """ Represents the Central Syslog Config
+    """Central Syslog Config Record
 
     Args:
         api (obj): FiremonAPI()
@@ -43,12 +43,15 @@ class CentralSyslogConfig(Record):
 
 
 class CentralSyslogConfigs(Endpoint):
-    """ Represents the Central Syslog Configs
+    """Central Syslog Configs Endpoint
     
     Args:
         api (obj): FiremonAPI()
         app (obj): App()
         name (str): name of the endpoint
+
+    Kwargs:
+        record (obj): default `Record` object
     """
 
     def __init__(self, api, app, name, record=CentralSyslogConfig):

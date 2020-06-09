@@ -13,11 +13,120 @@ import logging
 
 # Local packages
 from firemon_api.core.endpoint import Endpoint
-from firemon_api.core.response import Record
-from firemon_api.core.query import Request, url_param_builder
+from firemon_api.core.response import Record, JsonField
+from firemon_api.core.query import Request, url_param_builder, RequestError
 from firemon_api.core.utils import _build_dict, _find_dicts_with_key
+from .collectionconfigs import CollectionConfig
 
 log = logging.getLogger(__name__)
+
+
+class DevicePack(Record):
+    """ Representation of the device pack
+
+    Args:
+        dps (obj): DevicePacks()
+
+    Attributes:
+        * artifactId
+        * groupId
+        * deviceName
+        * vendor
+        * deviceType
+        * version
+
+    Example:
+        >>> dp = fm.sm.dp.get('juniper_srx')
+        >>> dp
+        juniper_srx
+        >>> dp.version
+        '1.24.10'
+    """
+
+    collectionConfig = CollectionConfig
+
+    def __init__(self, api, endpoint, config):
+        super().__init__(api, endpoint, config)
+        self.url = '{ep}/{gid}/{aid}'.format(
+                                            ep=self.endpoint.ep_url,
+                                            gid=config['groupId'],
+                                            aid=config['artifactId'])
+
+    def update(self):
+        """Nothing to update"""
+        pass
+
+    def save(self):
+        """Nothing to save"""
+        pass
+
+    def layout(self):
+        req = Request(
+            base='{url}/layout?layoutName=layout.json'.format(url=self.url),
+            session=self.session,
+        )
+        return req.post(None)
+
+    def get_blob(self, name='dc.zip'):
+        """Get the blob (artifact) from Device Pack
+
+        Kwargs:
+            name (str): name of the artifact (dc.zip, plugin.jar, etc)
+
+        Return:
+            bytes: your blob of stuff
+        """
+        url = '{url}/{blob}'.format(url=self.url, blob=name)
+        log.debug('GET: {}'.format(url))
+        resp = self.session.get(url)
+        if resp.status_code == 200:
+            return resp.content
+        else:
+            raise RequestError(resp)
+
+
+    def template(self):
+        """ Get default template format for a device. Note that a number of fields
+        can take bad information, like empty strings, '', and Secmanager appears
+        to happily create devices and things will appear to work. Problems may
+        arise on device update calls though where other parts of the system
+        further check and error out.
+
+        Return:
+            dict: template information for a device with defaults included
+        """
+
+        resp = self.layout()
+
+        template = {}
+        template['name'] = None
+        template['description'] = None
+        template['managementIp'] = None
+        template['domainId'] = self.api.domain_id
+        # Fix? in later versions we require a Group
+        #template['dataCollectorId'] = 1  # Assuming
+        #template['dataCollectorGroupId] = ''
+        #template['dataCollectorGroupName'] = ''
+        template['devicePack'] = {}
+        template['devicePack']['artifactId'] = self.artifactId
+        template['devicePack']['deviceName'] = self.deviceName
+        template['devicePack']['groupId'] = self.groupId
+        template['devicePack']['id'] = self.id
+        template['devicePack']['type'] = self.type
+        template['devicePack']['deviceType'] = self.deviceType
+        template['devicePack']['version'] = self.version
+        template['extendedSettingsJson'] = {}
+        for response in _find_dicts_with_key("key", resp):
+            template['extendedSettingsJson'][response["key"]] = None
+            if "defaultValue" in response:
+                template['extendedSettingsJson'][response["key"]] = response["defaultValue"]
+        return template
+
+    def __repr__(self):
+        return("<DevicePack(artifactId='{}')>".format(self.artifactId))
+
+    def __str__(self):
+        return("{}".format(self.artifactId))
 
 
 class DevicePacks(Endpoint):
@@ -39,28 +148,9 @@ class DevicePacks(Endpoint):
         Get a list of device packs by config options
         >>> fm.sm.dp.filter(ssh=True)
     """
-    def __init__(self, api, app, name):
-        super().__init__(api, app, name)
+    def __init__(self, api, app, name, record=DevicePack):
+        super().__init__(api, app, name, record=DevicePack)
         self.device_packs = {}
-
-    def _get_all(self) -> list:
-        """ Retrieve a dictionary of installed device packs.
-
-        Returns:
-            list: a list of dictionary objects that contain device pack info
-        """
-        url = self.url + ('/list/DEVICE_PACK/?sort=artifactId&pageSize='
-                        '100&showHidden=true')
-        log.debug('GET {}'.format(self.url))
-        response = self.session.get(url)
-        if response.status_code == 200:
-            dps = response.json()['results']
-            self.device_packs = _build_dict(dps, 'artifactId')
-        else:
-            raise FiremonError("ERROR retrieving list of device packs! HTTP "
-                               "code: {}  Server response: ".format(
-                                                        response.status_code,
-                                                        response.text))
 
     def all(self):
         """ Get all device packs
@@ -70,13 +160,14 @@ class DevicePacks(Endpoint):
         >>> device_packs = fm.sm.dp.all()
         """
 
-        # Commentting out to avoid potential issues if a change on server occurs
-        #    prior to this instance being torn down.
-        #if not self.device_packs:
-        #    self._get_all()
-        self._get_all()
-        return [DevicePack(self, self.device_packs[dp])
-                for dp in self.device_packs]
+        url = ('{url}/list/DEVICE_PACK/?sort=artifactId'
+        '&showHidden=true'.format(url=self.ep_url))
+        req = Request(
+            base=url,
+            session=self.api.session,
+        )
+
+        return [self._response_loader(i) for i in req.get()]
 
     def get(self, *args, **kwargs):
         """ Query and retrieve individual DevicePack
@@ -95,19 +186,16 @@ class DevicePacks(Endpoint):
         >>> fm.sm.dp.get(groupId='com.fm.sm.dp.juniper_srx')
         juniper_srx
         """
-        # Commentting out to avoid potential issues if a change on server occurs
-        #    prior to this instance being torn down.
-        #if not self.device_packs:
-        #    self._get_all()
-        self._get_all()
+
+        dp_all = self.all()
         try:
             id = args[0]
-            devpack = self.device_packs[id]
-            if devpack:
-                return DevicePack(self, devpack)
+            dp_l = [dp for dp in dp_all if dp.artifactId == id]
+            if len(dp_l) == 1:
+                return dp_l[0]
             else:
-                raise FiremonError("ERROR retrieving devicepack")
-        except (KeyError, IndexError):
+                return None
+        except IndexError:
             id = None
 
         if not id:
@@ -134,15 +222,12 @@ class DevicePacks(Endpoint):
 
         >>> fm.sm.dp.filter(ssh=True)
         """
-        #if not self.device_packs:
-        #    self._get_all()
-        self._get_all()
+
+        dp_all = self.all()
         if not kwargs:
             raise ValueError("filter must have kwargs")
 
-        return [DevicePack(self, self.device_packs[dp]) for dp in
-                self.device_packs if kwargs.items()
-                <= self.device_packs[dp].items()]
+        return [dp for dp in dp_all if kwargs.items() <= dict(dp).items()]
 
     def upload(self, file: bytes):
         """ Upload device pack
@@ -153,83 +238,11 @@ class DevicePacks(Endpoint):
         Returns:
             bool: The return value. True for success upload, False otherwise
         """
-        url = self.url + '/?overwrite=true'
+        url = '{url}/?overwrite=true'.format(url=self.ep_url)
         self.session.headers.pop('Content-type', None)  # If "content-type" exists get rid.
-        log.debug('POST {}'.format(self.url))
-        response = self.session.post(url, files={'devicepack.jar': file})
-        if response.status_code == 200:
-            self._get_all()  # Update the current listing
+        log.debug('POST {}'.format(url))
+        resp = self.session.post(url, files={'devicepack.jar': file})
+        if resp.status_code == 200:
             return True
         else:
-            return False
-
-
-class DevicePack(Record):
-    """ Representation of the device pack
-
-    Args:
-        dps (obj): DevicePacks()
-
-    Attributes:
-        * artifactId
-        * groupId
-        * deviceName
-        * vendor
-        * deviceType
-        * version
-
-    Example:
-        >>> dp = fm.sm.dp.get('juniper_srx')
-        >>> dp
-        juniper_srx
-        >>> dp.version
-        '1.24.10'
-    """
-    def __init__(self, dps, config):
-        super().__init__(dps, config)
-        self.dps = dps
-        self.url = dps.url
-
-    def template(self):
-        """ Get default template format for a device. Note that a number of fields
-        can take bad information, like empty strings, '', and Secmanager appears
-        to happily create devices and things will appear to work. Problems may
-        arise on device update calls though where other parts of the system
-        further check and error out.
-
-        Return:
-            dict: template information for a device with defaults included
-        """
-        url = self.url + ('/{groupId}/{artifactId}/layout?'
-                        'layoutName=layout.json'.format(
-                                                groupId=self.groupId,
-                                                artifactId=self.artifactId))
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('POST {}'.format(self.url))
-        r = self.session.post(url)
-        template = {}
-        template['name'] = None
-        template['description'] = None
-        template['managementIp'] = None
-        template['domainId'] = self.dps.sm.api.domainId
-        #template['dataCollectorId'] = 1  # Assuming
-        template['devicePack'] = {}
-        template['devicePack']['artifactId'] = self.artifactId
-        template['devicePack']['deviceName'] = self.deviceName
-        template['devicePack']['groupId'] = self.groupId
-        template['devicePack']['id'] = self.id
-        template['devicePack']['type'] = self.type
-        template['devicePack']['deviceType'] = self.deviceType
-        template['devicePack']['version'] = self.version
-        template['extendedSettingsJson'] = {}
-        for response in _find_dicts_with_key("key", r.json()):
-            template['extendedSettingsJson'][response["key"]] = None
-            if "defaultValue" in response:
-                template['extendedSettingsJson'][response["key"]] = response["defaultValue"]
-        return template
-
-    def __repr__(self):
-        return("<DevicePack(artifactId='{}')>".format(self.artifactId))
-
-    def __str__(self):
-        return("{}".format(self.artifactId))
+            raise RequestError(resp)

@@ -75,9 +75,9 @@ class SecurityManager(App):
         self.collectors = Collectors(
                                 self.api, self, 'collector')
         self.collectorgroups = CollectorGroups(
-                                self.api, self, 'collector')
+                                self.api, self, 'collector/group')
         self.devices = Devices(self.api, self, 'device')
-        self.dp = DevicePacks(self.api, self, 'plugins')  # Todo: create the other /plugins
+        self.dp = DevicePacks(self.api, self, 'plugin')  # Todo: create the other /plugin
         self.revisions = Revisions(self.api, self, 'rev')
         self.users = Users(self.api, self, 'user')
 

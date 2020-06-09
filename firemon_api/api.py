@@ -108,10 +108,9 @@ class FiremonAPI(object):
 
         self.host = host
 
-        # Much of all the APIs requires a domain ID. There is also a fair amount
+        # Many of the APIs requires a domain ID. There is also a fair amount
         #   that does not require a Domain ID. There may be a better way to
-        #   code this but this appears good enough. What all the endpoints then
-        #   are instantiated in the domainId setter.
+        #   code this but this appears good enough.
         self.domain_id = domain_id
 
         # This translates the major release to the dev pack major. Hopefully 

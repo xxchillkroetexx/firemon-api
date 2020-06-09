@@ -54,7 +54,7 @@ class Record(object):
 
     def __init__(self, api, endpoint, config):
         self._config = config  # keeping a cache just incase bad things
-        self._full_cache = []
+        #self._full_cache = []
         self._init_cache = []
         self.api = api
         self.session = api.session
@@ -65,8 +65,7 @@ class Record(object):
         # fail when updating an endpoint so just rip them out.
         # If a `Record` has different keys that crash or none just
         # modify the values in the child object or set as empty
-        self.no_no_keys = ['devicePack',
-                           'securityConcernIndex',
+        self.no_no_keys = ['securityConcernIndex',
                            'gpcComputeDate',
                            'gpcDirtyDate',
                            'gpcImplementDate',
@@ -173,6 +172,39 @@ class Record(object):
                 continue
         return(d)
 
+    def attr_set(self, k, v):
+        """Set an attribute and add it to the cache
+        Firemon will not provide all attributes so you will have
+        to just know what you are doing.
+
+        Add a new attribute to `Record`. This is to ensure that
+        the `serialize` picks up attribute and `_diff`.
+
+        Args:
+            k (str): key/attr
+            v (str, list, dict): value
+        """
+        if isinstance(k, (str)) and isinstance(v, (str, list, dict)):
+            if k in dict(self._init_cache).keys():
+                setattr(self, k, v)
+            else:
+                setattr(self, k, v)
+                self._add_cache((k, ''))
+
+    def attr_unset(self, k):
+        """Unset an attribute and remove from the cache.
+
+        This is to ensure that the `serialize` picks up 
+        attribute and `_diff`.
+
+        Args:
+            k (str): key/attr
+        """
+        if k in dict(self._init_cache).keys():
+            v = dict(self._init_cache)[k]
+            self._init_cache.remove((k, v))
+            delattr(self, k)
+
     def serialize(self, nested=False, init=False):
         """Serializes an object
         Pulls all the attributes in an object and creates a dict that
@@ -184,7 +216,7 @@ class Record(object):
             is discouraged. It's probably better to cast to dict()
             instead. See Record docstring for example. Why? Because
             we are popping out no_no_keys from the full config in the
-            hope that `update()` just works
+            hope that `update()` and `save()` just work
         Return:
             (dict)
         """
@@ -234,14 +266,20 @@ class Record(object):
         """Saves changes to an existing object.
         Checks the state of `_diff` and sends the entire
         `serialize` to Request.put().
+
         Return:
             (bool): True if PUT request was successful.
 
-        >>> x = nb.dcim.devices.get(name='test1-a3-tor1b')
-        >>> x.serial
-        u''
-        >>> x.serial = '1234'
-        >>> x.save()
+        Example:
+        >>> dev = fm.sm.devices.get(name='vsrx3')
+        >>> dev.name = 'vsrx - updated'
+        >>> dev.save()
+        True
+        >>> dev.description
+            ...
+        AttributeError: 'Device' object has no attribute 'description'
+        >>> dev.add_attr('description', 'new description')
+        >>> dev.save()
         True
         >>>
         """
@@ -263,28 +301,33 @@ class Record(object):
         Accepts a dict and uses it to update the record and call save().
         For nested and choice fields you'd pass an int the same as
         if you were modifying the attribute and calling save().
-        :arg dict data: Dictionary containing the k/v to update the
+
+        Args:
+            data (dict): Dictionary containing the k/v to update the
             record object with.
-        :returns: True if PUT request was successful.
-        :example:
-        >>> x = nb.dcim.devices.get(1)
-        >>> x.update({
-        ...   "name": "test-switch2",
-        ...   "serial": "ABC321",
+
+        Returns:
+            bool: True if PUT request was successful.
+
+        Example:
+        >>> dev = fm.sm.devices.get(1)
+        >>> dev.update({
+        ...   "name": "foo2",
+        ...   "description": "barbarbaaaaar",
         ... })
         True
         """
 
         for k, v in data.items():
-            setattr(self, k, v)
+            self.attr_set(self, k, v)
         return self.save()
 
     def delete(self):
         """Deletes an existing object.
         :returns: True if DELETE operation was successful.
         :example:
-        >>> x = nb.dcim.devices.get(name='test1-a3-tor1b')
-        >>> x.delete()
+        >>> dev = fm.sm.devices.get(name='vsrx2')
+        >>> dev.delete()
         True
         >>>
         """

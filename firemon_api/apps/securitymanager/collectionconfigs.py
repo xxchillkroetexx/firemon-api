@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 
 
 class CollectionConfig(Record):
-    """ Represents a collection configuration in Firemon
+    """Collection Configuration Record
 
     Args:
         api (obj): FiremonAPI()
@@ -35,20 +35,13 @@ class CollectionConfig(Record):
 
         Get a Collection Config by ID
         >>> cc = fm.sm.cc.get(47)
-        >>> cc
-        47
-        >>> dict(cc)
-        {'id': 47, 'name': 'Ape Grape', 'devicepack_id': 40, ...}
 
         Set a Device by ID to the Collection Config
-        >>> cc.set_device(21)
-        True
-        If CC is already associated with a Device()
-        >>> cc.set_device()
+        >>> cc.device_set(21)
         True
 
         Set this CC as the default for associate Device Pack
-        >>> cc.set_dp()
+        >>> cc.devicepack_set()
         True
     """
     def __init__(self, api, endpoint, config):
@@ -89,9 +82,10 @@ class CollectionConfig(Record):
         return req.delete()
 
     def device_set(self, id) -> bool:
-        """ Set CollectionConfig for a device by ID. If requested device IDs
-        device pack does not match CC device pack server handles mismatch and will
-        NOT set. If device ID is not found server handles mismatch and will NOT set.
+        """ Set CollectionConfig for a device by ID. If requested 
+        device IDs device pack does not match CC device pack server
+        handles mismatch and will NOT set. If device ID is not 
+        found server handles mismatch and will NOT set.
 
         Args:
             id (int): The ID for the device as understood by Firemon
@@ -111,6 +105,7 @@ class CollectionConfig(Record):
 
     def device_unset(self, id) -> bool:
         """ Unset a device from CollectionConfig
+
         Args:
             id (int): The ID for the device as understood by Firemon
 
@@ -135,10 +130,7 @@ class CollectionConfig(Record):
 
 
 class CollectionConfigs(Endpoint):
-    """ Represents the Collection Configs
-    Filtering is terrible given the API.
-    As a kludge I just ingest all collectionconfigs (like the device packs)
-    and create get() and filter() functions to parse a dictionary.
+    """Collection Configs Endpoint
 
     Args:
         api (obj): FiremonAPI()
@@ -146,6 +138,7 @@ class CollectionConfigs(Endpoint):
         name (str): name of the endpoint
 
     Kwargs:
+        record (obj): default `Record` object
         devicepack_id (int): Device Pack id
         device_id (int): Device id
 
