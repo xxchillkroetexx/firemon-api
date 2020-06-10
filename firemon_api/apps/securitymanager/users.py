@@ -20,6 +20,34 @@ from firemon_api.core.query import Request, url_param_builder
 log = logging.getLogger(__name__)
 
 
+class User(Record):
+    """ Represents a User in Firemon
+
+    Args:
+        api (obj): FiremonAPI()
+        endpoint (obj): Endpoint()
+        config (dict): dictionary of things values from json
+
+    Examples:
+        Unlock and Enable all users
+        >>> for user in fm.sm.users.all():
+        ...   user.enabled = True
+        ...   user.locked = False
+        ...   user.save()
+    """
+
+    def __init__(self, api, endpoint, config):
+        super().__init__(api, endpoint, config)
+        self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url, 
+                                      id=config['id'])
+
+    def __repr__(self):
+        return("<User(id='{}', username={})>".format(self.id, self.username))
+
+    def __str__(self):
+        return("{}".format(self.username))
+
+
 class Users(Endpoint):
     """ Represents the Users
 
@@ -27,176 +55,29 @@ class Users(Endpoint):
         api (obj): FiremonAPI()
         app (obj): App()
         name (str): name of the endpoint
+
+    Kwargs:
+        record (obj): default `Record` object
     """
 
-    def __init__(self, api, app, name):
-        super().__init__(api, app, name)
+    def __init__(self, api, app, name, record=User):
+        super().__init__(api, app, name, record=User)
+
+        self.ep_url = "{url}/{ep}".format(url=app.domain_url,
+                                        ep=name)
 
     def all(self):
-        """ Get all users
-
-        Return:
-            list: List of User(object)
-
-        Raises:
-            firemon_api.errors.FiremonError: if not status code 200
-
-        Examples:
-            >>> users = fm.sm.users.all()
-            [..., ..., ..., ..., ]
+        """Get all `Record`
         """
-        url = self.url + ('?includeSystem=true&includeDisabled=true&sort'
-                            '=id&pageSize=100')
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('GET {}'.format(self.url))
-        response = self.session.get(url)
-        if response.status_code == 200:
-            resp = response.json()
-            if resp['results']:
-                return [User(self, user) for user in resp['results']]
-            else:
-                return None
-        else:
-            raise FiremonError("ERROR retrieving user! HTTP code: {}"
-                               " Server response: {}".format(
-                                                        response.status_code,
-                                                        response.text))
+        filters = {'includeSystem': True, 'includeDisabled': True}
 
-    def get(self, *args, **kwargs):
-        """ Get single user
+        req = Request(
+            base=self.ep_url,
+            filters=filters,
+            session=self.api.session,
+        )
 
-        Args:
-            *args (int, optional): User id to retrieve
-            **kwargs (str, optional): see filter() for available filters
-
-        Raises:
-            firemon_api.errors.FiremonError: if not status code 200
-
-        Examples:
-            Get by ID
-            >>> fm.sm.users.get(2)
-            ...
-        """
-        try:
-            id = args[0]
-            url = self.url + '/{id}'.format(id=str(id))
-            self.session.headers.update({'Content-Type': 'application/json'})
-            log.debug('GET {}'.format(self.url))
-            response = self.session.get(url)
-            if response.status_code == 200:
-                return User(self, response.json())
-            else:
-                raise FiremonError("ERROR retrieving user! HTTP code: {}"
-                                   " Server response: {}".format(
-                                   response.status_code, response.text))
-        except IndexError:
-            id = None
-        if not id:
-            filter_lookup = self.filter(**kwargs)
-            if filter_lookup:
-                if len(filter_lookup) > 1:
-                    raise ValueError(
-                            "get() returned more than one result. "
-                            "Check that the kwarg(s) passed are valid for this "
-                            "or use filter() or all() instead."
-                        )
-                else:
-                    return filter_lookup[0]
-            return None
-
-    def filter(self, **kwargs):
-        """ Filter users based on search parameters
-
-        Args:
-            **kwargs (str): filter parameters
-
-        Available Filters:
-            username, firstName, lastName, email,
-            passwordExpired, locked, expired, enabled
-
-        Return:
-            list: List of User(objects)
-            None: if not found
-
-        Raises:
-            firemon_api.errors.DeviceError: if not status code 200
-
-        Examples:
-            Partial name search return multiple users
-            >>> fm.sm.users.filter(username='socra')
-            [<User(id='4', username=dc_socrates)>, <User(id='3', username=nd_socrates)>]
-
-            >>> fm.sm.users.filter(enabled=False)
-            [<User(id='2', username=workflow)>]
-
-            >>> fm.sm.users.filter(locked=True)
-            [<User(id='2', username=workflow)>]
-        """
-        if not kwargs:
-            raise ValueError('filter() must be passed kwargs. ')
-        total = 0
-        page = 0
-        count = 0
-        url = self.url + '/filter?page={page}&pageSize=100&filter={filters}'.format(
-                            page=page, filters=urlencode(kwargs, quote_via=quote))
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('GET {}'.format(self.url))
-        response = self.session.get(url)
-        if response.status_code == 200:
-            resp = response.json()
-            if resp['results']:
-                results = resp['results']
-                total = resp['total']
-                count = resp['count']
-                while total > count:
-                    page += 1
-                    url = self.url + '/filter?page={page}&pageSize=100&filter={filters}'.format(
-                                    page=page, filters=urlencode(kwargs, quote_via=quote))
-                    log.debug('GET {}'.format(self.url))
-                    response = self.session.get(url)
-                    resp = response.json()
-                    count += resp['count']
-                    results.extend(resp['results'])
-                return [User(self, user) for user in results]
-            else:
-                return []
-        else:
-            raise DeviceError("ERROR retrieving users! HTTP code: {}"
-                               " Server response: {}".format(
-                               response.status_code, response.text))
-
-    def create(self, *args, **kwargs):
-        """ Create a new User
-
-        Args:
-            args (dict): a dictionary of all the config settings for a User
-
-        Return:
-            int: id for newly created User
-
-        Examples:
-
-        Create by dictionary
-        >>> fm.sm.c...
-        """
-        try:
-            config = args[0]
-            config['domainId'] = int(self.sm.api.domainId)  # API is dumb to auto-fill
-        except IndexError:
-            config = None
-        if not config:
-            config = kwargs
-            config['domainId'] = self.domainId # API is dumb to auto-fill
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('POST {}'.format(self.url))
-        response = self.session.post(self.url, json=config)
-        if response.status_code == 200:
-            config = json.loads(response.content)
-            return self.get(config['id'])
-        else:
-            raise FiremonError("ERROR creating collector! HTTP code: {}"
-                               " Server response: {}".format(
-                               response.status_code, response.text))
+        return [self._response_loader(i) for i in req.get()]
 
     def template(self):
         """ Create a template of a simple user
@@ -219,90 +100,16 @@ class Users(Endpoint):
         conf['authServerId'] = None  # 0
         return conf
 
-
-class User(Record):
-    """ Represents a User in Firemon
-
-    Args:
-        usrs (obj): Users() object
-        config (dict): all the things
-    """
-    def __init__(self, usrs, config):
-        super().__init__(usrs, config)
-
-        self.usrs = usrs
-        self.url = usrs.sm.domain_url + '/user/{id}'.format(id=str(config['id']))  # User id URL
-
-    def _reload(self):
-        """ Todo: Get configuration info upon change """
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('GET {}'.format(self.url))
-        response = self.session.get(self.url)
-        if response.status_code == 200:
-            config = response.json()
-            self._config = config.copy()
-            self.__init__(self.api, self._config)
-        else:
-            raise FiremonError('Error! unable to reload User')
-
-    def enable(self):
-        url = self.url + '/enable'
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('PUT {}'.format(self.url))
-        response = self.session.put(url)
-        if response.status_code == 204:
-            self._reload()
-            return True
-        else:
-            raise DeviceError("ERROR enableing User! HTTP code: {}  \
-                            Content {}".format(response.status_code, response.text))
-
-    def disable(self):
-        url = self.url + '/disable'
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('PUT {}'.format(self.url))
-        response = self.session.put(url)
-        if response.status_code == 204:
-            self._reload()
-            return True
-        else:
-            raise DeviceError("ERROR disabling User! HTTP code: {}  \
-                            Content {}".format(response.status_code, response.text))
-
-    def unlock(self):
-        url = self.url + '/unlock'
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('PUT {}'.format(self.url))
-        response = self.session.put(url)
-        if response.status_code == 204:
-            self._reload()
-            return True
-        else:
-            raise DeviceError("ERROR unlocking User! HTTP code: {}  \
-                            Content {}".format(response.status_code, response.text))
-
-    def update(self):
-        pass
-
-    def __repr__(self):
-        return("<User(id='{}', username={})>".format(self.id, self.username))
-
-    def __str__(self):
-        return("{}".format(self.username))
-
-
 class UserGroup(Record):
     """ Represents a UserGroup in Firemon
 
     Args:
-        usrs (obj): Users() object
-        config (dict): all the things
-
-    Todo:
-        Finish this -
+        api (obj): FiremonAPI()
+        endpoint (obj): Endpoint()
+        config (dict): dictionary of things values from json
     """
-    def __init__(self, usrs, config):
-        super().__init__(usrs, config)
 
-        self.usrs = usrs
-        self.url = usrs.sm.domain_url + '/user/{id}'.format(id=str(config['id']))  # User id URL
+    def __init__(self, api, endpoint, config):
+        super().__init__(api, endpoint, config)
+        self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url, 
+                                      id=config['id'])

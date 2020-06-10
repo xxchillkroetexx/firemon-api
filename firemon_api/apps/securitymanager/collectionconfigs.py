@@ -152,12 +152,25 @@ class CollectionConfigs(Endpoint):
                 api, app, 
                 name,
                 record=CollectionConfig,
-                devicepack_id: int=None, 
                 device_id: int=None):
         super().__init__(api, app, name, record=CollectionConfig)
-        # Use setter. Intended for use when CollectionConfigs() is called from Device()
-        self._devicepack_id = devicepack_id
+        
         self._device_id = device_id
+
+    def all(self):
+        """Get all `Record`
+        """
+        filters = None
+        if self.device_id:
+            filters = {'devicePackId': self.devicePackId}
+
+        req = Request(
+            base="{}/".format(self.ep_url),
+            filters=filters,
+            session=self.api.session,
+        )
+
+        return [self._response_loader(i) for i in req.get(add_params=add_params)]
 
     def filter(self, *args, **kwargs):
         """ Retrieve a filterd list of CollectionConfigs
@@ -191,3 +204,7 @@ class CollectionConfigs(Endpoint):
 
     def count(self):
         return len(self.all())
+
+    @property
+    def device_id(self):
+        return self._device_id

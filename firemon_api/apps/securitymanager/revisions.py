@@ -14,7 +14,7 @@ import logging
 # Local packages
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
-from firemon_api.core.query import Request, url_param_builder
+from firemon_api.core.query import Request, url_param_builder, RequestError
 from firemon_api.core.utils import _build_dict
 
 log = logging.getLogger(__name__)
@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 
 class Revision(Record):
     """Revision `Record`
-    'ndrevisions' and it other cases it is under 'normalization'.
+    'ndrevisions' and 'normalization'.
 
     (change configuration &/or normalization state)
 
@@ -44,115 +44,85 @@ class Revision(Record):
     """
     def __init__(self, api, endpoint, config):
         super().__init__(api, endpoint, config)
-        self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url, 
-                                      id=config['id'])
+        # app/rev
+        self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url2, 
+                                                id=str(config['id']))
+        # app/domain-stuff/device-stuff/id
+        self.d_url = '{ep}/domain/{did}/device/{devid}/rev/{id}'.format(
+                                                ep=self.app_url,
+                                                did=str(config['domainId']),
+                                                devid=str(config['deviceId']),
+                                                id=str(config['id']))
 
+        self.no_no_keys = []
 
-    def __init__(self, revs, config):
-        super().__init__(revs, config)
-        self.revs = revs
-        self.url = revs.sm.sm_url + '/rev/{revId}'.format(
-                                                        revId=str(config['id']))
-        # Because instead of just operating on the revision they needed another
-        # path <sigh>
-        self.url2 = revs.sm.domain_url + ('/device/{device_id}/rev/{revId}'
-                                        .format(
-                                            device_id=str(config['device_id']),
-                                            revId=str(config['id'])))
+    def save(self):
+        """Nothing to save"""
+        pass
 
-    def summary(self):
-        return self._config.copy()
+    def update(self):
+        """Nothing to save"""
+        pass
 
     def changelog(self):
         """ Revision changelog """
-        total = 0
-        page = 0
-        count = 0
-        url = self.url2 + '/changelog?page={page}&pageSize=100'.format(
-                                                                    page=page)
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('GET {}'.format(self.url))
-        response = self.session.get(url)
-        if response.status_code == 200:
-            resp = response.json()
-            if resp['results']:
-                results = resp['results']
-                total = resp['total']
-                count = resp['count']
-                while total > count:
-                    page += 1
-                    url = self.url2 + ('/changelog?page={page}&pageSize=100'
-                                        .format(page=page))
-                    log.debug('GET {}'.format(self.url))
-                    response = self.session.get(url)
-                    resp = response.json()
-                    count += resp['count']
-                    results.extend(resp['results'])
-                return(results)
-            else:
-                return([])
-        else:
-            raise FiremonError("ERROR retrieving revisions! HTTP code: {} "
-                              "Server response: {}".format(
-                                                        response.status_code,
-                                                        response.text))
+        url = '{url}/changelog'.format(url=self.d_url)
+        req = Request(
+            base=url,
+            session=self.session,
+        )
+        return req.get()
 
-    def export(self, with_meta: bool=True):
-        """ Export a zip file contain the config data for the device and,
-        optionally, other meta data and NORMALIZED data. Support files in gui.
+    def export(self, meta: bool=True):
+        """Export a zip file contain the config data.
+        
+        Support files include all NORMALIZED data and other meta data.
+        Raw configs include only those files as found by Firemon 
+        during a retrieval.
 
         Kwargs:
-            with_meta (bool): Include metadata and NORMALIZED config files
+            meta (bool): Include metadata and NORMALIZED config files
 
         Return:
             bytes: zip file
         """
-        self.session.headers.pop('Content-type', None)  # If "content-type" exists get rid.
-        if with_meta:
-            url = self.url + '/export'
+        if meta:
+            url = '{url}/export'.format(self.url)
         else:
-            url = self.url + '/export/config'
+            url = '{url}/export/config'.format(self.url)
         log.debug('GET {}'.format(self.url))
         response = self.session.get(url)
         if response.status_code == 200:
             return response.content
         else:
-            raise FiremonError("ERROR retrieving revisions! HTTP code: {}  "
-                              "Server response: {}".format(
-                                                    response.status_code,
-                                                    response.text))
+            raise RequestError(response)
 
-    def delete(self):
-        """ Delete the revision
-
-        Return:
-            bool: True if deleted
+    def nd_get(self):
+        """Get normalized data as a fully parsed object
+        
+        Retrieve all the revision data in a single payload.
         """
-        url = self.revs.sm.domain_url + \
-            '/device/{device_id}/rev/{revId}'.format(
-                device_id=str(self.device_id), revId=str(self.id))
-        log.debug('DELETE {}'.format(self.url))
-        response = self.session.delete(url)
-        if response.status_code == 204:
-            return True
-        else:
-            raise DeviceError("ERROR deleting revision id {}".format(self.id))
-
-    def get_nd(self):
-        """Get normalized data as a fully parsed object """
-        url = self.url + '/nd/all'
-        self.session.headers.update({'Accept': 'application/json'})
-        log.debug('GET {}'.format(self.url))
+        url = '{url}/nd/all'.format(url=self.url)
+        log.debug('GET {}'.format(url))
         response = self.session.get(url)
         if response.status_code == 200:
-            return ParsedRevision(self.revs, response.json())
+            return ParsedRevision(self.api, self.endpoint, response.json())
         else:
-            raise FiremonError('Error: Unable to retrieve parsed revision')
+            raise RequestError(response)
+
+    def nd_problem(self):
+        """Get problems with revision"""
+        url = '{url}/nd/problem'.format(url=self.d_url)
+        req = Request(
+            base=url,
+            session=self.session,
+        )
+        return req.get()
 
     def __repr__(self):
         return("<Revision(id='{}', device='{}')>".format(
                                                     self.id,
-                                                    self.device_id))
+                                                    self.deviceId))
 
     def __str__(self):
         return("{}".format(self.id))
@@ -177,8 +147,10 @@ class Revisions(Endpoint):
         >>> rev = fm.sm.revisions.get(34)
         >>> rev = fm.sm.revisions.filter(latest=True, deviceName='vSRX-2')[0]
     """
-    def __init__(self, api, app, name, device_id: int=None):
-        super().__init__(api, app, name)
+    def __init__(self, api, app, name, 
+                record=Revision,
+                device_id: int=None):
+        super().__init__(api, app, name, record=Revision)
         self._device_id = device_id
         if self.device_id:
             self.ep_url = "{url}/device/{id}/{ep}".format(
@@ -188,161 +160,82 @@ class Revisions(Endpoint):
         else:
             self.ep_url = "{url}/{ep}".format(url=app.domain_url,
                                               ep=name)
-        self._revisions = {}
+        # Why have one EP when you can have 2+
+        # app/rev
+        self.ep_url2 = "{url}/{ep}".format(url=app.app_url,
+                                              ep=name)
 
-    def _get_all(self):
-        """ Retrieve a dictionary of revisions. This is effectively a kludge
-        since we do not have direct access to /rev endpoint so we will injest
-        all then parse locally.
-
-        Returns:
-            dict: a dictionary that contains revision info
-        """
-        total = 0
-        page = 0
-        count = 0
-        if self.device_id:
-            url = self.sm.domain_url + ('/device/{device_id}/rev?sort=id&page'
-                                        '={page}&pageSize=100'.format(
-                                                        device_id=self.device_id,
-                                                        page=page))
-        else:
-            url = self.sm.domain_url + ('/rev?sort=id&page={page}&pageSize'
-                                        '=100'.format(page=page))
-        log.debug('GET {}'.format(self.url))
-        self.session.headers.update({'Content-Type': 'application/json'})
-        response = self.session.get(url)
-        if response.status_code == 200:
-            resp = response.json()
-            if resp['results']:
-                results = resp['results']
-                total = resp['total']
-                count = resp['count']
-                while total > count:
-                    page += 1
-                    if self.device_id:
-                        url = self.sm.domain_url + ('/device/{device_id}/rev?'
-                                'sort=id&page={page}&pageSize=100'.format(
-                                            device_id=self.device_id,
-                                            page=page))
-                    else:
-                        url = self.sm.domain_url + ('/rev?sort=id&page'
-                                    '={page}&pageSize=100'.format(page=page))
-                    log.debug('GET {}'.format(self.url))
-                    response = self.session.get(url)
-                    resp = response.json()
-                    count += resp['count']
-                    results.extend(resp['results'])
-                self._revisions = _build_dict(results, 'id')
-            else:
-                self._revisions = {}
-        else:
-            raise FiremonError("ERROR retrieving revisions! HTTP code: {} "
-                              "Server response: {}".format(
-                                                response.status_code,
-                                                response.text))
-
-    def all(self):
-        """ Get all revisions
-
-        Return:
-            list: a list of Revision(object)
-
-        Examples:
-
-            >>> revs = fm.sm.revisions.all()
-        """
-        #if not self._revisions:
-        #    self._get_all()
-        self._get_all()
-        return [Revision(self, self._revisions[id]) for id in self._revisions]
 
     def get(self, *args, **kwargs):
-        """ Query and retrieve individual Revision
+        """Get single Record
 
         Args:
-            *args (int): The revision ID
-            **kwargs: key value pairs in a revision dictionary
-
-        Return:
-            Revision(object): a single Revision(object)
+            *args (int): (optional) id to retrieve. If this is not type(int)
+                        dump it into filter and grind it up there.
+            **kwargs (str): (optional) see filter() for available filters
 
         Examples:
+            Get by ID
+            >>> fm.sm.revisions.get(1262)
+            new york
 
-            >>> fm.sm.revisions.get(3)
-            3
-            >>> rev = fm.sm.revisions.get(3)
-            >>> type(rev)
-            <class 'firemon_api.apps.securitymanager.Revision'>
-            >>> rev = fm.sm.revisions.get(correlationId='7a5406e4-93de-44af-8ed1-0e4135458324')
-            >>> rev
-            11
         """
-        #if not self._revisions:
-        #    self._get_all()
-        self._get_all()
+        url = self.ep_url
         try:
-            id = args[0]
-            rev = self._revisions[id]
-            if rev:
-                return Revision(self, rev)
-            else:
-                raise FiremonError("ERROR retrieving revison")
-        except (KeyError, IndexError):
+            id = int(args[0])
+            url = '{ep}/{id}'.format(ep=self.ep_url2, id=str(id))
+        except (IndexError, ValueError) as e:
             id = None
 
         if not id:
-            filter_lookup = self.filter(**kwargs)
+            if kwargs:
+                filter_lookup = self.filter(**kwargs)
+            else:
+                filter_lookup = self.filter(*args)
             if filter_lookup:
                 if len(filter_lookup) > 1:
-                    raise ValueError("get() returned more than one result."
-                                    "Check the kwarg(s) passed are valid or"
-                                    "use filter() or all() instead.")
+                    raise ValueError(
+                        "get() returned more than one result. "
+                        "Check that the kwarg(s) passed are valid for this "
+                        "endpoint or use filter() or all() instead."
+                    )
                 else:
                     return filter_lookup[0]
             return None
 
-    def filter(self, **kwargs):
-        """ Retrieve a filterd list of Revisions
+        req = Request(
+            base=url,
+            session=self.api.session,
+        )
+
+        return self._response_loader(req.get())
+
+    def filter(self, *args, **kwargs):
+        """ Retrieve a filterd list of Revisions.
+
+        I have no idea how our /filter endpoint works. Some SIQL but
+        I cannot find any decent documentation.
 
         Args:
-            **kwargs: key value pairs in a revision dictionary
+            **kwargs: key value pairs in a device pack dictionary
 
         Return:
             list: a list of Revision(object)
 
         Examples:
 
-            >>> fm.sm.revisions.filter(deviceName='vSRX-2')
-            [76, 77, 108, 177, 178]
-
-            >>> fm.sm.revisions.filter(latest=True, deviceName='vSRX-2')
-            [178]
-
-            >>> fm.sm.revisions.filter(deviceType='FIREWALL')
-            [3, 4, 5, 6, 7, 8, 9,
-
-            >>> fm.sm.revisions.filter(latest=True)
-            [1, 2, 3, 6, 8, 9, 10, 13, 14, 75, 122, 153, 171, 174, 178, 189]
+        >>> fm.sm.dp.filter(latest=True)
         """
-        #if not self._revisions:
-        #    self._get_all()
-        self._get_all()
 
+        rev_all = self.all()
         if not kwargs:
             raise ValueError("filter must have kwargs")
 
-        return [Revision(self, self._revisions[id]) for id in
-                self._revisions if kwargs.items()
-                <= self._revisions[id].items()]
+        return [rev for rev in rev_all if kwargs.items() <= dict(rev).items()]
 
     @property
     def device_id(self):
         return self._device_id
-
-    @device_id.setter
-    def device_id(self, id):
-        self._device_id = id
 
 
 class ParsedRevision(Record):
@@ -351,9 +244,21 @@ class ParsedRevision(Record):
     def __init__(self, api, endpoint, config):
         super().__init__(api, endpoint, config)
         self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url, 
-                                      id=config['id'])
+                                      id=config['revisionId'])
 
         self.no_no_keys = []
+
+    def save(self):
+        """Nothing to save"""
+        pass
+
+    def update(self):
+        """Nothing to save"""
+        pass
+
+    def delete(self):
+        """Nothing to delete"""
+        pass
 
     def __repr__(self):
         return("ParsedRevision<(id='{}')>".format(self.revisionId))

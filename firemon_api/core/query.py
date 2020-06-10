@@ -94,11 +94,11 @@ class Request(object):
     FireMon's API
 
     Args:
-        base (str) Base URL passed in api() instantiation.
-        filters: (dict, optional) contains key/value pairs that
+        base (str) Base URL
+        session (`Session`): requests
+        filters (dict, optional): contains key/value pairs that
             correlate to the filters a given endpoint accepts.
-            In (e.g. /devices/?name='test') 'name': 'test'
-            would be in the filters dict.
+        key (str, optional): append to base to make up full url
     """
 
     def __init__(
@@ -106,30 +106,22 @@ class Request(object):
         base,
         session,
         filters=None,
+        key=None,
         url=None,
     ):
-        """
-        Instantiates a new Request object
-        Args:
-            base (string): Base URL passed in api() instantiation.
-            filters (dict, optional): contains key/value pairs that
-                correlate to the filters a given endpoint accepts.
-                In (e.g. //devices/?name='test') 'name': 'test'
-                would be in the filters dict.
-        """
         #self.base = self.normalize_url(base)
-        self.base = base
-        self.filters = filters
+        self.base = self.normalize_url(base)
         self.session = session
-        self.url = self.base
+        self.filters = filters
+        self.key = key
+        self.url = self.base if not key else "{}/{}".format(self.base, key)
 
-    #def normalize_url(self, url):
-    #    """ Builds a url for POST actions.
-    #    """
-    #    if url[-1] != "/":
-    #        return "{}/".format(url)
-
-    #    return url
+    def normalize_url(self, url):
+        """ Builds a url for POST actions.
+        """
+        if url[-1] = "/":
+            return url.strip('/')
+        return url
 
     def _make_call(
         self, verb="get", url_override=None, add_params=None, data=None

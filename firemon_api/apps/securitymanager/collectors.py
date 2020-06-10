@@ -35,9 +35,7 @@ class Collector(Record):
         self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url, 
                                       id=config['id'])
 
-        # add attributes to Record() for more info
-        #self.devices = Devices(self.dcs.sm, collectorId=self.id)
-        self.devices = Devices(self.api, self.endpoint.app, 'device')
+        self._Devices = Devices(self.api, self.endpoint.app, 'device')
 
     def status(self):
         """Get status of Collector"""
@@ -48,6 +46,15 @@ class Collector(Record):
             session=self.api.session,
         )
         return req.get()
+
+    def devices(self):
+        """Get all devices assigned to collector"""
+        req = Request(
+            base="{}/device".format(self.url),
+            session=self.api.session,
+        )
+
+        return [Device(self.api, self._Devices, config) for config in req.get()]
 
     def __repr__(self):
         if len(str(self.id)) > 10:

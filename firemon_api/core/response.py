@@ -339,3 +339,7 @@ class Record(object):
             session=self.api.session,
         )
         return True if req.delete() else False
+
+    def dump(self):
+        """Dump of unparsed config"""
+        return self._config.copy()

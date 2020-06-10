@@ -44,7 +44,7 @@ class Endpoint(object):
         return self.return_obj(self.api, self, values)
 
     def all(self):
-        """
+        """Get all `Record`
         """
         req = Request(
             base="{}/".format(self.ep_url),
@@ -54,7 +54,7 @@ class Endpoint(object):
         return [self._response_loader(i) for i in req.get()]
 
     def get(self, *args, **kwargs):
-        """ Get single Record
+        """Get single Record
 
         Args:
             *args (int): (optional) id to retrieve. If this is not type(int)
@@ -117,16 +117,16 @@ class Endpoint(object):
 
         # Our filter is the screwiest <sigh>. Seems non-standard
         # revist if our filter style is different at each EP
-        filters = ''
+        l = []
         for k in kwargs.keys():
-            d = {'filter': '{}={}'.format(k, kwargs[k])}
-            filters += '&{}'.format(urlencode(d))
+            l.append('{}={}'.format(k, kwargs[k]))
+        filters = {'filter': l}
 
-        url = '{ep}/filter?{filters}'.format(ep=self.ep_url, 
-                                             filters=filters)
+        url = '{ep}/filter'.format(ep=self.ep_url)
 
         req = Request(
-            base=self.ep_url,
+            base=url,
+            filters=filters,
             session=self.api.session,
         )
 

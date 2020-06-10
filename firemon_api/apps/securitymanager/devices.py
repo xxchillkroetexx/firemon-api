@@ -28,8 +28,9 @@ class Device(Record):
     """Device Record
 
     Args:
-        devs (obj): Devices()
-        config (dict): all the things
+        api (obj): FiremonAPI()
+        endpoint (obj): Endpoint()
+        config (dict): dictionary of things values from json
 
     Attributes:
         * cc (collection configs)
@@ -69,8 +70,16 @@ class Device(Record):
                                       id=config['id'])
 
         # Add attributes to Record() so we can get more info
+        self.revisions = Revisions(self.api, 
+                                   self.endpoint.app, 
+                                   'rev',
+                                   device_id=config['id'])
         #self.revisions = Revisions(self.devs.sm, self.id)
         #self.cc = CollectionConfigs(self.devs.sm, self.devicePack.id, self.id)
+        self.collectionconfigs = CollectionConfigs(self.api, 
+                                   self.endpoint.app, 
+                                   'collectionconfig',
+                                   device_id=config['id'])
 
     def save(self, retrieve: bool=False) -> bool:
         """Saves changes to an existing object.
@@ -85,9 +94,9 @@ class Device(Record):
 
         >>> dev = fm.sm.devices.get(name='vsrx3')
         >>> dev.description
-        ''
-        >>> dev.description = 'new description'
-        >>> x.save()
+        AttributeError: 'Device' object has no attribute 'description'
+        >>> dev.attr_set('description','Virtual SRX - DC 3')
+        >>> dev.save()
         True
         >>>
         """
@@ -170,22 +179,46 @@ class Device(Record):
         if req.delete():
             return True
 
-    def export_config(self):
-        """Export latest raw config files"""
-        pass
+    def rev_export(self, meta: bool=True):
+        """Export latest configuration files as a zip file 
+        
+        Support files include all NORMALIZED data and other meta data.
+        Raw configs include only those files as found by Firemon 
+        during a retrieval.
+        
+        Kwargs:
+            meta (bool): True gets a SUPPORT file. False is Raw only
 
-    def export_support(self):
-        """Export latest support file"""
-        pass
+        Returns:
+            bytes: file
+
+        Example:
+            >>> import os
+            >>> dev = fm.sm.devices.get(name='vsrx-2')
+            >>> support = dev.rev_export()
+            >>> with open('support.zip', 'wb') as f:
+            ...   f.write(support)
+            ...
+            38047
+        """
+        if meta:
+            url = '{url}/export'.format(url=self.url)
+        else:
+            url = '{url}/export/config'.format(url=self.url)
+        response = self.session.get(url)
+        if response.status_code == 200:
+            return response.content
+        else:
+            raise RequestError(response)
 
     def import_config(self, f_list: list) -> bool:
         """Import config files for device to create a new revision
 
         Args:
             f_list (list): a list of tuples. Tuples are intended to uploaded
-                as a multipart form using 'requests'. format of the data in the
-                tuple is ('file', ('<file-name>',
-                            open(<path_to_file>, 'rb'), 'text/plain'))
+            as a multipart form using 'requests'. format of the data in the
+            tuple is:
+            ('file', ('<file-name>', open(<path_to_file>, 'rb'), 'text/plain'))
 
         Example:
             >>> import os
@@ -290,17 +323,17 @@ class Device(Record):
         )
         return req.get()
 
-    #def get_nd_latest(self):
-    #    """Gets the latest revision as a fully parsed object """
-    #    url = self.url + '/rev/latest/nd/all'
-    #    self.session.headers.update({'Accept': 'application/json'})
-    #    log.debug('GET {}'.format(self.url))
-    #    response = self.session.get(url)
-    #    if response.status_code == 200:
-    #        return ParsedRevision(self.devs, response.json())
-    #    else:
-    #        raise FiremonError('Error: Unable to retrieve latest parsed '
-    #                            'revision')
+    def get_nd_latest(self):
+        """Gets the latest revision as a fully parsed object """
+        url = self.url + '/rev/latest/nd/all'
+        self.session.headers.update({'Accept': 'application/json'})
+        log.debug('GET {}'.format(self.url))
+        response = self.session.get(url)
+        if response.status_code == 200:
+            return ParsedRevision(self.devs, response.json())
+        else:
+            raise FiremonError('Error: Unable to retrieve latest parsed '
+                                'revision')
 
     def ssh_key_remove(self):
         """Remove ssh key from all Collectors for Device.
@@ -345,27 +378,12 @@ class Devices(Endpoint):
         collectorgroup_id (str): Data Collector Group Id (uuid)
     """
 
-    def __init__(self, api, app, name,
-                record=Device,
-                collector_id: int = None,
-                collectorgroup_id: str = None):
+    def __init__(self, api, app, name, record=Device):
         super().__init__(api, app, name, record=Device)
+
         self.ep_url = "{url}/{ep}".format(url=app.domain_url,
                                         ep=name)
 
-        # Use setter. Intended for use when Devices is called from
-        #   Collector(object) or CollectorGroup(object)
-        self.collector_id: int = collector_id
-        self.collectorgroup_id: str = collectorgroup_id
-
-        if self.collector_id:
-            self.ep_url = "{url}/collector/{id}/device".format(
-                                            url=self.app.app_url,
-                                            id=self.collector_id)
-        elif self.collectorgroup_id:
-            self.ep_url = "{url}/collector/group/{id}/assigned".format(
-                                            url=self.app.app_url,
-                                            id=self.collectorgroup_id)
         self.ep_url = "{url}/{ep}".format(url=app.domain_url, ep=name)        
 
 
@@ -401,19 +419,3 @@ class Devices(Endpoint):
                               "Server response: {}".format(
                                             response.status_code,
                                             response.text))
-
-    @property
-    def collector_id(self):
-        return self._collector_id
-
-    @collector_id.setter
-    def collector_id(self, id):
-        self._collector_id = id
-
-    @property
-    def collectorgroup_id(self):
-        return self._collectorgroup_id
-
-    @collectorgroup_id.setter
-    def collectorgroup_id(self, id):
-        self._collectorgroup_id = id
