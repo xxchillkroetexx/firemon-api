@@ -26,18 +26,19 @@ class CentralSyslog(Record):
 
     Args:
         api (obj): FiremonAPI()
-        endpoint (obj): Endpoint()
+        app (obj): App()
         config (dict): dictionary of things values from json
     """
+
+    ep_name = 'central-syslog'
+    domain = True    
     centralSyslogConfig = CentralSyslogConfig
 
-    def __init__(self, api, endpoint, config):
-        super().__init__(api, endpoint, config)
-        self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url, 
-                                      id=config['id'])
+    def __init__(self, api, app, config):
+        super().__init__(api, app, config)
 
         # not needed for `serialize` update using ep function
-        self.no_no_keys = ['centralSyslogConfig']
+        self._no_no_keys = ['centralSyslogConfig']
 
     def device_set(self, id: int):
         """Set a device to this Central Syslog
@@ -48,10 +49,11 @@ class CentralSyslog(Record):
         Returns:
             (bool): True if assigned
         """
-        url = '{ep}/devices/{id}'.format(ep=self.url, id=id)
+        key = 'devices/{id}'.format(id=id)
         req = Request(
-            base=url,
-            session=self.api.session,
+            base=self.url,
+            key=key,
+            session=self.session,
         )
         return req.post(None)
 
@@ -64,10 +66,11 @@ class CentralSyslog(Record):
         Returns:
             (bool): True if assigned
         """
-        url = '{ep}/devices/{id}'.format(ep=self.url, id=id)
+        key = 'devices/{id}'.format(id=id)
         req = Request(
-            base=url,
-            session=self.api.session,
+            base=self.url,
+            key=key,
+            session=self.session,
         )
         return req.delete()
 
@@ -80,10 +83,11 @@ class CentralSyslog(Record):
         Returns:
             (bool): True if assigned
         """
-        url = '{ep}/config/{id}'.format(ep=self.url, id=id)
+        key = 'config/{id}'.format(id=id)
         req = Request(
-            base=url,
-            session=self.api.session,
+            base=self.url,
+            key=key,
+            session=self.session,
         )
         return req.put(None)
 
@@ -110,47 +114,14 @@ class CentralSyslogs(Endpoint):
         record (obj): default `Record` object
     """
 
-    def __init__(self, api, app, name, record=CentralSyslog):
-        super().__init__(api, app, name, record=CentralSyslog)
-        self.ep_url = "{url}/{ep}".format(url=app.domain_url,
-                                          ep=name)
+    ep_name = 'central-syslog'
+    domain = True
 
-    def filter(self, *args, **kwargs):
-        """Filter devices based on search parameters.
-        central-syslog only has a single search. :shrug:
+    def __init__(self, api, app, record=CentralSyslog):
+        super().__init__(api, app, record=CentralSyslog)
 
-        Args:
-            arg (str): filter/search
-
-        Available Filters:
-            name (you read that correct, name is the only one. STUPID)
-
-        Return:
-            list: List of CentralSyslog(objects)
-
-        Examples:
-            Partial name search return multiple devices
-            >>> fm.sm.centralsyslogs.filter('mia')
-            [miami, miami-2]
-        """
-
-        srch = None
-        if args:
-            srch = args[0]
-        elif kwargs:
-            # Just get the value of first kwarg.
-            srch = kwargs[next(iter(kwargs))]
-        if not srch:
-            log.debug('No filter provided. Here is an empty list.')
-            return []
-        url = '{ep}?&search={srch}'.format(ep=self.ep_url,
-                                                srch=srch)
-        
-        req = Request(
-            base=url,
-            session=self.api.session,
-        )
-
-        ret = [self._response_loader(i) for i in req.get()]
-        return ret
-
+    def _make_filters(self, values):
+        # Only a 'search' for a single value. Take all key-values
+        # and use the first key's value for search query
+        filters = {'search': values[next(iter(values))]}
+        return filters

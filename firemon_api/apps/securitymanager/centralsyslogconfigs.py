@@ -25,14 +25,15 @@ class CentralSyslogConfig(Record):
 
     Args:
         api (obj): FiremonAPI()
-        endpoint (obj): Endpoint()
+        app (obj): App()
         config (dict): dictionary of things values from json
     """
 
-    def __init__(self, api, endpoint, config):
-        super().__init__(api, endpoint, config)
-        self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url, 
-                                      id=config['id'])
+    ep_name = 'centralsyslogconfig'
+    domain = True
+
+    def __init__(self, api, app, config):
+        super().__init__(api, app, config)
 
     def __repr__(self):
         return("<CentralSyslogConfig(id='{}, name='{}')>".format(
@@ -54,14 +55,18 @@ class CentralSyslogConfigs(Endpoint):
         record (obj): default `Record` object
     """
 
-    def __init__(self, api, app, name, record=CentralSyslogConfig):
-        super().__init__(api, app, name, record=CentralSyslogConfig)
-        self.ep_url = "{url}/{ep}".format(url=app.domain_url,
-                                          ep=name)
+    ep_name = 'centralsyslogconfig'
+    domain = True
+
+    def __init__(self, api, app, record=CentralSyslogConfig):
+        super().__init__(api, app, record=CentralSyslogConfig)
 
     def filter(self, *args, **kwargs):
-        # Create to grab all and do some lookup
-        pass
+        csc_all = self.all()
+        if not kwargs:
+            raise ValueError("filter must have kwargs")
+
+        return [csc for csc in csc_all if kwargs.items() <= dict(csc).items()]
 
     def count(self):
         return len(self.all())

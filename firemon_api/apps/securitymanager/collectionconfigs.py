@@ -44,10 +44,10 @@ class CollectionConfig(Record):
         >>> cc.devicepack_set()
         True
     """
+    ep_name = 'collectionconfig'
+
     def __init__(self, api, endpoint, config):
         super().__init__(api, endpoint, config)
-        self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url, 
-                                      id=config['id'])
 
         self.no_no_keys = ['index',
 			               'createdBy',
@@ -58,13 +58,13 @@ class CollectionConfig(Record):
 
     def devicepack_set(self) -> bool:
         """ Set CollectionConfig for Device Pack assignment. """
-        url = '{ep}/devicepack/{devicepack_id}/assignment/{id}'.format(
-                                            ep=self.endpoint.ep_url,
+        key = 'devicepack/{devicepack_id}/assignment/{id}'.format(
                                             devicepack_id=self.devicePackId,
                                             id=self.id)
         req = Request(
-            base=url,
-            session=self.api.session,
+            base=self.url,
+            key=key,
+            session=self.session,
         )
         return req.put(None)
 
@@ -72,12 +72,12 @@ class CollectionConfig(Record):
         """ Unset CollectionConfig for Device Pack assignment.
         Effectively sets back to 'default'
         """
-        url = '{ep}/devicepack/{devicepack_id}/assignment'.format(
-                                            ep=self.endpoint.ep_url,
+        key = 'devicepack/{devicepack_id}/assignment'.format(
                                             devicepack_id=self.devicePackId)
         req = Request(
-            base=url,
-            session=self.api.session,
+            base=self.url,
+            key=key,
+            session=self.session,
         )
         return req.delete()
 
@@ -93,13 +93,13 @@ class CollectionConfig(Record):
         Return:
             bool: True if device set
         """
-        url = '{ep}/device/{device_id}/assignment/{id}'.format(
-                                                    ep=self.endpoint.ep_url,
+        key = 'device/{device_id}/assignment/{id}'.format(
                                                     device_id=id,
                                                     id=self.id)
         req = Request(
-            base=url,
-            session=self.api.session,
+            base=self.url,
+            key=key,
+            session=self.session,
         )
         return req.put(None)
 
@@ -112,12 +112,13 @@ class CollectionConfig(Record):
         Return:
             bool: True if device unset
         """
-        url = '{ep}/device/{device_id}/assignment'.format(
-                                                ep=self.endpoint.ep_url,
+        key = 'device/{device_id}/assignment'.format(
                                                 device_id=id)
         req = Request(
-            base=url,
-            session=self.api.session,
+            base=self.url,
+            key=key,
+            session=self.
+            session,
         )
         return req.delete()
 
@@ -148,29 +149,31 @@ class CollectionConfigs(Endpoint):
                 activatedForDevicePack=True,
                 devicePackArtifactId='juniper_srx')[0]
     """
-    def __init__(self, 
-                api, app, 
-                name,
+
+    ep_name = 'collectionconfig'
+
+    def __init__(self, api, app, 
                 record=CollectionConfig,
-                device_id: int=None):
-        super().__init__(api, app, name, record=CollectionConfig)
+                device_id: int=None,
+                devicepack_id: int=None):
+        super().__init__(api, app, record=CollectionConfig)
         
         self._device_id = device_id
+        self._devicepack_id = devicepack_id
 
     def all(self):
-        """Get all `Record`
-        """
+        """Get all `Record` """
         filters = None
         if self.device_id:
-            filters = {'devicePackId': self.devicePackId}
+            filters = {'devicePackId': self.devicepack_id}
 
         req = Request(
-            base="{}/".format(self.ep_url),
+            base=self.url,
             filters=filters,
             session=self.api.session,
         )
 
-        return [self._response_loader(i) for i in req.get(add_params=add_params)]
+        return [self._response_loader(i) for i in req.get()]
 
     def filter(self, *args, **kwargs):
         """ Retrieve a filterd list of CollectionConfigs
@@ -189,18 +192,14 @@ class CollectionConfigs(Endpoint):
             >>> fm.sm.cc.filter(activatedForDevicePack=True)
             [4, 36, 18, 38, 24, 13, 8, 30, ...]
         """
+        cc_all = self.all()
         if args:
             kwargs.update({'name': args[0]})
 
-        req = Request(
-            base="{}/".format(self.ep_url),
-            session=self.api.session,
-        )
-        _collectionconfigs = _build_dict(req.get(), 'id')
+        if not kwargs:
+            raise ValueError("filter must have kwargs")
 
-        return [CollectionConfig(self.api, self, _collectionconfigs[id]) 
-                for id in _collectionconfigs if kwargs.items()
-                <= _collectionconfigs[id].items()]
+        return [cc for cc in cc_all if kwargs.items() <= dict(cc).items()]
 
     def count(self):
         return len(self.all())
@@ -208,3 +207,7 @@ class CollectionConfigs(Endpoint):
     @property
     def device_id(self):
         return self._device_id
+
+    @property
+    def devicepack_id(self):
+        return self._devicepack_id

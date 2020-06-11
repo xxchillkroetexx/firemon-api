@@ -12,7 +12,7 @@ from urllib.parse import urlencode, quote
 
 # Local packages
 from firemon_api.core.query import Request, url_param_builder
-from firemon_api.core.response import Record
+from firemon_api.core.response import Record, JsonField
 
 
 class Endpoint(object):
@@ -21,11 +21,13 @@ class Endpoint(object):
     Args:
         api (obj): FiremonAPI()
         app (obj): App()
-        name (str): name of the endpoint
-        record (obj): optional Record() to use
+        record (obj): optional `Record` to use
     """
 
-    def __init__(self, api, app, name, record=None):
+    ep_name = None
+    domain = False
+
+    def __init__(self, api, app, record=None):
         if record:
             self.return_obj = record
         else:
@@ -33,21 +35,44 @@ class Endpoint(object):
         self.api = api
         self.session = api.session
         self.app = app
-        self.name = name
         self.base_url = api.base_url
         self.app_url = app.app_url
         self.domain_url = app.domain_url
-        self.ep_url = "{url}/{ep}".format(url=app.app_url,
-                                          ep=name)
+        if self.__class__.domain:
+            self.url = "{url}/{ep}".format(url=self.domain_url,
+                                            ep=self.__class__.ep_name)
+        else:
+            self.url = "{url}/{ep}".format(url=self.app_url,
+                                            ep=self.__class__.ep_name)
+
+        # These will be used update `key` values for `query.Request`
+        # (i.e. they will be appended to 'self.url' to get full path)
+        # All child classes can then update to append endpoint actions
+        # or add new actions, hopefully for read-ability
+        self._ep = {'all': None,
+                    'filter': None,
+                    'create': None,
+                    'count': None,
+                   }
 
     def _response_loader(self, values):
-        return self.return_obj(self.api, self, values)
+        return self.return_obj(self.api, self.app, values)
+
+    def _make_filters(self, values):
+        # Our filters do not appear to be standardized across
+        # end points. Try and work around them at child classes
+        l = []
+        for k in values.keys():
+            l.append('{}={}'.format(k, values[k]))
+        filters = {'filter': l}
+        return filters
 
     def all(self):
         """Get all `Record`
         """
         req = Request(
-            base="{}/".format(self.ep_url),
+            base=self.url,
+            key=self._ep['all'],
             session=self.api.session,
         )
 
@@ -70,15 +95,13 @@ class Endpoint(object):
             >>> fm.sm.centralsyslogs.get(name='detro')
             detroit
         """
-        url = self.ep_url
-        try:
-            # Might need to try UUID later?
-            id = int(args[0])
-            url = '{ep}/{id}'.format(ep=self.ep_url, id=str(id))
-        except (IndexError, ValueError) as e:
-            id = None
 
-        if not id:
+        try:
+            key = str(args[0])
+        except IndexError:
+            key = None
+
+        if not key:
             if kwargs:
                 filter_lookup = self.filter(**kwargs)
             else:
@@ -95,7 +118,8 @@ class Endpoint(object):
             return None
 
         req = Request(
-            base=url,
+            base=self.url,
+            key=key,
             session=self.api.session,
         )
 
@@ -115,18 +139,12 @@ class Endpoint(object):
                 "filter must be passed kwargs. Perhaps use all() instead."
             )
 
-        # Our filter is the screwiest <sigh>. Seems non-standard
-        # revist if our filter style is different at each EP
-        l = []
-        for k in kwargs.keys():
-            l.append('{}={}'.format(k, kwargs[k]))
-        filters = {'filter': l}
-
-        url = '{ep}/filter'.format(ep=self.ep_url)
+        filters = self._make_filters(kwargs)
 
         req = Request(
-            base=url,
+            base=self.url,
             filters=filters,
+            key=self._ep['filter'],
             session=self.api.session,
         )
 
@@ -147,7 +165,8 @@ class Endpoint(object):
         """
 
         req = Request(
-            base=self.ep_url,
+            base=self.url,
+            key=self._ep['create'],
             session=self.api.session,
         ).post(args[0] if args else kwargs)
 
@@ -162,9 +181,9 @@ class Endpoint(object):
         Remember that this is domain dependant and if an Endpoint
         requires a domain we are using that.
         """
-        url = '{ep}/count'.format(ep=self.ep_url)
         ret = Request(
-            base=url,
+            base=self.url,
+            key=self._ep['count'],
             session=self.api.session,
         )
 

@@ -109,19 +109,21 @@ class Request(object):
         key=None,
         url=None,
     ):
-        #self.base = self.normalize_url(base)
         self.base = self.normalize_url(base)
         self.session = session
         self.filters = filters
-        self.key = key
+        self.key = self.normalize_key(key) if key else None
         self.url = self.base if not key else "{}/{}".format(self.base, key)
 
     def normalize_url(self, url):
-        """ Builds a url for POST actions.
-        """
-        if url[-1] = "/":
+        if url[-1] == "/":
             return url.strip('/')
         return url
+
+    def normalize_key(self, key):
+        if key[0] == "/":
+            return key.lstrip('/')
+        return key
 
     def _make_call(
         self, verb="get", url_override=None, add_params=None, data=None
@@ -138,8 +140,9 @@ class Request(object):
             if add_params:
                 params.update(add_params)
 
-        log.debug('{}: {}'.format(verb.upper(), url_override or self.url))
-        #log.debug(params)
+        log.debug('{}: {}'.format(verb.upper(), url_override or 
+                            '{}?{}'.format(self.url, urlencode(params))))
+
         req = getattr(self.session, verb)(
             url_override or self.url, headers=headers,
             params=params, json=data
@@ -154,8 +157,8 @@ class Request(object):
             try:
                 return req.json()
             except json.JSONDecodeError:
-                # Assuming an empty body but all is good.
-                return True
+                # Assuming an empty body or data download
+                return req.content
         else:
             raise RequestError(req)
 
@@ -179,10 +182,9 @@ class Request(object):
 
         Raises:
             RequestError: if req.ok returns false.
-            ContentError if response is not json.
 
         Returns:
-            List of `Response` objects returned from the endpoint.
+            dict: data from the endpoint.
         """
         #if add_params is None:
         #    # Limit must be 0 to discover the max page size
@@ -215,30 +217,42 @@ class Request(object):
     def put(self, data):
         """Makes PUT request.
         Makes a PUT request to Firemon API.
-        :param data: (dict) Contains a dict that will be turned into a
-            json object and sent to the API.
-        :raises: RequestError if req.ok returns false.
-        :raises: ContentError if response is not json.
-        :returns: Dict containing the response from Firemon API.
+
+        Args:
+            data (dict): Contains a dict that will be turned 
+            into a json object and sent to the API.
+
+        Raises:
+            RequestError: if req.ok returns false.
+
+        Returns:
+            dict: data from the endpoint.
         """
         return self._make_call(verb="put", data=data)
 
     def post(self, data):
         """Makes POST request.
         Makes a POST request to Firemon API.
-        :param data: (dict) Contains a dict that will be turned into a
-            json object and sent to the API.
-        :raises: RequestError if req.ok returns False.
-        :raises: ContentError if response is not json.
-        :Returns: Dict containing the response from Firemon API.
+
+        Args:
+            data (dict): Contains a dict that will be turned 
+            into a json object and sent to the API.
+
+        Raises:
+            RequestError: if req.ok returns false.
+
+        Returns:
+            dict: data from the endpoint.
         """
         return self._make_call(verb="post", data=data)
 
     def delete(self):
         """Makes DELETE request.
         Makes a DELETE request to Firemon API.
+
         Returns:
             (bool) True if successful.
+
         Raises:
             RequestError if req.ok doesn't return True.
         """
@@ -246,7 +260,7 @@ class Request(object):
 
     def get_count(self):
         """Returns object count for query
-        returns the value of the "count" field.
+        returns the value of the "total" field.
 
         Return:
             (int): number of objects query returned
@@ -256,4 +270,14 @@ class Request(object):
             ContentError if response is not json.
         """
 
-        return self._make_call()["count"]
+        return self._make_call()["total"]
+
+    def get_content(self):
+        """Get content"""
+        log.debug('GET: {}'.format(self.url))
+
+        req = getattr(self.session, 'get')(self.url)
+        if req.ok:
+            return req.content
+        else:
+            raise RequestError(req)

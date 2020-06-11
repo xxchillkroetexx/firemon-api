@@ -28,7 +28,7 @@ class Revision(Record):
 
     Args:
         api (obj): FiremonAPI()
-        endpoint (obj): Endpoint()
+        app (obj): App()
         config (dict): dictionary of things values from json
 
     Examples:
@@ -42,11 +42,14 @@ class Revision(Record):
         >>> rev.delete()
         True
     """
-    def __init__(self, api, endpoint, config):
-        super().__init__(api, endpoint, config)
+
+    ep_name = 'rev'
+
+    def __init__(self, api, app, config):
+        super().__init__(api, app, config)
         # app/rev
-        self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url2, 
-                                                id=str(config['id']))
+        #self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url2, 
+        #                                        id=str(config['id']))
         # app/domain-stuff/device-stuff/id
         self.d_url = '{ep}/domain/{did}/device/{devid}/rev/{id}'.format(
                                                 ep=self.app_url,
@@ -57,12 +60,14 @@ class Revision(Record):
         self.no_no_keys = []
 
     def save(self):
-        """Nothing to save"""
-        pass
+        raise NotImplementedError(
+            "Writes are not supported."
+        )
 
     def update(self):
-        """Nothing to save"""
-        pass
+         raise NotImplementedError(
+            "Writes are not supported."
+        )
 
     def changelog(self):
         """ Revision changelog """
@@ -106,7 +111,7 @@ class Revision(Record):
         log.debug('GET {}'.format(url))
         response = self.session.get(url)
         if response.status_code == 200:
-            return ParsedRevision(self.api, self.endpoint, response.json())
+            return ParsedRevision(self.api, self.app, response.json())
         else:
             raise RequestError(response)
 
@@ -147,68 +152,81 @@ class Revisions(Endpoint):
         >>> rev = fm.sm.revisions.get(34)
         >>> rev = fm.sm.revisions.filter(latest=True, deviceName='vSRX-2')[0]
     """
-    def __init__(self, api, app, name, 
+
+    ep_name = 'rev'
+
+    def __init__(self, api, app,
                 record=Revision,
                 device_id: int=None):
-        super().__init__(api, app, name, record=Revision)
+        super().__init__(api, app, record=Revision)
         self._device_id = device_id
-        if self.device_id:
-            self.ep_url = "{url}/device/{id}/{ep}".format(
-                                                    url=app.domain_url,
-                                                    id=device_id,
-                                                    ep=name)
-        else:
-            self.ep_url = "{url}/{ep}".format(url=app.domain_url,
-                                              ep=name)
+
         # Why have one EP when you can have 2+
         # app/rev
-        self.ep_url2 = "{url}/{ep}".format(url=app.app_url,
-                                              ep=name)
+        #self.url = "{url}/{ep}".format(url=self.app_url,
+        #                                      ep=self.__class__.ep_name)        
 
 
-    def get(self, *args, **kwargs):
-        """Get single Record
-
-        Args:
-            *args (int): (optional) id to retrieve. If this is not type(int)
-                        dump it into filter and grind it up there.
-            **kwargs (str): (optional) see filter() for available filters
-
-        Examples:
-            Get by ID
-            >>> fm.sm.revisions.get(1262)
-            new york
-
+    def all(self):
+        """Get all `Record`
         """
-        url = self.ep_url
-        try:
-            id = int(args[0])
-            url = '{ep}/{id}'.format(ep=self.ep_url2, id=str(id))
-        except (IndexError, ValueError) as e:
-            id = None
-
-        if not id:
-            if kwargs:
-                filter_lookup = self.filter(**kwargs)
-            else:
-                filter_lookup = self.filter(*args)
-            if filter_lookup:
-                if len(filter_lookup) > 1:
-                    raise ValueError(
-                        "get() returned more than one result. "
-                        "Check that the kwarg(s) passed are valid for this "
-                        "endpoint or use filter() or all() instead."
-                    )
-                else:
-                    return filter_lookup[0]
-            return None
+        if self.device_id:
+            all_key = "device/{id}/{ep}".format(id=self.device_id,
+                                                     ep=self.__class__.ep_name)
+        else:
+            all_key = "{ep}".format(ep=self.__class__.ep_name)
 
         req = Request(
-            base=url,
-            session=self.api.session,
+            base=self.domain_url,
+            key=all_key,
+            session=self.session,
         )
 
-        return self._response_loader(req.get())
+        return [self._response_loader(i) for i in req.get()]
+
+    #def get(self, *args, **kwargs):
+    #    """Get single Record
+#
+    #    Args:
+    #        *args (int): (optional) id to retrieve. If this is not type(int)
+    #                    dump it into filter and grind it up there.
+    #        **kwargs (str): (optional) see filter() for available filters
+#
+    #    Examples:
+    #        Get by ID
+    #        >>> fm.sm.revisions.get(1262)
+    #        new york
+#
+    #    """
+#
+    #    try:
+    #        id = int(args[0])
+    #        url = '{ep}/{id}'.format(ep=self.url, id=str(id))
+    #    except (IndexError, ValueError) as e:
+    #        id = None
+#
+    #    if not id:
+    #        if kwargs:
+    #            filter_lookup = self.filter(**kwargs)
+    #        else:
+    #            filter_lookup = self.filter(*args)
+    #        if filter_lookup:
+    #            if len(filter_lookup) > 1:
+    #                raise ValueError(
+    #                    "get() returned more than one result. "
+    #                    "Check that the kwarg(s) passed are valid for this "
+    #                    "endpoint or use filter() or all() instead."
+    #                )
+    #            else:
+    #                return filter_lookup[0]
+    #        return None
+#
+    #    req = Request(
+    #        base=url,
+    #        session=self.api.session,
+    #    )
+#
+    #    return self._response_loader(req.get())
 
     def filter(self, *args, **kwargs):
         """ Retrieve a filterd list of Revisions.
@@ -241,9 +259,11 @@ class Revisions(Endpoint):
 class ParsedRevision(Record):
     """A NORMALIZED Revision. All the things.
     """
-    def __init__(self, api, endpoint, config):
-        super().__init__(api, endpoint, config)
-        self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url, 
+    ep_name = 'rev'
+
+    def __init__(self, api, app, config):
+        super().__init__(api, app, config)
+        self.url = '{ep}/{id}'.format(ep=self.ep_url, 
                                       id=config['revisionId'])
 
         self.no_no_keys = []

@@ -29,7 +29,7 @@ class Device(Record):
 
     Args:
         api (obj): FiremonAPI()
-        endpoint (obj): Endpoint()
+        app (obj): App()
         config (dict): dictionary of things values from json
 
     Attributes:
@@ -61,25 +61,25 @@ class Device(Record):
         178
     """
 
+    ep_name = 'device'
+    domain = True
     extendedSettingsJson = JsonField
     devicePack = DevicePack
 
-    def __init__(self, api, endpoint, config):
-        super().__init__(api, endpoint, config)
-        self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url, 
-                                      id=config['id'])
+    def __init__(self, api, app, config):
+        super().__init__(api, app, config)
 
+        self.url = '{ep}/{id}'.format(ep=self.ep_url, 
+                                        id=config['id'])
         # Add attributes to Record() so we can get more info
         self.revisions = Revisions(self.api, 
-                                   self.endpoint.app, 
-                                   'rev',
+                                   self.app, 
                                    device_id=config['id'])
-        #self.revisions = Revisions(self.devs.sm, self.id)
-        #self.cc = CollectionConfigs(self.devs.sm, self.devicePack.id, self.id)
+
         self.collectionconfigs = CollectionConfigs(self.api, 
-                                   self.endpoint.app, 
-                                   'collectionconfig',
-                                   device_id=config['id'])
+                                self.app, 
+                                device_id=config['id'],
+                                devicepack_id=config['devicePack']['id'])
 
     def save(self, retrieve: bool=False) -> bool:
         """Saves changes to an existing object.
@@ -370,22 +370,16 @@ class Devices(Endpoint):
     Args:
         api (obj): FiremonAPI()
         app (obj): App()
-        name (str): name of the endpoint
 
     Kwargs:
         record (obj): default `Record` object
-        collector_id (int): Data Collector id
-        collectorgroup_id (str): Data Collector Group Id (uuid)
     """
 
-    def __init__(self, api, app, name, record=Device):
-        super().__init__(api, app, name, record=Device)
+    ep_name = 'device'
+    domain = True
 
-        self.ep_url = "{url}/{ep}".format(url=app.domain_url,
-                                        ep=name)
-
-        self.ep_url = "{url}/{ep}".format(url=app.domain_url, ep=name)        
-
+    def __init__(self, api, app, record=Device):
+        super().__init__(api, app, record=Device)
 
     def create(self, dev_config, retrieve: bool=False):
         """  Create a new device

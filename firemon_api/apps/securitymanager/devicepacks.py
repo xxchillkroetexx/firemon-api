@@ -25,15 +25,9 @@ class DevicePack(Record):
     """ Representation of the device pack
 
     Args:
-        dps (obj): DevicePacks()
-
-    Attributes:
-        * artifactId
-        * groupId
-        * deviceName
-        * vendor
-        * deviceType
-        * version
+        api (obj): FiremonAPI()
+        app (obj): App()
+        config (dict): dictionary of things values from json
 
     Example:
         >>> dp = fm.sm.dp.get('juniper_srx')
@@ -43,26 +37,34 @@ class DevicePack(Record):
         '1.24.10'
     """
 
+    ep_name = 'plugin'
     collectionConfig = CollectionConfig
+    #collectionConfig = JsonField
 
-    def __init__(self, api, endpoint, config):
-        super().__init__(api, endpoint, config)
-        self.url = '{ep}/{gid}/{aid}'.format(
-                                            ep=self.endpoint.ep_url,
-                                            gid=config['groupId'],
-                                            aid=config['artifactId'])
+    def __init__(self, api, app, config):
+        super().__init__(api, app, config)
+        self.url = '{ep}/{gid}/{aid}'.format(ep=self.ep_url,
+                                             gid=config['groupId'],
+                                             aid=config['artifactId'])
 
     def update(self):
         """Nothing to update"""
-        pass
+        raise NotImplementedError(
+            "Writes are not supported for this endpoint."
+        )
 
     def save(self):
-        """Nothing to save"""
-        pass
+        raise NotImplementedError(
+            "Writes are not supported for this endpoint."
+        )
 
     def layout(self):
+        key = 'layout'
+        filters = {'layoutName': 'layout.json'}
         req = Request(
-            base='{url}/layout?layoutName=layout.json'.format(url=self.url),
+            base=self.url,
+            key=key,
+            filters=filters,
             session=self.session,
         )
         return req.post(None)
@@ -76,13 +78,12 @@ class DevicePack(Record):
         Return:
             bytes: your blob of stuff
         """
-        url = '{url}/{blob}'.format(url=self.url, blob=name)
-        log.debug('GET: {}'.format(url))
-        resp = self.session.get(url)
-        if resp.status_code == 200:
-            return resp.content
-        else:
-            raise RequestError(resp)
+        req = Request(
+            base=self.url,
+            key=name,
+            session=self.session,
+        )
+        return req.get_content()
 
 
     def template(self):
@@ -148,9 +149,10 @@ class DevicePacks(Endpoint):
         Get a list of device packs by config options
         >>> fm.sm.dp.filter(ssh=True)
     """
-    def __init__(self, api, app, name, record=DevicePack):
-        super().__init__(api, app, name, record=DevicePack)
-        self.device_packs = {}
+    ep_name = 'plugin'
+
+    def __init__(self, api, app, record=DevicePack):
+        super().__init__(api, app, record=DevicePack)
 
     def all(self):
         """ Get all device packs
@@ -160,17 +162,20 @@ class DevicePacks(Endpoint):
         >>> device_packs = fm.sm.dp.all()
         """
 
-        url = ('{url}/list/DEVICE_PACK/?sort=artifactId'
-        '&showHidden=true'.format(url=self.ep_url))
+        key = 'list/DEVICE_PACK'
+        filters = {'sort': 'artifactId',
+                   'showhidden': True}
         req = Request(
-            base=url,
+            base=self.url,
+            key=key,
+            filters=filters,
             session=self.api.session,
         )
 
         return [self._response_loader(i) for i in req.get()]
 
     def get(self, *args, **kwargs):
-        """ Query and retrieve individual DevicePack
+        """ Query and retrieve individual DevicePack. Spelling matters.
 
         Args:
             *args: device pack name (artifactId)
@@ -189,12 +194,14 @@ class DevicePacks(Endpoint):
 
         dp_all = self.all()
         try:
+            # Only getting exact matches
             id = args[0]
             dp_l = [dp for dp in dp_all if dp.artifactId == id]
             if len(dp_l) == 1:
                 return dp_l[0]
             else:
-                return None
+                raise Exception("The requested aritfactId: {} could not "
+                                "be found".format(id))
         except IndexError:
             id = None
 
@@ -238,7 +245,7 @@ class DevicePacks(Endpoint):
         Returns:
             bool: The return value. True for success upload, False otherwise
         """
-        url = '{url}/?overwrite=true'.format(url=self.ep_url)
+        url = '{url}/?overwrite=true'.format(url=self.url)
         self.session.headers.pop('Content-type', None)  # If "content-type" exists get rid.
         log.debug('POST {}'.format(url))
         resp = self.session.post(url, files={'devicepack.jar': file})

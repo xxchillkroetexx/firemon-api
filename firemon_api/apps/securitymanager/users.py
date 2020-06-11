@@ -25,7 +25,7 @@ class User(Record):
 
     Args:
         api (obj): FiremonAPI()
-        endpoint (obj): Endpoint()
+        app (obj): App()
         config (dict): dictionary of things values from json
 
     Examples:
@@ -36,10 +36,8 @@ class User(Record):
         ...   user.save()
     """
 
-    def __init__(self, api, endpoint, config):
-        super().__init__(api, endpoint, config)
-        self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url, 
-                                      id=config['id'])
+    def __init__(self, api, app, config):
+        super().__init__(api, app, config)
 
     def __repr__(self):
         return("<User(id='{}', username={})>".format(self.id, self.username))
@@ -60,11 +58,11 @@ class Users(Endpoint):
         record (obj): default `Record` object
     """
 
-    def __init__(self, api, app, name, record=User):
-        super().__init__(api, app, name, record=User)
+    ep_name = 'user'
+    domain = True
 
-        self.ep_url = "{url}/{ep}".format(url=app.domain_url,
-                                        ep=name)
+    def __init__(self, api, app, record=User):
+        super().__init__(api, app, record=User)
 
     def all(self):
         """Get all `Record`
@@ -72,7 +70,7 @@ class Users(Endpoint):
         filters = {'includeSystem': True, 'includeDisabled': True}
 
         req = Request(
-            base=self.ep_url,
+            base=self.url,
             filters=filters,
             session=self.api.session,
         )
@@ -105,11 +103,12 @@ class UserGroup(Record):
 
     Args:
         api (obj): FiremonAPI()
-        endpoint (obj): Endpoint()
+        app (obj): App()
         config (dict): dictionary of things values from json
     """
 
+    ep_name = None
+
     def __init__(self, api, endpoint, config):
         super().__init__(api, endpoint, config)
-        self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url, 
-                                      id=config['id'])
+

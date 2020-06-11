@@ -16,7 +16,7 @@ import uuid
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
 from firemon_api.core.query import Request, url_param_builder
-from .devices import Devices, Device
+#from .devices import Devices, Device
 
 log = logging.getLogger(__name__)
 
@@ -26,35 +26,35 @@ class Collector(Record):
 
     Args:
         api (obj): FiremonAPI()
-        endpoint (obj): Endpoint()
+        app (obj): App()
         config (dict): dictionary of things values from json
     """
 
-    def __init__(self, api, endpoint, config):
-        super().__init__(api, endpoint, config)
-        self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url, 
-                                      id=config['id'])
+    ep_name = 'collector'
 
-        self._Devices = Devices(self.api, self.endpoint.app, 'device')
+    def __init__(self, api, app, config):
+        super().__init__(api, app, config)
 
     def status(self):
         """Get status of Collector"""
-        url = '{ep}/status/{id}'.format(ep=self.endpoint.ep_url,
-                                    id=self.id)
+        key = 'status/{id}'.format(id=self.id)
         req = Request(
-            base=url,
-            session=self.api.session,
+            base=self.url,
+            key=key,
+            session=self.session,
         )
         return req.get()
 
     def devices(self):
         """Get all devices assigned to collector"""
+        key = 'device'
         req = Request(
-            base="{}/device".format(self.url),
-            session=self.api.session,
+            base=self.url,
+            key=key,
+            session=self.session,
         )
 
-        return [Device(self.api, self._Devices, config) for config in req.get()]
+        return [Device(self.api, self.app, config) for config in req.get()]
 
     def __repr__(self):
         if len(str(self.id)) > 10:
@@ -70,6 +70,7 @@ class Collector(Record):
     def __str__(self):
         return("{}".format(self.name))
 
+
 class Collectors(Endpoint):
     """ Represents the Data Collectors
 
@@ -82,117 +83,66 @@ class Collectors(Endpoint):
         record (obj): default `Record` object
     """
 
-    def __init__(self, api, app, name, record=Collector):
-        super().__init__(api, app, name, record=Collector)
+    ep_name = 'collector'
 
-    def filter(self, *args, **kwargs):
-        """Filter devices based on search parameters.
-        collector only has a single search. :shrug:
-        """
-        srch = None
-        if args:
-            srch = args[0]
-        elif kwargs:
-            # Just get the value of first kwarg.
-            srch = kwargs[next(iter(kwargs))]
-        if not srch:
-            log.debug('No filter provided. Here is an empty list.')
-            return []
-        url = '{ep}?&search={srch}'.format(ep=self.ep_url,
-                                                srch=srch)
-        
-        req = Request(
-            base=url,
-            session=self.api.session,
-        )
+    def __init__(self, api, app, record=Collector):
+        super().__init__(api, app, record=Collector)
 
-        ret = [self._response_loader(i) for i in req.get()]
-        return ret
+    def _make_filters(self, values):
+        # Only a 'search' for a single value. Take all key-values
+        # and use the first key's value for search query
+        filters = {'search': values[next(iter(values))]}
+        return filters
+
 
 class CollectorGroup(Record):
     """ Represents the Collector Group
 
     Args:
         api (obj): FiremonAPI()
-        endpoint (obj): Endpoint()
+        app (obj): App()
         config (dict): dictionary of things values from json
     """
 
-    def __init__(self, api, endpoint, config):
-        super().__init__(api, endpoint, config)
-        self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url, 
-                                      id=config['id'])
+    ep_name = 'collector/group'
 
-    def member_list(self):
-        """ Get all data collector objects
-
-        Return:
-            list: List of Collector(object)
-        """
-        return [Collectors(self.sm).get(mem['id'])
-                for mem in self._config['members']]
-
-    def member_get(self, cid):
-        """
-        Args:
-            cid (int): Collector ID
-        """
-        return Collectors(self.sm).get(cid)
+    def __init__(self, api, app, config):
+        super().__init__(api, app, config)
 
     def member_set(self, cid):
-        """
+        """Assign a Collector to Group.
+
+        note: no changes if device is already assigned.
+
         Args:
             cid (int): Collector ID
         """
-        url = self.url + '/member/{collectorId}'.format(collectorId=cid)
-        log.debug('PUT {}'.format(self.url))
-        response = self.session.put(url)
-        if response.status_code == 200:
-            self._reload()
-            return True
-        else:
-            return False
+        key = 'member/{collectorId}'.format(collectorId=cid)
+        req = Request(
+            base=self.url,
+            key=key,
+            session=self.session,
+        )
+        return req.put(None)
 
-    def member_unset(self, cid):
-        """
-        Args:
-            cid (int): Collector ID
-        """
-        config = self._config.copy()
-        for member in config['members']:
-            if member['id'] == cid:
-                log.debug('removing member: {}'.format(member))
-                config['members'].remove(member)
-
-        config['id'] = self._config['id']  # make sure this is set appropriately
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('PUT {}'.format(self.url))
-        response = self.session.put(self.url, json=config)
-        if response.status_code == 200:
-            self._reload()
-            return True
-        else:
-            raise DeviceError("ERROR removing memember! HTTP code: {} "
-                            "Content {}".format(
-                                            response.status_code,
-                                            response.text))
+    #def member_unset(self, cid):
+        # Need to get this working to make set useful
+    #    pass
 
     def device_set(self, id):
         """ Assign a Device
+        note: no changes if device is already assigned. How to unassign?
+
         Args:
             id (int): Device id
         """
-        url = self.url + '/assigned/{deviceId}'.format(deviceId=id)
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('PUT {}'.format(self.url))
-        response = self.session.put(url)
-        if response.status_code == 200:
-            return True
-        else:
-            raise DeviceError("ERROR assigning Device! HTTP code: {} "
-                            "Content {}".format(
-                                            response.status_code,
-                                            response.text))
+        key = 'member/{deviceId}'.format(deviceId=id)
+        req = Request(
+            base=self.url,
+            key=key,
+            session=self.session,
+        )
+        return req.put(None)
 
     def __repr__(self):
         if len(str(self.id)) > 10:
@@ -215,38 +165,21 @@ class CollectorGroups(Endpoint):
     Args:
         api (obj): FiremonAPI()
         app (obj): App()
-        name (str): name of the endpoint
 
     Kwargs:
         record (obj): default `Record` object
     """
 
-    def __init__(self, api, app, name, record=CollectorGroup):
-        super().__init__(api, app, name, record=CollectorGroup)
+    ep_name = 'collector/group'
 
-    def filter(self, *args, **kwargs):
-        """Filter devices based on search parameters.
-        collectorgroup only has a single search. :shrug:
-        """
-        srch = None
-        if args:
-            srch = args[0]
-        elif kwargs:
-            # Just get the value of first kwarg.
-            srch = kwargs[next(iter(kwargs))]
-        if not srch:
-            log.debug('No filter provided. Here is an empty list.')
-            return []
-        url = '{ep}?&search={srch}'.format(ep=self.ep_url,
-                                                srch=srch)
-        
-        req = Request(
-            base=url,
-            session=self.api.session,
-        )
+    def __init__(self, api, app, record=CollectorGroup):
+        super().__init__(api, app, record=CollectorGroup)
 
-        ret = [self._response_loader(i) for i in req.get()]
-        return ret
+    def _make_filters(self, values):
+        # Only a 'search' for a single value. Take all key-values
+        # and use the first key's value for search query
+        filters = {'search': values[next(iter(values))]}
+        return filters
 
     def count(self):
         return len(self.all())

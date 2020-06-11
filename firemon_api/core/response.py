@@ -38,7 +38,7 @@ class Record(object):
 
     Args:
         api (obj): FiremonAPI()
-        endpoint (obj): Endpoint()
+        app (obj): App()
         config (dict): dictionary of things values from json
 
     Example:
@@ -51,29 +51,42 @@ class Record(object):
     """
 
     url = None
+    ep_name = None
+    domain = False
 
-    def __init__(self, api, endpoint, config):
+    def __init__(self, api, app, config):
         self._config = config  # keeping a cache just incase bad things
-        #self._full_cache = []
         self._init_cache = []
+        self.default_ret = Record
         self.api = api
         self.session = api.session
-        self.endpoint = endpoint
-        self.base_url = endpoint.base_url
-        self.app_url = endpoint.app_url
-        self.domain_url = endpoint.domain_url
-        self.default_ret = Record
+        self.app = app
+        self.base_url = api.base_url
+        self.app_url = app.app_url
+        self.domain_url = app.domain_url
+        if self.__class__.domain:
+            self.ep_url = "{url}/{ep}".format(url=self.domain_url,
+                                            ep=self.__class__.ep_name)
+        else:
+            self.ep_url = "{url}/{ep}".format(url=self.app_url,
+                                            ep=self.__class__.ep_name)
+
+        #self.default_ret = JsonField
+        # In almost every case this is the format of the `Record` url
+        # if not, re-work in child class
+        self.url = '{ep}/{id}'.format(ep=self.ep_url, 
+                                        id=config['id'])
 
         # These are, from what I can see, bad mojo and will always
         # fail when updating an endpoint so just rip them out.
         # If a `Record` has different keys that crash or none just
         # modify the values in the child object or set as empty
-        self.no_no_keys = ['securityConcernIndex',
-                           'gpcComputeDate',
-                           'gpcDirtyDate',
-                           'gpcImplementDate',
-                           'gpcStatus',
-                          ]
+        self._no_no_keys = ['securityConcernIndex',
+                            'gpcComputeDate',
+                            'gpcDirtyDate',
+                            'gpcImplementDate',
+                            'gpcStatus',
+                           ]
 
         if config:
             self._parse_config(config)
@@ -126,12 +139,13 @@ class Record(object):
 
     def _parse_config(self, config):
 
-        def list_parser(list_item):
-            if isinstance(list_item, dict):
-                # Only create `Record` if it has an `id`
-                if 'id' in list_item.keys():
-                    return self.default_ret(self.api, self.endpoint, list_item)
-            return list_item
+        # Not sure I want to create Record()
+        #def list_parser(list_item):
+        #    if isinstance(list_item, dict):
+        #        # Only create `Record` if it has an `id`
+        #        if 'id' in list_item.keys():
+        #            return self.default_ret(self.api, self.app, list_item)
+        #    return list_item
 
         for k, v in config.items():
             if isinstance(v, dict):
@@ -141,14 +155,17 @@ class Record(object):
                     setattr(self, k, v)
                     continue
                 if lookup:
-                    v = lookup(self.api, self.endpoint, v)
+                    v = lookup(self.api, self.app, v)
                 else:
-                    v = self.default_ret(self.api, self.endpoint, v)
+                    v = self.default_ret(self.api, self.app, v)
+                    #v = self.default_ret()
                 self._add_cache((k, v))
-            elif isinstance(v, list):
-                v = [list_parser(i) for i in v]
-                to_cache = list(v)
-                self._add_cache((k, to_cache))
+            # See above. Probably don't want Record all the way down.
+            #elif isinstance(v, list):
+            #    # See above - not sure about need for Record
+            #    #v = [list_parser(i) for i in v]
+            #    #to_cache = list(v)
+            #    #self._add_cache((k, to_cache))
             else:
                 self._add_cache((k, v))
             setattr(self, k, v)
@@ -168,7 +185,7 @@ class Record(object):
 
     def _clean_no_no(self, d):
         # remove no_no_keys from a dict
-        for k in self.no_no_keys:
+        for k in self._no_no_keys:
             try:
                 d.pop(k)
             except KeyError:
@@ -218,7 +235,7 @@ class Record(object):
             Using this to get a dictionary representation of the record
             is discouraged. It's probably better to cast to dict()
             instead. See Record docstring for example. Why? Because
-            we are popping out no_no_keys from the full config in the
+            we are popping out _no_no_keys from the full config in the
             hope that `update()` and `save()` just work
         Return:
             (dict)
@@ -292,6 +309,7 @@ class Record(object):
                 serialized = self.serialize()
                 req = Request(
                     base=self.url or self.endpoint.ep_url,
+                    key=self.id if not self.url else None,
                     session=self.api.session,
                 )
                 if req.put(serialized):
@@ -322,7 +340,7 @@ class Record(object):
         """
 
         for k, v in data.items():
-            self.attr_set(self, k, v)
+            self.attr_set(k, v)
         return self.save()
 
     def delete(self):
@@ -336,6 +354,7 @@ class Record(object):
         """
         req = Request(
             base=self.url or self.endpoint.ep_url,
+            key=self.id if not self.url else None,
             session=self.api.session,
         )
         return True if req.delete() else False

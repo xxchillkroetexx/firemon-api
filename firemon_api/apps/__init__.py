@@ -27,12 +27,13 @@ class App(object):
 
     """
 
-    def __init__(self, api, name):
+    name = None
+
+    def __init__(self, api):
         self.api = api
         self.session = api.session
-        self.name = name
         self.app_url = "{url}/{name}/api".format(url=api.base_url,
-                                                name=name)
+                                            name=self.__class__.name)
         self.domain_url = "{url}/domain/{id}".format(url=self.app_url,
                                             id=str(self.api.domain_id))
 
@@ -51,8 +52,8 @@ class SecurityManager(App):
         name (str): name of the application
 
     Valid attributes are:
-        * cc: CollectionConfigs()
         * centralsyslogs: CentralSyslogs()
+        * collectionconfigs: CollectionConfigs()
         * collectors: Collectors()
         * collectorgroups: CollectorGroups()
         * devices: Devices()
@@ -62,24 +63,21 @@ class SecurityManager(App):
         * Todo: add more as needed
     """
 
-    def __init__(self, api, name):
-        super().__init__(api, name)
+    name = 'securitymanager'
+
+    def __init__(self, api):
+        super().__init__(api)
 
         # Endpoints
-        self.centralsyslogconfigs = CentralSyslogConfigs(
-                                self.api, self, 'centralsyslogconfig')
-        self.centralsyslogs = CentralSyslogs(
-                                self.api, self, 'central-syslog')
-        self.collectionconfigs = CollectionConfigs(
-                                self.api, self, 'collectionconfig')
-        self.collectors = Collectors(
-                                self.api, self, 'collector')
-        self.collectorgroups = CollectorGroups(
-                                self.api, self, 'collector/group')
-        self.devices = Devices(self.api, self, 'device')
-        self.dp = DevicePacks(self.api, self, 'plugin')  # Todo: create the other /plugin
-        self.revisions = Revisions(self.api, self, 'rev')
-        self.users = Users(self.api, self, 'user')
+        self.centralsyslogconfigs = CentralSyslogConfigs(self.api, self)
+        self.centralsyslogs = CentralSyslogs(self.api, self)
+        self.collectionconfigs = CollectionConfigs(self.api, self)
+        self.collectors = Collectors(self.api, self)
+        self.collectorgroups = CollectorGroups(self.api, self)
+        self.devices = Devices(self.api, self)
+        self.dp = DevicePacks(self.api, self)  # Todo: create the other /plugin
+        self.revisions = Revisions(self.api, self)
+        self.users = Users(self.api, self)
 
     # Make an es endpoint
     #def es_reindex(self):
@@ -107,8 +105,10 @@ class GlobalPolicyController(App):
         * xx: EndPoint()
     """
 
-    def __init__(self, api, name):
-        super().__init__(api, name)
+    name = 'globalpolicycontroller'
+
+    def __init__(self, api):
+        super().__init__(api)
 
         # Endpoints
         #self.xx = EndPoint(self)
@@ -125,8 +125,10 @@ class PolicyOptimizer(App):
         * xx: EndPoint()
     """
 
-    def __init__(self, api, name):
-        super().__init__(api, name)
+    name = 'policyoptimizer'
+
+    def __init__(self, api):
+        super().__init__(api)
 
         # Endpoints
         #self.xx = EndPoint(self)
@@ -143,8 +145,10 @@ class PolicyPlanner(App):
         * xx: EndPoint()
     """
 
-    def __init__(self, api, name):
-        super().__init__(api, name)
+    name = 'policyplanner'
+
+    def __init__(self, api):
+        super().__init__(api)
 
         # Endpoints
         #self.xx = EndPoint(self)

@@ -119,10 +119,10 @@ class FiremonAPI(object):
                                 '9': '9',
                               }
 
-        self.sm = SecurityManager(self, 'securitymanager')
-        self.gpc = GlobalPolicyController(self, 'globalpolicycontroller')
-        self.po = PolicyOptimizer(self, 'policyoptimizer')
-        self.pp = PolicyPlanner(self, 'policyplanner')
+        self.sm = SecurityManager(self)
+        self.gpc = GlobalPolicyController(self)
+        self.po = PolicyOptimizer(self)
+        self.pp = PolicyPlanner(self)
 
     def _auth(self):
         """ Need to auth """
