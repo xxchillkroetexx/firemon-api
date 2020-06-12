@@ -95,10 +95,9 @@ class FiremonAPI(object):
 
         self.session = requests.Session()
         self.session.auth = (self.username, self.password)  # Basic auth is used
-        self.default_headers = {'User-Agent': 'dev-netsec/0.0.1',
+        self.default_headers = {'User-Agent': 'py-firemon-api/0.0.1',
                                 'Accept-Encoding': 'gzip, deflate',
-                                'Accept': '*/*',
-                                'Connection': 'keep-alive'}
+                                'Accept': '*/*', 'Connection': 'keep-alive'}
         self.session.headers.update(self.default_headers)
         self.session.verify = self.verify
         self.session.cert = self.cert

@@ -36,6 +36,9 @@ class User(Record):
         ...   user.save()
     """
 
+    ep_name = 'user'
+    _domain_url = True
+
     def __init__(self, api, app, config):
         super().__init__(api, app, config)
 
@@ -59,7 +62,7 @@ class Users(Endpoint):
     """
 
     ep_name = 'user'
-    domain = True
+    _domain_url = True
 
     def __init__(self, api, app, record=User):
         super().__init__(api, app, record=User)

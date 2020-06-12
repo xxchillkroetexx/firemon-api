@@ -13,7 +13,7 @@ import logging
 
 # Local packages
 from firemon_api.core.endpoint import Endpoint
-from firemon_api.core.response import Record
+from firemon_api.core.response import Record, JsonField
 from firemon_api.core.query import Request, url_param_builder, RequestError
 from firemon_api.core.utils import _build_dict
 
@@ -27,9 +27,8 @@ class Revision(Record):
     (change configuration &/or normalization state)
 
     Args:
-        api (obj): FiremonAPI()
-        app (obj): App()
         config (dict): dictionary of things values from json
+        app (obj): App()
 
     Examples:
         >>> rev = fm.sm.revisions.filter(latest=True, deviceName='vSRX-2')[0]
@@ -45,19 +44,17 @@ class Revision(Record):
 
     ep_name = 'rev'
 
-    def __init__(self, api, app, config):
-        super().__init__(api, app, config)
-        # app/rev
-        #self.url = '{ep}/{id}'.format(ep=self.endpoint.ep_url2, 
-        #                                        id=str(config['id']))
-        # app/domain-stuff/device-stuff/id
+    def __init__(self, config, app):
+        super().__init__(config, app)
+
+        self.domain_id = config['domainId']
+        self.device_id = config['deviceId']
         self.d_url = '{ep}/domain/{did}/device/{devid}/rev/{id}'.format(
                                                 ep=self.app_url,
-                                                did=str(config['domainId']),
-                                                devid=str(config['deviceId']),
+                                                did=self.domain_id,
+                                                devid=self.device_id,
                                                 id=str(config['id']))
-
-        self.no_no_keys = []
+        self.files = self._files_load()
 
     def save(self):
         raise NotImplementedError(
@@ -68,15 +65,6 @@ class Revision(Record):
          raise NotImplementedError(
             "Writes are not supported."
         )
-
-    def changelog(self):
-        """ Revision changelog """
-        url = '{url}/changelog'.format(url=self.d_url)
-        req = Request(
-            base=url,
-            session=self.session,
-        )
-        return req.get()
 
     def export(self, meta: bool=True):
         """Export a zip file contain the config data.
@@ -107,19 +95,30 @@ class Revision(Record):
         
         Retrieve all the revision data in a single payload.
         """
-        url = '{url}/nd/all'.format(url=self.url)
-        log.debug('GET {}'.format(url))
-        response = self.session.get(url)
-        if response.status_code == 200:
-            return ParsedRevision(self.api, self.app, response.json())
-        else:
-            raise RequestError(response)
+        key = 'nd/all'
+        req = Request(
+            base=self.url,
+            key=key,
+            session=self.session,
+        )
+        return NormalizedData(req.get(), self.app)
+
+    def _files_load(self):
+        """Get the file descriptors attached to Revision"""
+        key = 'nd/file'
+        req = Request(
+            base=self.url,
+            key=key,
+            session=self.session,
+        )
+        return [RevFile(i, self.app, self.id) for i in req.get()]
 
     def nd_problem(self):
         """Get problems with revision"""
-        url = '{url}/nd/problem'.format(url=self.d_url)
+        key = 'nd/problem'
         req = Request(
-            base=url,
+            base=self.url,
+            key=key,
             session=self.session,
         )
         return req.get()
@@ -143,9 +142,9 @@ class Revisions(Endpoint):
     Args:
         api (obj): FiremonAPI()
         app (obj): App()
-        name (str): name of the endpoint
 
     Kwargs:
+        record (obj): default `Record` object
         device_id (int): Device id
 
     Examples:
@@ -160,12 +159,6 @@ class Revisions(Endpoint):
                 device_id: int=None):
         super().__init__(api, app, record=Revision)
         self._device_id = device_id
-
-        # Why have one EP when you can have 2+
-        # app/rev
-        #self.url = "{url}/{ep}".format(url=self.app_url,
-        #                                      ep=self.__class__.ep_name)        
-
 
     def all(self):
         """Get all `Record`
@@ -183,50 +176,6 @@ class Revisions(Endpoint):
         )
 
         return [self._response_loader(i) for i in req.get()]
-
-    #def get(self, *args, **kwargs):
-    #    """Get single Record
-#
-    #    Args:
-    #        *args (int): (optional) id to retrieve. If this is not type(int)
-    #                    dump it into filter and grind it up there.
-    #        **kwargs (str): (optional) see filter() for available filters
-#
-    #    Examples:
-    #        Get by ID
-    #        >>> fm.sm.revisions.get(1262)
-    #        new york
-#
-    #    """
-#
-    #    try:
-    #        id = int(args[0])
-    #        url = '{ep}/{id}'.format(ep=self.url, id=str(id))
-    #    except (IndexError, ValueError) as e:
-    #        id = None
-#
-    #    if not id:
-    #        if kwargs:
-    #            filter_lookup = self.filter(**kwargs)
-    #        else:
-    #            filter_lookup = self.filter(*args)
-    #        if filter_lookup:
-    #            if len(filter_lookup) > 1:
-    #                raise ValueError(
-    #                    "get() returned more than one result. "
-    #                    "Check that the kwarg(s) passed are valid for this "
-    #                    "endpoint or use filter() or all() instead."
-    #                )
-    #            else:
-    #                return filter_lookup[0]
-    #        return None
-#
-    #    req = Request(
-    #        base=url,
-    #        session=self.api.session,
-    #    )
-#
-    #    return self._response_loader(req.get())
 
     def filter(self, *args, **kwargs):
         """ Retrieve a filterd list of Revisions.
@@ -256,32 +205,87 @@ class Revisions(Endpoint):
         return self._device_id
 
 
-class ParsedRevision(Record):
+class RevFile(Record):
+    """A Revision File
+    """
+    ep_name = 'rev'
+
+    def __init__(self, config, app, rev_id):
+        self.rev_id = rev_id
+        super().__init__(config, app)
+
+    def _url_create(self):
+        """ General self.url create """
+        url = '{ep}/{rid}/nd/file/{id}'.format(ep=self.ep_url, 
+                                        rid=self.rev_id,
+                                        id=self._config['id'])
+        return url
+
+    def save(self):
+        raise NotImplementedError(
+            "Writes are not supported for this Record."
+        )
+
+    def update(self):
+        raise NotImplementedError(
+            "Writes are not supported for this Record."
+        )
+
+    def delete(self):
+        raise NotImplementedError(
+            "Writes are not supported for this Record."
+        )
+
+    def get(self):
+        """Get the raw file
+        
+        Return:
+            bytes: the bytes that make up the file
+        """
+        req = Request(
+            base=self.url,
+            session=self.session,
+        )
+        return req.get_content()
+
+    def __repr__(self):
+        return("RevFile<(name='{}')>".format(self.name))
+
+    def __str__(self):
+        return("{}".format(self.name))
+
+
+class NormalizedData(Record):
     """A NORMALIZED Revision. All the things.
     """
     ep_name = 'rev'
 
-    def __init__(self, api, app, config):
-        super().__init__(api, app, config)
-        self.url = '{ep}/{id}'.format(ep=self.ep_url, 
-                                      id=config['revisionId'])
-
-        self.no_no_keys = []
+    def __init__(self, config, app):
+        super().__init__(config, app)
 
     def save(self):
-        """Nothing to save"""
-        pass
+        raise NotImplementedError(
+            "Writes are not supported for this Record."
+        )
 
     def update(self):
-        """Nothing to save"""
-        pass
+        raise NotImplementedError(
+            "Writes are not supported for this Record."
+        )
 
     def delete(self):
-        """Nothing to delete"""
-        pass
+        raise NotImplementedError(
+            "Writes are not supported for this Record."
+        )
+
+    def _url_create(self):
+        """ General self.url create """
+        url = '{ep}/{id}'.format(ep=self.ep_url, 
+                                 id=self._config['revisionId'])
+        return url
 
     def __repr__(self):
-        return("ParsedRevision<(id='{}')>".format(self.revisionId))
+        return("NormalizedData<(id='{}')>".format(self.revisionId))
 
     def __str__(self):
         return("{}".format(self.revisionId))

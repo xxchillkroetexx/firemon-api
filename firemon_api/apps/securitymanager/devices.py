@@ -18,8 +18,8 @@ from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record, JsonField
 from firemon_api.core.query import Request, url_param_builder, RequestError
 from .devicepacks import DevicePack
-from .collectionconfigs import CollectionConfigs, CollectionConfig
-from .revisions import Revisions, Revision, ParsedRevision
+from .collectionconfigs import CollectionConfigs
+from .revisions import Revisions
 
 log = logging.getLogger(__name__)
 
@@ -28,9 +28,8 @@ class Device(Record):
     """Device Record
 
     Args:
-        api (obj): FiremonAPI()
-        app (obj): App()
         config (dict): dictionary of things values from json
+        app (obj): App()
 
     Attributes:
         * cc (collection configs)
@@ -61,22 +60,29 @@ class Device(Record):
         178
     """
 
+    _domain_url = True
     ep_name = 'device'
-    domain = True
     extendedSettingsJson = JsonField
     devicePack = DevicePack
 
-    def __init__(self, api, app, config):
-        super().__init__(api, app, config)
+    def __init__(self, config , app):
+        super().__init__(config, app)
 
-        self.url = '{ep}/{id}'.format(ep=self.ep_url, 
-                                        id=config['id'])
+        #self.url = '{ep}/{id}'.format(ep=self.ep_url, 
+        #                                id=config['id'])
+        self._no_no_keys = ['securityConcernIndex',
+                            'gpcComputeDate',
+                            'gpcDirtyDate',
+                            'gpcImplementDate',
+                            'gpcStatus',
+                           ]
+
         # Add attributes to Record() so we can get more info
-        self.revisions = Revisions(self.api, 
+        self.revisions = Revisions(self.app.api, 
                                    self.app, 
                                    device_id=config['id'])
 
-        self.collectionconfigs = CollectionConfigs(self.api, 
+        self.collectionconfigs = CollectionConfigs(self.app.api, 
                                 self.app, 
                                 device_id=config['id'],
                                 devicepack_id=config['devicePack']['id'])
@@ -376,7 +382,7 @@ class Devices(Endpoint):
     """
 
     ep_name = 'device'
-    domain = True
+    _domain_url = True
 
     def __init__(self, api, app, record=Device):
         super().__init__(api, app, record=Device)

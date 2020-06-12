@@ -25,15 +25,14 @@ class Collector(Record):
     """ Represents the Data Collector
 
     Args:
-        api (obj): FiremonAPI()
-        app (obj): App()
         config (dict): dictionary of things values from json
+        app (obj): App()
     """
 
     ep_name = 'collector'
 
-    def __init__(self, api, app, config):
-        super().__init__(api, app, config)
+    def __init__(self, config, app):
+        super().__init__(config, app)
 
     def status(self):
         """Get status of Collector"""
@@ -54,7 +53,7 @@ class Collector(Record):
             session=self.session,
         )
 
-        return [Device(self.api, self.app, config) for config in req.get()]
+        return [Device(config, self.app) for config in req.get()]
 
     def __repr__(self):
         if len(str(self.id)) > 10:
@@ -77,7 +76,6 @@ class Collectors(Endpoint):
     Args:
         api (obj): FiremonAPI()
         app (obj): App()
-        name (str): name of the endpoint
 
     Kwargs:
         record (obj): default `Record` object
@@ -99,15 +97,14 @@ class CollectorGroup(Record):
     """ Represents the Collector Group
 
     Args:
-        api (obj): FiremonAPI()
-        app (obj): App()
         config (dict): dictionary of things values from json
+        app (obj): App()
     """
 
     ep_name = 'collector/group'
 
-    def __init__(self, api, app, config):
-        super().__init__(api, app, config)
+    def __init__(self, config, app):
+        super().__init__(config, app)
 
     def member_set(self, cid):
         """Assign a Collector to Group.

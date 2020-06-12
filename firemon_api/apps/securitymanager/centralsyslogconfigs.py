@@ -24,16 +24,15 @@ class CentralSyslogConfig(Record):
     """Central Syslog Config Record
 
     Args:
-        api (obj): FiremonAPI()
-        app (obj): App()
         config (dict): dictionary of things values from json
+        app (obj): App()
     """
 
     ep_name = 'centralsyslogconfig'
-    domain = True
+    _domain_url = True
 
-    def __init__(self, api, app, config):
-        super().__init__(api, app, config)
+    def __init__(self, config, app):
+        super().__init__(config, app)
 
     def __repr__(self):
         return("<CentralSyslogConfig(id='{}, name='{}')>".format(
@@ -49,14 +48,13 @@ class CentralSyslogConfigs(Endpoint):
     Args:
         api (obj): FiremonAPI()
         app (obj): App()
-        name (str): name of the endpoint
 
     Kwargs:
         record (obj): default `Record` object
     """
 
     ep_name = 'centralsyslogconfig'
-    domain = True
+    _domain_url = True
 
     def __init__(self, api, app, record=CentralSyslogConfig):
         super().__init__(api, app, record=CentralSyslogConfig)

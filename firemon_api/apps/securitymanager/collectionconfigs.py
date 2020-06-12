@@ -24,9 +24,8 @@ class CollectionConfig(Record):
     """Collection Configuration Record
 
     Args:
-        api (obj): FiremonAPI()
-        endpoint (obj): Endpoint()
         config (dict): dictionary of things values from json
+        endpoint (obj): Endpoint()
 
     Examples:
         Get a list of all Collection Configs
@@ -46,8 +45,8 @@ class CollectionConfig(Record):
     """
     ep_name = 'collectionconfig'
 
-    def __init__(self, api, endpoint, config):
-        super().__init__(api, endpoint, config)
+    def __init__(self, config, app):
+        super().__init__(config, app,)
 
         self.no_no_keys = ['index',
 			               'createdBy',
@@ -136,7 +135,6 @@ class CollectionConfigs(Endpoint):
     Args:
         api (obj): FiremonAPI()
         app (obj): App()
-        name (str): name of the endpoint
 
     Kwargs:
         record (obj): default `Record` object

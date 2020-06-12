@@ -28,7 +28,9 @@ def get_return(lookup, return_fields=None):
 
 class JsonField(object):
     """Explicit field type for values that are not to be converted
-    to a Record object. Basically anything that does not have an `id`
+    to a JsonRecord object. 
+    
+    Basically anything that does not have an `id`
     """
     _json_field = True
 
@@ -37,9 +39,8 @@ class Record(object):
     """Create python objects for json responses from Firemon
 
     Args:
-        api (obj): FiremonAPI()
-        app (obj): App()
         config (dict): dictionary of things values from json
+        app (obj): App()
 
     Example:
         Cast object as a dictionary
@@ -52,44 +53,40 @@ class Record(object):
 
     url = None
     ep_name = None
-    domain = False
+    _domain_url = False
 
-    def __init__(self, api, app, config):
-        self._config = config  # keeping a cache just incase bad things
-        self._init_cache = []
+    def __init__(self, config, app):
+        self._config = config
+        self._init_cache = []   
         self.default_ret = Record
-        self.api = api
-        self.session = api.session
         self.app = app
-        self.base_url = api.base_url
+        self.session = app.session
+        self.base_url = app.base_url
         self.app_url = app.app_url
         self.domain_url = app.domain_url
-        if self.__class__.domain:
+        self.ep_url = None
+        if self.__class__._domain_url and self.__class__.ep_name:
             self.ep_url = "{url}/{ep}".format(url=self.domain_url,
                                             ep=self.__class__.ep_name)
-        else:
+        elif self.__class__.ep_name:
             self.ep_url = "{url}/{ep}".format(url=self.app_url,
                                             ep=self.__class__.ep_name)
 
-        #self.default_ret = JsonField
-        # In almost every case this is the format of the `Record` url
-        # if not, re-work in child class
-        self.url = '{ep}/{id}'.format(ep=self.ep_url, 
-                                        id=config['id'])
-
-        # These are, from what I can see, bad mojo and will always
-        # fail when updating an endpoint so just rip them out.
-        # If a `Record` has different keys that crash or none just
-        # modify the values in the child object or set as empty
-        self._no_no_keys = ['securityConcernIndex',
-                            'gpcComputeDate',
-                            'gpcDirtyDate',
-                            'gpcImplementDate',
-                            'gpcStatus',
-                           ]
-
         if config:
             self._parse_config(config)
+
+        # In almost every case this is the format of the `Record` url
+        # if not, re-work in child class
+        if self.ep_url:
+            self.url = self._url_create()
+
+        self._no_no_keys = []
+
+    def _url_create(self):
+        """ General self.url create """
+        url = '{ep}/{id}'.format(ep=self.ep_url, 
+                                        id=self._config['id'])
+        return url
 
     def __iter__(self):
         for i in dict(self._init_cache):
@@ -107,10 +104,11 @@ class Record(object):
         return item
 
     def __str__(self):
-        return (getattr(self, "name", None) or getattr(self, "artifactId", None)
-                or getattr(self, "id", None) or "")
+        return (getattr(self, "name", None) or 
+                getattr(self, "id", None) or "__unknown__")
 
     def __repr__(self):
+        #return("Record<({})>".format(str(self)))
         return str(self)
 
     def __getstate__(self):
@@ -121,9 +119,9 @@ class Record(object):
 
     def __key__(self):
         if hasattr(self, "id"):
-            return (self.endpoint.name, self.id)
+            return (self.name, self.id)
         else:
-            return (self.endpoint.name)
+            return (self.name)
 
     def __hash__(self):
         return hash(self.__key__())
@@ -139,13 +137,12 @@ class Record(object):
 
     def _parse_config(self, config):
 
-        # Not sure I want to create Record()
-        #def list_parser(list_item):
-        #    if isinstance(list_item, dict):
-        #        # Only create `Record` if it has an `id`
-        #        if 'id' in list_item.keys():
-        #            return self.default_ret(self.api, self.app, list_item)
-        #    return list_item
+        def list_parser(list_item):
+            if isinstance(list_item, dict):
+                # Only attempt creating `Record` if there is an id.
+                if 'id' in list_item.keys():
+                     return self.default_ret(list_item, self.app)
+            return list_item
 
         for k, v in config.items():
             if isinstance(v, dict):
@@ -155,17 +152,14 @@ class Record(object):
                     setattr(self, k, v)
                     continue
                 if lookup:
-                    v = lookup(self.api, self.app, v)
+                    v = lookup(v, self.app)
                 else:
-                    v = self.default_ret(self.api, self.app, v)
-                    #v = self.default_ret()
+                    v = self.default_ret(v, self.app)
                 self._add_cache((k, v))
-            # See above. Probably don't want Record all the way down.
-            #elif isinstance(v, list):
-            #    # See above - not sure about need for Record
-            #    #v = [list_parser(i) for i in v]
-            #    #to_cache = list(v)
-            #    #self._add_cache((k, to_cache))
+            elif isinstance(v, list):
+                v = [list_parser(i) for i in v]
+                to_cache = list(v)
+                self._add_cache((k, to_cache))
             else:
                 self._add_cache((k, v))
             setattr(self, k, v)
@@ -184,46 +178,14 @@ class Record(object):
         return False
 
     def _clean_no_no(self, d):
-        # remove no_no_keys from a dict
+        # remove no_no_keys from a dict. A list of keys for a Record
+        # that might break if trying to `save` or `update`
         for k in self._no_no_keys:
             try:
                 d.pop(k)
             except KeyError:
                 continue
         return(d)
-
-    def attr_set(self, k, v):
-        """Set an attribute and add it to the cache
-        Firemon will not provide all attributes so you will have
-        to just know what you are doing.
-
-        Add a new attribute to `Record`. This is to ensure that
-        the `serialize` picks up attribute and `_diff`.
-
-        Args:
-            k (str): key/attr
-            v (str, list, dict): value
-        """
-        if isinstance(k, (str)) and isinstance(v, (str, list, dict)):
-            if k in dict(self._init_cache).keys():
-                setattr(self, k, v)
-            else:
-                setattr(self, k, v)
-                self._add_cache((k, ''))
-
-    def attr_unset(self, k):
-        """Unset an attribute and remove from the cache.
-
-        This is to ensure that the `serialize` picks up 
-        attribute and `_diff`.
-
-        Args:
-            k (str): key/attr
-        """
-        if k in dict(self._init_cache).keys():
-            v = dict(self._init_cache)[k]
-            self._init_cache.remove((k, v))
-            delattr(self, k)
 
     def serialize(self, nested=False, init=False):
         """Serializes an object
@@ -233,10 +195,11 @@ class Record(object):
         the ``id`` field of that object.
         .. note::
             Using this to get a dictionary representation of the record
-            is discouraged. It's probably better to cast to dict()
-            instead. See Record docstring for example. Why? Because
+            is discouraged. It's probably better to cast to dict() or
+            dump() instead. See Record docstring for example. Why? Because
             we are popping out _no_no_keys from the full config in the
             hope that `update()` and `save()` just work
+
         Return:
             (dict)
         """
@@ -281,6 +244,43 @@ class Record(object):
             {fmt_dict(k, v) for k, v in self.serialize(init=True).items()}
         )
         return set([i[0] for i in set(current.items()) ^ set(init.items())])
+
+    def dump(self):
+        """Dump of unparsed config"""
+        return self._config.copy()
+
+    def attr_set(self, k, v):
+        """Set an attribute and add it to the cache
+        Firemon will not provide all attributes so you will have
+        to just know what you are doing.
+
+        Add a new attribute to `Record`. This is to ensure that
+        the `serialize` picks up attribute and `_diff`.
+
+        Args:
+            k (str): key/attr
+            v (str, list, dict): value
+        """
+        if isinstance(k, (str)) and isinstance(v, (str, list, dict)):
+            if k in dict(self._init_cache).keys():
+                setattr(self, k, v)
+            else:
+                setattr(self, k, v)
+                self._add_cache((k, ''))
+
+    def attr_unset(self, k):
+        """Unset an attribute and remove from the cache.
+
+        This is to ensure that the `serialize` picks up 
+        attribute and `_diff`.
+
+        Args:
+            k (str): key/attr
+        """
+        if k in dict(self._init_cache).keys():
+            v = dict(self._init_cache)[k]
+            self._init_cache.remove((k, v))
+            delattr(self, k)
 
     def save(self):
         """Saves changes to an existing object.
@@ -358,7 +358,3 @@ class Record(object):
             session=self.api.session,
         )
         return True if req.delete() else False
-
-    def dump(self):
-        """Dump of unparsed config"""
-        return self._config.copy()

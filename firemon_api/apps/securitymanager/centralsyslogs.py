@@ -25,17 +25,16 @@ class CentralSyslog(Record):
     """Central Syslog Record
 
     Args:
-        api (obj): FiremonAPI()
-        app (obj): App()
         config (dict): dictionary of things values from json
+        app (obj): App()
     """
 
     ep_name = 'central-syslog'
-    domain = True    
+    _domain_url = True    
     centralSyslogConfig = CentralSyslogConfig
 
-    def __init__(self, api, app, config):
-        super().__init__(api, app, config)
+    def __init__(self, config, app):
+        super().__init__(config, app)
 
         # not needed for `serialize` update using ep function
         self._no_no_keys = ['centralSyslogConfig']
@@ -108,14 +107,13 @@ class CentralSyslogs(Endpoint):
     Args:
         api (obj): FiremonAPI()
         app (obj): App()
-        name (str): name of the endpoint
 
     Kwargs:
         record (obj): default `Record` object
     """
 
     ep_name = 'central-syslog'
-    domain = True
+    _domain_url = True
 
     def __init__(self, api, app, record=CentralSyslog):
         super().__init__(api, app, record=CentralSyslog)

@@ -25,9 +25,8 @@ class DevicePack(Record):
     """ Representation of the device pack
 
     Args:
-        api (obj): FiremonAPI()
-        app (obj): App()
         config (dict): dictionary of things values from json
+        app (obj): App()
 
     Example:
         >>> dp = fm.sm.dp.get('juniper_srx')
@@ -41,11 +40,19 @@ class DevicePack(Record):
     collectionConfig = CollectionConfig
     #collectionConfig = JsonField
 
-    def __init__(self, api, app, config):
-        super().__init__(api, app, config)
-        self.url = '{ep}/{gid}/{aid}'.format(ep=self.ep_url,
-                                             gid=config['groupId'],
-                                             aid=config['artifactId'])
+    def __init__(self, config, app):
+        super().__init__(config, app)
+
+        self.name = config['artifactId']
+        self.artifacts = [ArtifactFile(f, self.app, self.url) for f in 
+                    self.artifacts]
+
+    def _url_create(self):
+        """ General self.url create """
+        url = '{ep}/{gid}/{aid}'.format(ep=self.ep_url, 
+                                        gid=self.groupId,
+                                        aid=self.artifactId)
+        return url
 
     def update(self):
         """Nothing to update"""
@@ -69,7 +76,7 @@ class DevicePack(Record):
         )
         return req.post(None)
 
-    def get_blob(self, name='dc.zip'):
+    def get(self, name='dc.zip'):
         """Get the blob (artifact) from Device Pack
 
         Kwargs:
@@ -137,7 +144,6 @@ class DevicePacks(Endpoint):
     Args:
         api (obj): FiremonAPI()
         app (obj): App()
-        name (str): name of the endpoint
 
     Examples:
         Get a list of all device packs
@@ -253,3 +259,46 @@ class DevicePacks(Endpoint):
             return True
         else:
             raise RequestError(resp)
+
+
+class ArtifactFile(Record):
+    """An Artifact File
+    """
+
+    def __init__(self, config, app, ep_url):
+        super().__init__(config, app)
+        self.url = '{ep}/{name}'.format(ep=ep_url,
+                                    name=config['name'])
+
+    def save(self):
+        raise NotImplementedError(
+            "Writes are not supported for this Record."
+        )
+
+    def update(self):
+        raise NotImplementedError(
+            "Writes are not supported for this Record."
+        )
+
+    def delete(self):
+        raise NotImplementedError(
+            "Writes are not supported for this Record."
+        )
+
+    def get(self):
+        """Get the raw file
+        
+        Return:
+            bytes: the bytes that make up the file
+        """
+        req = Request(
+            base=self.url,
+            session=self.session,
+        )
+        return req.get_content()
+
+    def __repr__(self):
+        return("ArtifactFile<(name='{}')>".format(self.name))
+
+    def __str__(self):
+        return("{}".format(self.name))

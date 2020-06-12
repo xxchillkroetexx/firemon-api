@@ -32,6 +32,7 @@ class App(object):
     def __init__(self, api):
         self.api = api
         self.session = api.session
+        self.base_url = api.base_url
         self.app_url = "{url}/{name}/api".format(url=api.base_url,
                                             name=self.__class__.name)
         self.domain_url = "{url}/domain/{id}".format(url=self.app_url,

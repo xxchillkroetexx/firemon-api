@@ -66,28 +66,6 @@ class RequestError(Exception):
         self.error = req.text
 
 
-#class ContentError(Exception):
-#    """Content Exception
-#    If the API URL does not point to a valid Firemon API, the server may
-#    return a valid response code, but the content is not json. This
-#    exception is raised in those cases.
-#    """
-#
-#    def __init__(self, message):
-#        req = message
-#
-#        message = (
-#            "The server returned invalid (non-json) data. Maybe not "
-#            "a Firemon server?"
-#        )
-#
-#        super(ContentError, self).__init__(message)
-#        self.req = req
-#        self.request_body = req.request.body
-#        self.base = req.url
-#        self.error = message
-
-
 class Request(object):
     """Creates requests to the FireMon API
     Responsible for building the url and making the HTTPS requests to
@@ -273,7 +251,11 @@ class Request(object):
         return self._make_call()["total"]
 
     def get_content(self):
-        """Get content"""
+        """Get content
+        In some cases the appending of default pageSize
+        my break our API calls. Appears to happen 
+        when requesting data blobs but not always.
+        """
         log.debug('GET: {}'.format(self.url))
 
         req = getattr(self.session, 'get')(self.url)

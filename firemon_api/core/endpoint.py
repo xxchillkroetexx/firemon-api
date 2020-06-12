@@ -24,8 +24,9 @@ class Endpoint(object):
         record (obj): optional `Record` to use
     """
 
+    url = None
     ep_name = None
-    domain = False
+    _domain_url = False
 
     def __init__(self, api, app, record=None):
         if record:
@@ -38,10 +39,11 @@ class Endpoint(object):
         self.base_url = api.base_url
         self.app_url = app.app_url
         self.domain_url = app.domain_url
-        if self.__class__.domain:
+        self.url = None
+        if self.__class__._domain_url and self.__class__.ep_name:
             self.url = "{url}/{ep}".format(url=self.domain_url,
                                             ep=self.__class__.ep_name)
-        else:
+        elif self.__class__.ep_name:
             self.url = "{url}/{ep}".format(url=self.app_url,
                                             ep=self.__class__.ep_name)
 
@@ -56,7 +58,7 @@ class Endpoint(object):
                    }
 
     def _response_loader(self, values):
-        return self.return_obj(self.api, self.app, values)
+        return self.return_obj(values, self.app)
 
     def _make_filters(self, values):
         # Our filters do not appear to be standardized across
