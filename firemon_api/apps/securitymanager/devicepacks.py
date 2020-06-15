@@ -92,13 +92,14 @@ class DevicePack(Record):
         )
         return req.get_content()
 
-
     def template(self):
-        """ Get default template format for a device. Note that a number of fields
-        can take bad information, like empty strings, '', and Secmanager appears
-        to happily create devices and things will appear to work. Problems may
-        arise on device update calls though where other parts of the system
-        further check and error out.
+        """ Get default template format for a device.
+        
+        :..note that a number of fields can take bad information, 
+        like empty strings, '', and Secmanager appears to happily
+        create devices and things will appear to work. Problems may
+        arise on device update calls though where other parts of
+        the system fields that should not exist and error out.
 
         Return:
             dict: template information for a device with defaults included
@@ -138,8 +139,8 @@ class DevicePack(Record):
 
 
 class DevicePacks(Endpoint):
-    """ Represents the Device Packs. There is no API to query individual Device
-    Packs so this is a kludge. Retrieve all DPs and query from there.
+    """Device Packs. There is no API to query individual Device
+    Packs to filter thus we retrieve all DPs and query locally.
 
     Args:
         api (obj): FiremonAPI()

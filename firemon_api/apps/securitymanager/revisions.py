@@ -37,7 +37,7 @@ class Revision(Record):
         ...   f.write(zip)
         ...
         36915
-        >>> zip = rev.export(with_meta=False)
+        >>> zip = rev.export(meta=False)
         >>> rev.delete()
         True
     """
@@ -80,15 +80,14 @@ class Revision(Record):
             bytes: zip file
         """
         if meta:
-            url = '{url}/export'.format(self.url)
+            url = '{url}/export'.format(url=self.url)
         else:
-            url = '{url}/export/config'.format(self.url)
-        log.debug('GET {}'.format(self.url))
-        response = self.session.get(url)
-        if response.status_code == 200:
-            return response.content
-        else:
-            raise RequestError(response)
+            url = '{url}/export/config'.format(url=self.url)
+        req = Request(
+            base=url,
+            session=self.session,
+        )
+        return req.get_content()
 
     def nd_get(self):
         """Get normalized data as a fully parsed object
@@ -161,8 +160,7 @@ class Revisions(Endpoint):
         self._device_id = device_id
 
     def all(self):
-        """Get all `Record`
-        """
+        """Get all `Record`"""
         if self.device_id:
             all_key = "device/{id}/{ep}".format(id=self.device_id,
                                                      ep=self.__class__.ep_name)
