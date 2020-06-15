@@ -17,17 +17,15 @@ import warnings
 import requests  # performing web requests
 
 # Local packages
-from firemon_api.errors import (
-    AuthenticationError, FiremonError, LicenseError,
-    DeviceError, DevicePackError, VersionError,
-    FiremonWarning, AuthenticationWarning
-)
-from firemon_api.apps.securitymanager import SecurityManager
-from firemon_api.apps.globalpolicycontroller import GlobalPolicyController
-from firemon_api.apps.policyplanner import PolicyPlanner
-from firemon_api.apps.policyoptimizer import PolicyOptimizer
+from firemon_api.core.query import Request, url_param_builder
 
+from firemon_api.apps import (GlobalPolicyController,
+                              PolicyOptimizer,
+                              PolicyPlanner,
+                              SecurityManager
+                             )
 log = logging.getLogger(__name__)
+
 
 class FiremonAPI(object):
     """ The FiremonAPI object is the entry point to firemon_api
@@ -85,10 +83,10 @@ class FiremonAPI(object):
         timeout: int = 20,
         verify: Optional = True,
         cert: Optional = None,
-        domainId: int = 1,
+        domain_id: int = 1,
         proxy: str = None,
     ):
-        self.host = host
+
         self.username = username
         self.password = password
         self.timeout = timeout
@@ -97,52 +95,56 @@ class FiremonAPI(object):
 
         self.session = requests.Session()
         self.session.auth = (self.username, self.password)  # Basic auth is used
-        self.default_headers = {'User-Agent': 'dev-netsec/0.0.1',
+        self.default_headers = {'User-Agent': 'py-firemon-api/0.0.1',
                                 'Accept-Encoding': 'gzip, deflate',
-                                'Accept': '*/*',
-                                'Connection': 'keep-alive'}
+                                'Accept': '*/*', 'Connection': 'keep-alive'}
         self.session.headers.update(self.default_headers)
         self.session.verify = self.verify
         self.session.cert = self.cert
         self.session.timeout = self.timeout
         if proxy:
             self.session.proxies = {'http': proxy, 'https': proxy}
-        self._auth()
 
-        # Much of all the APIs requires a domain ID. There is also a fair amount
+        self.host = host
+
+        # Many of the APIs requires a domain ID. There is also a fair amount
         #   that does not require a Domain ID. There may be a better way to
-        #   code this but this appears good enough. What all the endpoints then
-        #   are instantiated in the domainId setter.
-        self.domainId = domainId
+        #   code this but this appears good enough.
+        self.domain_id = domain_id
 
-        # This translates the major release to the dev pack major.
+        # This translates the major release to the dev pack major. Hopefully 
+        # we can get rid of this soon with 8.x going away.
         self._major_to_pack = { '8': '1',
                                 '9': '9',
                               }
 
+        self.sm = SecurityManager(self)
+        self.gpc = GlobalPolicyController(self)
+        self.po = PolicyOptimizer(self)
+        self.pp = PolicyPlanner(self)
+
     def _auth(self):
-        """ Initial check for access and version information """
+        """ Need to auth """
         log.debug(
             "Authenticating Firemon connection: %s",
             self.host
         )
-        url = self._base_url + '/securitymanager/api/authentication/login'
+        url = '{}/securitymanager/api/authentication/login'.format(
+                                                        self._base_url)
         payload = {'username': self.username, 'password': self.password}
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('POST {}'.format(url))
-        response = self.session.post(url,
-                                    data=json.dumps(payload),
-                                    verify=self.verify,
-                                    cert=self.cert)
-        if (response.status_code != 200):
-            raise AuthenticationError("HTTP code: {}  Server response: "
-                                      " {}".format(str(response.status_code),
-                                      response.text))
-        else:
-            self.version = self._get_version()
-            self.major_version = self.version.split('.')[0]
-            self.minor_version = self.version.split('.')[1]
-            self.micro_version = self.version.split('.')[2]
+        Request(
+            base=url,
+            session=self.session,
+        ).post(payload)
+
+    def versions(self):
+        """All the versions from API"""
+        url = '{}/securitymanager/api/version'.format(self._base_url)
+        resp = Request(
+            base=url,
+            session=self.session,
+        ).get()
+        return(resp)
 
     def _get_version(self) -> dict:
         """ Retrieve fmos version for display and filter device packs """
@@ -161,25 +163,14 @@ class FiremonAPI(object):
         """ Verify that requested domain Id exists.
         Set the domainId that will be used.
         """
-        url = self.base_url + "/securitymanager/api/domain/{id}".format(
-                                                                    id=str(id))
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('GET {}'.format(url))
-        response = self.session.get(url)
-        if response.status_code == 200:
-            resp = response.json()
-            self.domainName = resp['name']
-            self.domainDescription = resp['description']
-            return True
-        elif response.status_code == 403:
-            warnings.warn('User is not authorized for request. '
-                          'Unable to verify Domain {} exists'.format(id),
-                          AuthenticationWarning)
-            return False
-        else:
-            warnings.warn('Unable to verify Domain {} exists'.format(id),
-                          FiremonWarning)
-            return False
+        url = "{}/securitymanager/api/domain/{id}".format(self.base_url,
+                                                        id=str(id))
+        resp = Request(
+            base=url,
+            session=self.session,
+        ).get()
+        self.domain_name = resp['name']
+        self.domain_description = resp['description']
 
     def __repr__(self):
         return("<Firemon(host='{}', "
@@ -189,25 +180,17 @@ class FiremonAPI(object):
         return("FMOS: {} ver. {}".format(self.host, self.version))
 
     @property
-    def domainId(self):
+    def domain_id(self):
         return self._domain
 
-    @domainId.setter
-    def domainId(self, id):
+    @domain_id.setter
+    def domain_id(self, id):
         self._verify_domain(id)  # User may not be authorized to validate domain.
         self._domain = id  # Set domain regardless and pop a warning if unable to validate
-        self.sm = SecurityManager(self)
-        self.gpc = GlobalPolicyController(self)
-        self.po = PolicyOptimizer(self) # Todo: build this
-        self.pp = PolicyPlanner(self) # Todo: build this
 
     @property
     def base_url(self):
         return self._base_url
-
-    @base_url.setter
-    def base_url(self, host):
-        self._base_url = 'https://' + host
 
     @property
     def host(self):
@@ -216,4 +199,11 @@ class FiremonAPI(object):
     @host.setter
     def host(self, host):
         self._host = host
-        self.base_url = self._host
+        self._base_url = 'https://{}'.format(host)
+        self._auth()
+        self._version = self.versions()['fmosVersion']
+
+    @property
+    def version(self):
+        """FMOS version"""
+        return self._version

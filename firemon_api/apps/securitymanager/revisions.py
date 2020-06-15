@@ -12,216 +12,23 @@ import json
 import logging
 
 # Local packages
-from firemon_api.errors import (
-    AuthenticationError, FiremonError, LicenseError,
-    DeviceError, DevicePackError, VersionError
-)
-from firemon_api.core.response import Record
+from firemon_api.core.endpoint import Endpoint
+from firemon_api.core.response import Record, JsonField
+from firemon_api.core.query import Request, url_param_builder, RequestError
 from firemon_api.core.utils import _build_dict
 
 log = logging.getLogger(__name__)
 
 
-class Revisions(object):
-    """ Represents the Revisions.
-    Filtering is terrible given the API. It is a mixture of revID,
-    static domain requirements and deviceID, or searching by a weird subset
-    of our internal SIQL (but you cannot search by name or anything in SIQL).
-    As a kludge I just ingest all revisions (like the device packs) and create
-    get() and filter() functions to parse a dictionary. This may be problematic
-    if there are crazy number of revisions but since this is for interal use
-    *meh*.
-
-    Args:
-        sm (object): SecurityManager()
-
-    Kwargs:
-        deviceId (int): Device id
-
-    Examples:
-        >>> rev = fm.sm.revisions.get(34)
-        >>> rev = fm.sm.revisions.filter(latest=True, deviceName='vSRX-2')[0]
-    """
-    def __init__(self, sm, deviceId: int=None):
-        self.sm = sm
-        self.session = sm.session
-        self.url = "{sm_url}/rev".format(sm_url=sm.sm_url)
-        # Use setter. Intended for use when Revisions is called from Device(objects)
-        self._deviceId = deviceId
-        self._revisions = {}
-
-    def _get_all(self):
-        """ Retrieve a dictionary of revisions. This is effectively a kludge
-        since we do not have direct access to /rev endpoint so we will injest
-        all then parse locally.
-
-        Returns:
-            dict: a dictionary that contains revision info
-        """
-        total = 0
-        page = 0
-        count = 0
-        if self.deviceId:
-            url = self.sm.domain_url + ('/device/{deviceId}/rev?sort=id&page'
-                                        '={page}&pageSize=100'.format(
-                                                        deviceId=self.deviceId,
-                                                        page=page))
-        else:
-            url = self.sm.domain_url + ('/rev?sort=id&page={page}&pageSize'
-                                        '=100'.format(page=page))
-        log.debug('GET {}'.format(self.url))
-        self.session.headers.update({'Content-Type': 'application/json'})
-        response = self.session.get(url)
-        if response.status_code == 200:
-            resp = response.json()
-            if resp['results']:
-                results = resp['results']
-                total = resp['total']
-                count = resp['count']
-                while total > count:
-                    page += 1
-                    if self.deviceId:
-                        url = self.sm.domain_url + ('/device/{deviceId}/rev?'
-                                'sort=id&page={page}&pageSize=100'.format(
-                                            deviceId=self.deviceId,
-                                            page=page))
-                    else:
-                        url = self.sm.domain_url + ('/rev?sort=id&page'
-                                    '={page}&pageSize=100'.format(page=page))
-                    log.debug('GET {}'.format(self.url))
-                    response = self.session.get(url)
-                    resp = response.json()
-                    count += resp['count']
-                    results.extend(resp['results'])
-                self._revisions = _build_dict(results, 'id')
-            else:
-                self._revisions = {}
-        else:
-            raise FiremonError("ERROR retrieving revisions! HTTP code: {} "
-                              "Server response: {}".format(
-                                                response.status_code,
-                                                response.text))
-
-    def all(self):
-        """ Get all revisions
-
-        Return:
-            list: a list of Revision(object)
-
-        Examples:
-
-            >>> revs = fm.sm.revisions.all()
-        """
-        #if not self._revisions:
-        #    self._get_all()
-        self._get_all()
-        return [Revision(self, self._revisions[id]) for id in self._revisions]
-
-    def get(self, *args, **kwargs):
-        """ Query and retrieve individual Revision
-
-        Args:
-            *args (int): The revision ID
-            **kwargs: key value pairs in a revision dictionary
-
-        Return:
-            Revision(object): a single Revision(object)
-
-        Examples:
-
-            >>> fm.sm.revisions.get(3)
-            3
-            >>> rev = fm.sm.revisions.get(3)
-            >>> type(rev)
-            <class 'firemon_api.apps.securitymanager.Revision'>
-            >>> rev = fm.sm.revisions.get(correlationId='7a5406e4-93de-44af-8ed1-0e4135458324')
-            >>> rev
-            11
-        """
-        #if not self._revisions:
-        #    self._get_all()
-        self._get_all()
-        try:
-            id = args[0]
-            rev = self._revisions[id]
-            if rev:
-                return Revision(self, rev)
-            else:
-                raise FiremonError("ERROR retrieving revison")
-        except (KeyError, IndexError):
-            id = None
-
-        if not id:
-            filter_lookup = self.filter(**kwargs)
-            if filter_lookup:
-                if len(filter_lookup) > 1:
-                    raise ValueError("get() returned more than one result."
-                                    "Check the kwarg(s) passed are valid or"
-                                    "use filter() or all() instead.")
-                else:
-                    return filter_lookup[0]
-            return None
-
-    def filter(self, **kwargs):
-        """ Retrieve a filterd list of Revisions
-
-        Args:
-            **kwargs: key value pairs in a revision dictionary
-
-        Return:
-            list: a list of Revision(object)
-
-        Examples:
-
-            >>> fm.sm.revisions.filter(deviceName='vSRX-2')
-            [76, 77, 108, 177, 178]
-
-            >>> fm.sm.revisions.filter(latest=True, deviceName='vSRX-2')
-            [178]
-
-            >>> fm.sm.revisions.filter(deviceType='FIREWALL')
-            [3, 4, 5, 6, 7, 8, 9,
-
-            >>> fm.sm.revisions.filter(latest=True)
-            [1, 2, 3, 6, 8, 9, 10, 13, 14, 75, 122, 153, 171, 174, 178, 189]
-        """
-        #if not self._revisions:
-        #    self._get_all()
-        self._get_all()
-
-        if not kwargs:
-            raise ValueError("filter must have kwargs")
-
-        return [Revision(self, self._revisions[id]) for id in
-                self._revisions if kwargs.items()
-                <= self._revisions[id].items()]
-
-    @property
-    def deviceId(self):
-        return self._deviceId
-
-    @deviceId.setter
-    def deviceId(self, id):
-        self._deviceId = id
-
-    def __repr__(self):
-        return("<Revisions(url='{}')>".format(self.url))
-
-    def __str__(self):
-        return("{}".format(self.url))
-
-
 class Revision(Record):
-    """ Represents a Revision in Firemon
-    The API is painful to use. In some cases the info needed is under
-    'ndrevisions' and it other cases it is under 'normalization'. And different
-    paths can get the exact same information.
+    """Revision `Record`
+    'ndrevisions' and 'normalization'.
 
     (change configuration &/or normalization state)
 
     Args:
-        revs: Revisions() object
-        config (dict): all the things
+        config (dict): dictionary of things values from json
+        app (obj): App()
 
     Examples:
         >>> rev = fm.sm.revisions.filter(latest=True, deviceName='vSRX-2')[0]
@@ -230,110 +37,90 @@ class Revision(Record):
         ...   f.write(zip)
         ...
         36915
-        >>> zip = rev.export(with_meta=False)
+        >>> zip = rev.export(meta=False)
         >>> rev.delete()
         True
     """
-    def __init__(self, revs, config):
-        super().__init__(revs, config)
-        self.revs = revs
-        self.url = revs.sm.sm_url + '/rev/{revId}'.format(
-                                                        revId=str(config['id']))
-        # Because instead of just operating on the revision they needed another
-        # path <sigh>
-        self.url2 = revs.sm.domain_url + ('/device/{deviceId}/rev/{revId}'
-                                        .format(
-                                            deviceId=str(config['deviceId']),
-                                            revId=str(config['id'])))
 
-    def summary(self):
-        return self._config.copy()
+    ep_name = 'rev'
 
-    def changelog(self):
-        """ Revision changelog """
-        total = 0
-        page = 0
-        count = 0
-        url = self.url2 + '/changelog?page={page}&pageSize=100'.format(
-                                                                    page=page)
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('GET {}'.format(self.url))
-        response = self.session.get(url)
-        if response.status_code == 200:
-            resp = response.json()
-            if resp['results']:
-                results = resp['results']
-                total = resp['total']
-                count = resp['count']
-                while total > count:
-                    page += 1
-                    url = self.url2 + ('/changelog?page={page}&pageSize=100'
-                                        .format(page=page))
-                    log.debug('GET {}'.format(self.url))
-                    response = self.session.get(url)
-                    resp = response.json()
-                    count += resp['count']
-                    results.extend(resp['results'])
-                return(results)
-            else:
-                return([])
-        else:
-            raise FiremonError("ERROR retrieving revisions! HTTP code: {} "
-                              "Server response: {}".format(
-                                                        response.status_code,
-                                                        response.text))
+    def __init__(self, config, app):
+        super().__init__(config, app)
 
-    def export(self, with_meta: bool=True):
-        """ Export a zip file contain the config data for the device and,
-        optionally, other meta data and NORMALIZED data. Support files in gui.
+        self.domain_id = config['domainId']
+        self.device_id = config['deviceId']
+        self.d_url = '{ep}/domain/{did}/device/{devid}/rev/{id}'.format(
+                                                ep=self.app_url,
+                                                did=self.domain_id,
+                                                devid=self.device_id,
+                                                id=str(config['id']))
+        self.files = self._files_load()
+
+    def save(self):
+        raise NotImplementedError(
+            "Writes are not supported."
+        )
+
+    def update(self):
+         raise NotImplementedError(
+            "Writes are not supported."
+        )
+
+    def export(self, meta: bool=True):
+        """Export a zip file contain the config data.
+        
+        Support files include all NORMALIZED data and other meta data.
+        Raw configs include only those files as found by Firemon 
+        during a retrieval.
 
         Kwargs:
-            with_meta (bool): Include metadata and NORMALIZED config files
+            meta (bool): Include metadata and NORMALIZED config files
 
         Return:
             bytes: zip file
         """
-        self.session.headers.pop('Content-type', None)  # If "content-type" exists get rid.
-        if with_meta:
-            url = self.url + '/export'
+        if meta:
+            url = '{url}/export'.format(url=self.url)
         else:
-            url = self.url + '/export/config'
-        log.debug('GET {}'.format(self.url))
-        response = self.session.get(url)
-        if response.status_code == 200:
-            return response.content
-        else:
-            raise FiremonError("ERROR retrieving revisions! HTTP code: {}  "
-                              "Server response: {}".format(
-                                                    response.status_code,
-                                                    response.text))
+            url = '{url}/export/config'.format(url=self.url)
+        req = Request(
+            base=url,
+            session=self.session,
+        )
+        return req.get_content()
 
-    def delete(self):
-        """ Delete the revision
-
-        Return:
-            bool: True if deleted
+    def nd_get(self):
+        """Get normalized data as a fully parsed object
+        
+        Retrieve all the revision data in a single payload.
         """
-        url = self.revs.sm.domain_url + \
-            '/device/{deviceId}/rev/{revId}'.format(
-                deviceId=str(self.deviceId), revId=str(self.id))
-        log.debug('DELETE {}'.format(self.url))
-        response = self.session.delete(url)
-        if response.status_code == 204:
-            return True
-        else:
-            raise DeviceError("ERROR deleting revision id {}".format(self.id))
+        key = 'nd/all'
+        req = Request(
+            base=self.url,
+            key=key,
+            session=self.session,
+        )
+        return NormalizedData(req.get(), self.app)
 
-    def get_nd(self):
-        """Get normalized data as a fully parsed object """
-        url = self.url + '/nd/all'
-        self.session.headers.update({'Accept': 'application/json'})
-        log.debug('GET {}'.format(self.url))
-        response = self.session.get(url)
-        if response.status_code == 200:
-            return ParsedRevision(self.revs, response.json())
-        else:
-            raise FiremonError('Error: Unable to retrieve parsed revision')
+    def _files_load(self):
+        """Get the file descriptors attached to Revision"""
+        key = 'nd/file'
+        req = Request(
+            base=self.url,
+            key=key,
+            session=self.session,
+        )
+        return [RevFile(i, self.app, self.id) for i in req.get()]
+
+    def nd_problem(self):
+        """Get problems with revision"""
+        key = 'nd/problem'
+        req = Request(
+            base=self.url,
+            key=key,
+            session=self.session,
+        )
+        return req.get()
 
     def __repr__(self):
         return("<Revision(id='{}', device='{}')>".format(
@@ -344,15 +131,159 @@ class Revision(Record):
         return("{}".format(self.id))
 
 
-class ParsedRevision(Record):
-    """A dynamic representation of all the NORMALIZED things
+class Revisions(Endpoint):
+    """Revisions Endpoint.
+    Combining 'ndrevisions' and 'normalization'.
+    Filtering is what it is. It is a mixture of revID,
+    static domain requirements and device_id, or searching by a subset
+    of our internal SIQL (but you cannot search by name or anything in SIQL).
 
-    Todo:
-        Document the JSON/Record information and key values purpose
-            or at least some of the major ones
+    Args:
+        api (obj): FiremonAPI()
+        app (obj): App()
+
+    Kwargs:
+        record (obj): default `Record` object
+        device_id (int): Device id
+
+    Examples:
+        >>> rev = fm.sm.revisions.get(34)
+        >>> rev = fm.sm.revisions.filter(latest=True, deviceName='vSRX-2')[0]
     """
+
+    ep_name = 'rev'
+
+    def __init__(self, api, app,
+                record=Revision,
+                device_id: int=None):
+        super().__init__(api, app, record=Revision)
+        self._device_id = device_id
+
+    def all(self):
+        """Get all `Record`"""
+        if self.device_id:
+            all_key = "device/{id}/{ep}".format(id=self.device_id,
+                                                     ep=self.__class__.ep_name)
+        else:
+            all_key = "{ep}".format(ep=self.__class__.ep_name)
+
+        req = Request(
+            base=self.domain_url,
+            key=all_key,
+            session=self.session,
+        )
+
+        return [self._response_loader(i) for i in req.get()]
+
+    def filter(self, *args, **kwargs):
+        """ Retrieve a filterd list of Revisions.
+
+        I have no idea how our /filter endpoint works. Some SIQL but
+        I cannot find any decent documentation.
+
+        Args:
+            **kwargs: key value pairs in a device pack dictionary
+
+        Return:
+            list: a list of Revision(object)
+
+        Examples:
+
+        >>> fm.sm.dp.filter(latest=True)
+        """
+
+        rev_all = self.all()
+        if not kwargs:
+            raise ValueError("filter must have kwargs")
+
+        return [rev for rev in rev_all if kwargs.items() <= dict(rev).items()]
+
+    @property
+    def device_id(self):
+        return self._device_id
+
+
+class RevFile(Record):
+    """A Revision File
+    """
+    ep_name = 'rev'
+
+    def __init__(self, config, app, rev_id):
+        self.rev_id = rev_id
+        super().__init__(config, app)
+
+    def _url_create(self):
+        """ General self.url create """
+        url = '{ep}/{rid}/nd/file/{id}'.format(ep=self.ep_url, 
+                                        rid=self.rev_id,
+                                        id=self._config['id'])
+        return url
+
+    def save(self):
+        raise NotImplementedError(
+            "Writes are not supported for this Record."
+        )
+
+    def update(self):
+        raise NotImplementedError(
+            "Writes are not supported for this Record."
+        )
+
+    def delete(self):
+        raise NotImplementedError(
+            "Writes are not supported for this Record."
+        )
+
+    def get(self):
+        """Get the raw file
+        
+        Return:
+            bytes: the bytes that make up the file
+        """
+        req = Request(
+            base=self.url,
+            session=self.session,
+        )
+        return req.get_content()
+
     def __repr__(self):
-        return("ParsedRevision<(id='{}')>".format(self.revisionId))
+        return("RevFile<(name='{}')>".format(self.name))
+
+    def __str__(self):
+        return("{}".format(self.name))
+
+
+class NormalizedData(Record):
+    """A NORMALIZED Revision. All the things.
+    """
+    ep_name = 'rev'
+
+    def __init__(self, config, app):
+        super().__init__(config, app)
+
+    def save(self):
+        raise NotImplementedError(
+            "Writes are not supported for this Record."
+        )
+
+    def update(self):
+        raise NotImplementedError(
+            "Writes are not supported for this Record."
+        )
+
+    def delete(self):
+        raise NotImplementedError(
+            "Writes are not supported for this Record."
+        )
+
+    def _url_create(self):
+        """ General self.url create """
+        url = '{ep}/{id}'.format(ep=self.ep_url, 
+                                 id=self._config['revisionId'])
+        return url
+
+    def __repr__(self):
+        return("NormalizedData<(id='{}')>".format(self.revisionId))
 
     def __str__(self):
         return("{}".format(self.revisionId))
