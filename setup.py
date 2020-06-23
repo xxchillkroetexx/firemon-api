@@ -3,15 +3,20 @@
 # Learn more: https://confluence.securepassage.com/display/DEVNETSEC/FMAPI%3A+Python+Firemon+API+module
 
 from setuptools import setup, find_packages
+from distutils.util import convert_path
 
 PROJECT = 'firemon-api'
 
 with open('README.md') as f:
     readme = f.read()
 
+main_ns = {}
+with open(ver_path) as f:
+    exec(f.read(), main_ns)
+
 setup(
     name='firemon-api',
-    version='0.0.8',
+    version=main_ns['__version__'],
     description='NetSec Python Wrapper for Firemon API',
     long_description=readme,
     author='Firemon NetSec <dev-netsec@firemon.com>',
