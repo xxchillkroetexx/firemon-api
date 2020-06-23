@@ -11,6 +11,7 @@ with open('README.md') as f:
     readme = f.read()
 
 main_ns = {}
+ver_path = convert_path('firemon_api/version.py')
 with open(ver_path) as f:
     exec(f.read(), main_ns)
 
