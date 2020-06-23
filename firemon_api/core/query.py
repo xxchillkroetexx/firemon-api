@@ -90,6 +90,7 @@ class Request(object):
         self.base = self.normalize_url(base)
         self.session = session
         self.filters = filters
+        self.verify = session.verify
         self.key = self.normalize_key(key) if key else None
         self.url = self.base if not key else "{}/{}".format(self.base, key)
 
@@ -122,10 +123,12 @@ class Request(object):
                             '{}?{}'.format(self.url, urlencode(params))))
 
         req = getattr(self.session, verb)(
-            url_override or self.url, headers=headers,
+            url_override or self.url, headers=headers, verify=self.verify,
             params=params, json=data
         )
 
+        log.debug(req.request.headers)  # sent headers
+        log.debug(req.headers)  # returned headers
         if verb == "delete":
             if req.ok:
                 return True
@@ -136,7 +139,10 @@ class Request(object):
                 return req.json()
             except json.JSONDecodeError:
                 # Assuming an empty body or data download
-                return req.content
+                if req.content:
+                    return req.content
+                else:
+                    return True
         else:
             raise RequestError(req)
 
@@ -258,7 +264,7 @@ class Request(object):
         """
         log.debug('GET: {}'.format(self.url))
 
-        req = getattr(self.session, 'get')(self.url)
+        req = getattr(self.session, 'get')(self.url, verify=self.verify)
         if req.ok:
             return req.content
         else:

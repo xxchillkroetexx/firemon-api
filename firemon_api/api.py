@@ -18,7 +18,7 @@ import requests  # performing web requests
 
 # Local packages
 from firemon_api.core.query import Request, url_param_builder
-
+from firemon_api import version
 from firemon_api.apps import (GlobalPolicyController,
                               PolicyOptimizer,
                               PolicyPlanner,
@@ -95,7 +95,8 @@ class FiremonAPI(object):
 
         self.session = requests.Session()
         self.session.auth = (self.username, self.password)  # Basic auth is used
-        self.default_headers = {'User-Agent': 'py-firemon-api/0.0.1',
+        self.default_headers = {'User-Agent': 'py-firemon-api/{}'.format(
+                                                            version.__version__),
                                 'Accept-Encoding': 'gzip, deflate',
                                 'Accept': '*/*', 'Connection': 'keep-alive'}
         self.session.headers.update(self.default_headers)
@@ -112,12 +113,6 @@ class FiremonAPI(object):
         #   code this but this appears good enough.
         self.domain_id = domain_id
 
-        # This translates the major release to the dev pack major. Hopefully 
-        # we can get rid of this soon with 8.x going away.
-        self._major_to_pack = { '8': '1',
-                                '9': '9',
-                              }
-
         self.sm = SecurityManager(self)
         self.gpc = GlobalPolicyController(self)
         self.po = PolicyOptimizer(self)
@@ -129,35 +124,23 @@ class FiremonAPI(object):
             "Authenticating Firemon connection: %s",
             self.host
         )
-        url = '{}/securitymanager/api/authentication/login'.format(
-                                                        self._base_url)
+        key = 'securitymanager/api/authentication/login'
         payload = {'username': self.username, 'password': self.password}
         Request(
-            base=url,
+            base=self._base_url,
+            key=key,
             session=self.session,
         ).post(payload)
 
     def versions(self):
         """All the versions from API"""
-        url = '{}/securitymanager/api/version'.format(self._base_url)
+        key = 'securitymanager/api/version'
         resp = Request(
-            base=url,
+            base=self._base_url,
+            key=key,
             session=self.session,
         ).get()
         return(resp)
-
-    def _get_version(self) -> dict:
-        """ Retrieve fmos version for display and filter device packs """
-        url = self._base_url + '/securitymanager/api/version'
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('GET {}'.format(url))
-        response = self.session.get(url)
-        if response.status_code == 200:
-            return response.json()['fmosVersion']
-        else:
-            raise FiremonError("ERROR retrieving FMOS version! HTTP code: {}  "
-                              "Server response: {}".format(
-                              response.status_code, response.text))
 
     def _verify_domain(self, id):
         """ Verify that requested domain Id exists.
