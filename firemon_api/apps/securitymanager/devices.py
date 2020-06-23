@@ -114,11 +114,10 @@ class Device(Record):
                 serialized['id'] = self._config['id']
                 # Put all this redundant nonsense back in. Why api, why?
                 serialized['devicePack'] = self._config['devicePack']
-                url = '{url}?manualRetrieval={retrieval}'.format(
-                                                    url=self.url,
-                                                    retrieval=str(retrieve))
+                params = {'manualRetrieval': retrieve}
                 req = Request(
-                    base=url,
+                    base=self.url,
+                    filters=params,
                     session=self.session,
                 )
                 if req.put(serialized):

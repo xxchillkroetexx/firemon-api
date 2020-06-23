@@ -112,12 +112,6 @@ class FiremonAPI(object):
         #   code this but this appears good enough.
         self.domain_id = domain_id
 
-        # This translates the major release to the dev pack major. Hopefully 
-        # we can get rid of this soon with 8.x going away.
-        self._major_to_pack = { '8': '1',
-                                '9': '9',
-                              }
-
         self.sm = SecurityManager(self)
         self.gpc = GlobalPolicyController(self)
         self.po = PolicyOptimizer(self)

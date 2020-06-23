@@ -171,7 +171,7 @@ class DevicePacks(Endpoint):
 
         key = 'list/DEVICE_PACK'
         filters = {'sort': 'artifactId',
-                   'showhidden': True}
+                   'showHidden': True}
         req = Request(
             base=self.url,
             key=key,

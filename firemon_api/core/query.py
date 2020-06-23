@@ -136,7 +136,10 @@ class Request(object):
                 return req.json()
             except json.JSONDecodeError:
                 # Assuming an empty body or data download
-                return req.content
+                if req.content:
+                    return req.content
+                else:
+                    return True
         else:
             raise RequestError(req)
 
