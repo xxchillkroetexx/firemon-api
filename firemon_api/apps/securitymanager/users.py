@@ -24,10 +24,9 @@ class User(Record):
     """ Represents a User in Firemon
 
     Args:
-        api (obj): FiremonAPI()
-        app (obj): App()
         config (dict): dictionary of things values from json
-
+        app (obj): App()
+        
     Examples:
         Unlock and Enable all users
         >>> for user in fm.sm.users.all():
@@ -39,8 +38,8 @@ class User(Record):
     ep_name = 'user'
     _domain_url = True
 
-    def __init__(self, api, app, config):
-        super().__init__(api, app, config)
+    def __init__(self, config, app):
+        super().__init__(config, app)
 
     def __repr__(self):
         return("<User(id='{}', username={})>".format(self.id, self.username))
@@ -101,17 +100,146 @@ class Users(Endpoint):
         conf['authServerId'] = None  # 0
         return conf
 
+
 class UserGroup(Record):
     """ Represents a UserGroup in Firemon
 
     Args:
-        api (obj): FiremonAPI()
-        app (obj): App()
         config (dict): dictionary of things values from json
+        app (obj): App()
+        
     """
 
-    ep_name = None
+    ep_name = 'usergroup'
+    _domain_url = True
 
-    def __init__(self, api, endpoint, config):
-        super().__init__(api, endpoint, config)
+    def __init__(self, config, app):
+        super().__init__(config, app)
 
+    def permission_list(self):
+        """ List all available permissions in Firemon. 
+
+        Return:
+            list: list of available permissions. 
+        """
+
+        key = 'permissiondefinition'
+        resp = Request(
+            base=self.app.domain_url,
+            key=key,
+            session=self.session,
+            ).get()
+
+        perms = []
+        for rg in resp:
+            #perms.extend(rg['permissions'])
+            for p in rg['permissions']:
+                perms.append(Permission(p, self.app))
+
+        return perms
+
+    def permission_show(self):
+        key = 'permissions'
+        resp = Request(
+            base=self.url,
+            key=key,
+            session=self.session,
+            ).get()
+
+        perms = []
+        for p in resp:
+            perms.append(Permission(p, self.app))
+
+        return perms
+
+    def permission_set(self, id):
+        """Set a permision for UserGroup.
+
+        Args:
+            id (int): see permission_list() for id values and meaning
+        """
+        key = 'permission/{}'.format(id)
+        resp = Request(
+            base=self.url,
+            key=key,
+            session=self.session,
+            ).post()
+
+        return resp
+
+    def permission_unset(self, id):
+        """Unset a permision for UserGroup.
+
+        Args:
+            id (int): see permission_list() for id values and meaning
+        """
+        key = 'permission/{}'.format(id)
+        resp = Request(
+            base=self.url,
+            key=key,
+            session=self.session,
+            ).delete()
+
+        return resp
+
+
+class UserGroups(Endpoint):
+    """Represents the User Groups
+
+    Args:
+        api (obj): FiremonAPI()
+        app (obj): App()
+        name (str): name of the endpoint
+
+    Kwargs:
+        record (obj): default `Record` object
+    """
+
+    ep_name = 'usergroup'
+    _domain_url = True
+
+    def __init__(self, api, app, record=UserGroup):
+        super().__init__(api, app, record=UserGroup)
+
+    def all(self):
+        """Get all `Record`
+        """
+        filters = {'includeMapping': True}
+
+        req = Request(
+            base=self.url,
+            filters=filters,
+            session=self.api.session,
+        )
+
+        return [self._response_loader(i) for i in req.get()]
+
+
+class Permission(Record):
+    """A Permission.
+    """
+    ep_name = 'permissions'
+
+    def __init__(self, config, app):
+        super().__init__(config, app)
+
+    def save(self):
+        raise NotImplementedError(
+            "Writes are not supported for this Record."
+        )
+
+    def update(self):
+        raise NotImplementedError(
+            "Writes are not supported for this Record."
+        )
+
+    def delete(self):
+        raise NotImplementedError(
+            "Writes are not supported for this Record."
+        )
+
+    def __repr__(self):
+        return("Permission<(id='{}')>".format(self.id))
+
+    def __str__(self):
+        return("{}".format(self.id))

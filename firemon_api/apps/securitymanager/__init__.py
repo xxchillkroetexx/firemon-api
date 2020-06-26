@@ -15,7 +15,7 @@ from .collectors import Collectors, Collector, CollectorGroups, CollectorGroup
 from .devicepacks import DevicePacks, DevicePack
 from .devices import Devices, Device
 from .revisions import Revisions, Revision, NormalizedData
-from .users import Users, User, UserGroup
+from .users import Users, User, UserGroup, UserGroups
 
 __all__ = ['CentralSyslogs',
            'CentralSyslog',
@@ -37,4 +37,5 @@ __all__ = ['CentralSyslogs',
            'Users',
            'User',
            'UserGroup',
+           'UserGroups',
            ]

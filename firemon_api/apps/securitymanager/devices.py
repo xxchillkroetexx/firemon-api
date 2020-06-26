@@ -19,7 +19,7 @@ from firemon_api.core.response import Record, JsonField
 from firemon_api.core.query import Request, url_param_builder, RequestError
 from .devicepacks import DevicePack
 from .collectionconfigs import CollectionConfigs
-from .revisions import Revisions
+from .revisions import Revisions, NormalizedData
 
 log = logging.getLogger(__name__)
 
@@ -120,8 +120,7 @@ class Device(Record):
                     filters=params,
                     session=self.session,
                 )
-                if req.put(serialized):
-                    return True
+                return req.put(serialized)
 
         return False
 
@@ -171,18 +170,16 @@ class Device(Record):
             True
         """
 
-        kwargs = {'deleteChildren': deleteChildren, 'async': a_sync,
+        filters = {'deleteChildren': deleteChildren, 'async': a_sync,
                   'sendNotification': sendNotification,
                   'postProcessing': postProcessing}
-        url = '{url}?{filters}'.format(url=self.url,
-                                    filters=urlencode(kwargs, 
-                                                    quote_via=quote))
+
         req = Request(
-            base=url,
+            base=self.url,
+            filters=filters,
             session=self.session,
         )
-        if req.delete():
-            return True
+        return req.delete()
 
     def rev_export(self, meta: bool=True):
         """Export latest configuration files as a zip file 
@@ -207,16 +204,18 @@ class Device(Record):
             38047
         """
         if meta:
-            url = '{url}/export'.format(url=self.url)
+            key = 'export'
         else:
-            url = '{url}/export/config'.format(url=self.url)
-        response = self.session.get(url)
-        if response.status_code == 200:
-            return response.content
-        else:
-            raise RequestError(response)
+            key = 'export/config'
+        req = Request(
+            base=self.url,
+            key=key,
+            session=self.session,
+        )
+        return req.get_content()
 
-    def import_config(self, f_list: list) -> bool:
+
+    def config_import(self, f_list: list) -> bool:
         """Import config files for device to create a new revision
 
         Args:
@@ -235,22 +234,36 @@ class Device(Record):
             ...     f_list.append(('file', (fn, open(path, 'rb'), 'text/plain')))
             >>> dev.import_config(f_list)
         """
-        self.session.headers.update({'Content-Type': 'multipart/form-data'})
-        changeUser = self.api.username  # Not really needed
+        changeUser = '{}_api_py'.format(self.api.username)  # Not really needed
         correlationId = str(uuid.uuid1())  # Not really needed
-        url = ('{url}/rev?action=IMPORT&changeUser={cu}'
-                        '&correlationId={ci}'.format(url=self.url,
-                                                     cu=changeUser,
-                                                     ci=correlationId))
-        log.debug('POST {}'.format(self.url))
-        response = self.session.post(url, files=f_list)
-        self.session.headers.pop('Content-type', None)
-        if response.status_code == 200:
-            return True
-        else:
-            raise RequestError(response)
+        filters = {'action': 'IMPORT', 'changeUser': changeUser,
+                    'correlationId': correlationId}
+        key = 'rev'
 
-    def import_support(self, zip_file: bytes, renormalize: bool=False):
+        req = Request(
+            base=self.url,
+            key=key,
+            filters=filters,
+            session=self.session,
+        )
+        return req.post(files=f_list)
+
+        #self.session.headers.update({'Content-Type': 'multipart/form-data'})
+        #changeUser = '{}_api_py'.format(self.api.username)  # Not really needed
+        #correlationId = str(uuid.uuid1())  # Not really needed
+        #url = ('{url}/rev?action=IMPORT&changeUser={cu}'
+        #                '&correlationId={ci}'.format(url=self.url,
+        #                                             cu=changeUser,
+        #                                             ci=correlationId))
+        #log.debug('POST {}'.format(self.url))
+        #response = self.session.post(url, files=f_list)
+        ##self.session.headers.pop('Content-type', None)
+        #if response.status_code == 200:
+        #    return True
+        #else:
+        #    raise RequestError(response)
+
+    def support_import(self, zip_file: bytes, renormalize: bool=False):
         """ Todo: Import a 'support' file, a zip file with the expected device
         config files along with 'NORMALIZED' and meta-data files. Use this
         function and set 'renormalize = True' and mimic 'import_config'.
@@ -270,33 +283,51 @@ class Device(Record):
             >>> with open(fn, 'rb') as f:
             >>>     zip_file = f.read()
             >>> dev.import_support(zip_file)
+
+            >>> dev = fm.sm.devices.get(name='vsrx-2')
+            >>> fn = 'vsrx-2.zip'
+            >>> path = '/path/to/file/vsrx-2.zip'
+            >>> dev.import_support((fn, open(path, 'rb'))
         """
-        self.session.headers.update({'Content-Type': 'multipart/form-data'})
-        url = '{url}/import?renormalize={tonorm}'.format(url=self.url,
-                                                    tonorm=str(renormalize))
+        filters = {'renormalize': renormalize}
         files = {'file': zip_file}
-        log.debug('POST {}'.format(self.url))
-        response = self.session.post(url, files=files)
-        self.session.headers.pop('Content-type', None)
-        if response.status_code == 200:
-            return True
-        else:
-            raise RequestError(response)
+        key = 'import'
 
-    def exec_retrieval(self, debug: bool=False):
-        """Have current device begin a manual retrieval.
-
-        Kwargs:
-            debug (bool): ???
-        """
-        url = '{url}/manualretrieval?debug={debug}'.format(url=self.url,
-                                                           debug=str(debug))
         req = Request(
-            base=url,
+            base=self.url,
+            key=key,
+            filters=filters,
             session=self.session,
         )
-        if req.post(None):
-            return True
+        return req.post(files=files)
+
+        #self.session.headers.update({'Content-Type': 'multipart/form-data'})
+        #url = '{url}/import?renormalize={tonorm}'.format(url=self.url,
+        #                                            tonorm=str(renormalize))
+        #files = {'file': zip_file}
+        #log.debug('POST {}'.format(self.url))
+        #response = self.session.post(url, files=files)
+        #self.session.headers.pop('Content-type', None)
+        #if response.status_code == 200:
+        #    return True
+        #else:
+        #    raise RequestError(response)
+
+    def retrieval_exec(self, debug: bool=False):
+        """Execute a manual retrieval for device.
+
+        Kwargs:
+            debug (bool): Unsure what this does
+        """
+
+        filters = {'manualretrieval': debug}
+
+        req = Request(
+            base=self.url,
+            filters=filters,
+            session=self.session,
+        )
+        return req.post()
 
     def rule_usage(self, type: str='total'):
         """Get rule usage for device.
@@ -309,10 +340,10 @@ class Device(Record):
             json: daily == {'hitDate': '....', 'totalHits': int}
                   total == {'totalHits': int}
         """
-        url = '{url}/ruleusagestat/{type}'.format(url=self.url,
-                                                    type=type)
+        key = 'ruleusagestat/{type}'.format(type=type)
         req = Request(
-            base=url,
+            base=self.url,
+            key=key,
             session=self.session,
         )
         return req.get()
@@ -320,25 +351,23 @@ class Device(Record):
     def nd_problem(self):
         """Retrieve problems with latest normalization
         """
-        url = '{url}/device/{id}/nd/problem'.format(url=self.app_url,
-                                                    id=self.id)
+        key = 'device/{id}/nd/problem'.format(id=self.id)
         req = Request(
-            base=url,
+            base=self.app_url,
+            key=key,
             session=self.session,
         )
         return req.get()
 
-    def get_nd_latest(self):
+    def nd_latest_get(self):
         """Gets the latest revision as a fully parsed object """
-        url = self.url + '/rev/latest/nd/all'
-        self.session.headers.update({'Accept': 'application/json'})
-        log.debug('GET {}'.format(self.url))
-        response = self.session.get(url)
-        if response.status_code == 200:
-            return ParsedRevision(self.devs, response.json())
-        else:
-            raise FiremonError('Error: Unable to retrieve latest parsed '
-                                'revision')
+        key = 'rev/latest/nd/all'
+        req = Request(
+            base=self.url,
+            key=key,
+            session=self.session,
+        )
+        return NormalizedData(req.get(), self.app)
 
     def ssh_key_remove(self):
         """Remove ssh key from all Collectors for Device.
@@ -346,13 +375,13 @@ class Device(Record):
         Notes:
             SSH Key location: /var/lib/firemon/dc/.ssh/known_hosts
         """
-        url = '{url}/sshhostkey'.format(url=self.url)
+        key = 'sshhostkey'
         req = Request(
-            base=url,
+            base=self.url,
+            key=key,
             session=self.session,
         )
-        if req.put(None):
-            return True
+        return req.put()
 
     def __repr__(self):
         if len(str(self.id)) > 10:
@@ -386,6 +415,12 @@ class Devices(Endpoint):
     def __init__(self, api, app, record=Device):
         super().__init__(api, app, record=Device)
 
+    def _make_filters(self, values):
+        # Only a 'search' for a single value. Take all key-values
+        # and use the first key's value for search query
+        filters = {'search': values[next(iter(values))]}
+        return filters
+
     def create(self, dev_config, retrieve: bool=False):
         """  Create a new device
 
@@ -404,17 +439,27 @@ class Devices(Endpoint):
             >>> dev = fm.sm.devices.create(config)
             Conan
         """
-        assert(isinstance(dev_config, dict)), 'Configuration needs to be a dict'
-        url = self.url + '?manualRetrieval={retrieve}'.format(
-                                                        retrieve=str(retrieve))
-        self.session.headers.update({'Content-Type': 'application/json'})
-        log.debug('POST {}'.format(self.url))
-        response = self.session.post(url, json=dev_config)
-        if response.status_code == 200:
-            config = json.loads(response.content)
-            return self.get(config['id'])
-        else:
-            raise DeviceError("ERROR installing device! HTTP code: {}  "
-                              "Server response: {}".format(
-                                            response.status_code,
-                                            response.text))
+        filters = {'manualRetrieval': retrieve}
+        req = Request(
+            base=self.url,
+            filters=filters,
+            session=self.api.session,
+        ).post(data=dev_config)
+
+        return self._response_loader(req)
+
+
+        #assert(isinstance(dev_config, dict)), 'Configuration needs to be a dict'
+        #url = self.url + '?manualRetrieval={retrieve}'.format(
+        #                                                retrieve=str(retrieve))
+        #self.session.headers.update({'Content-Type': 'application/json'})
+        #log.debug('POST {}'.format(self.url))
+        #response = self.session.post(url, json=dev_config)
+        #if response.status_code == 200:
+        #    config = json.loads(response.content)
+        #    return self.get(config['id'])
+        #else:
+        #    raise DeviceError("ERROR installing device! HTTP code: {}  "
+        #                      "Server response: {}".format(
+        #                                    response.status_code,
+        #                                    response.text))

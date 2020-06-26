@@ -105,9 +105,12 @@ class Request(object):
         return key
 
     def _make_call(
-        self, verb="get", url_override=None, add_params=None, data=None
-    ):
-        if verb in ("post", "put"):
+        self, verb="get", url_override=None, add_params=None, 
+        data=None, files=None
+        ):
+        if verb in ('post') and files:
+            {'Content-Type': 'multipart/form-data'}
+        elif verb in ("post", "put"):
             headers = {"Content-Type": "application/json;"}
         else:
             headers = {"accept": "application/json;"}
@@ -124,7 +127,7 @@ class Request(object):
 
         req = getattr(self.session, verb)(
             url_override or self.url, headers=headers, verify=self.verify,
-            params=params, json=data
+            params=params, json=data, files=files,
         )
 
         log.debug(req.request.headers)  # sent headers
@@ -198,9 +201,10 @@ class Request(object):
         else:
             return req
 
-    def put(self, data):
+    def put(self, data=None):
         """Makes PUT request.
-        Makes a PUT request to Firemon API.
+        Makes a PUT request to Firemon API. Not sure why we have PUT statements
+        with no data but it is what it is.
 
         Args:
             data (dict): Contains a dict that will be turned 
@@ -214,13 +218,21 @@ class Request(object):
         """
         return self._make_call(verb="put", data=data)
 
-    def post(self, data):
+    def post(self, data=None, files=None):
         """Makes POST request.
         Makes a POST request to Firemon API.
 
-        Args:
+        Kwargs:
             data (dict): Contains a dict that will be turned 
-            into a json object and sent to the API.
+            into a json and sent to the API.
+            files (list/dict): See `Requests` how-to
+            list of tuples formatted:
+                ('file', bytes, 'text/plain'))
+                ('file', ('<file-name>', open(<path_to_file>, 'rb'))            
+            dict formatted:
+                {'file': bytes}
+                {'file': ('<file-name>', open(<path_to_file>, 'rb')}
+                {'devicepack.jar': bytes}
 
         Raises:
             RequestError: if req.ok returns false.
@@ -228,7 +240,7 @@ class Request(object):
         Returns:
             dict: data from the endpoint.
         """
-        return self._make_call(verb="post", data=data)
+        return self._make_call(verb="post", data=data, files=files)
 
     def delete(self):
         """Makes DELETE request.

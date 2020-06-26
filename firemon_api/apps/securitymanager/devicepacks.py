@@ -74,7 +74,7 @@ class DevicePack(Record):
             filters=filters,
             session=self.session,
         )
-        return req.post(None)
+        return req.post()
 
     def get(self, name='dc.zip'):
         """Get the blob (artifact) from Device Pack
@@ -111,11 +111,11 @@ class DevicePack(Record):
         template['name'] = None
         template['description'] = None
         template['managementIp'] = None
-        template['domainId'] = self.api.domain_id
+        template['domainId'] = self.app.api.domain_id
         # Fix? in later versions we require a Group
         #template['dataCollectorId'] = 1  # Assuming
-        #template['dataCollectorGroupId] = ''
-        #template['dataCollectorGroupName'] = ''
+        #template['collectorGroupId] = ''
+        #template['collectorGroupName'] = ''
         template['devicePack'] = {}
         template['devicePack']['artifactId'] = self.artifactId
         template['devicePack']['deviceName'] = self.deviceName
@@ -247,19 +247,41 @@ class DevicePacks(Endpoint):
         """ Upload device pack
 
         Args:
-            file (bytes): the bytes to send that make a device pack
+            file (bytes): the bytes to send that make a device pack (JAR)
 
         Returns:
             bool: The return value. True for success upload, False otherwise
+
+        Example:
+            >>> dp = fm.sm.dp.get('juniper_srx')
+            >>> fn = '/path/to/file/srx.jar'
+            >>> with open(fn, 'rb') as f:
+            >>>     file = f.read()
+            >>> dp.upload(file)
+
+            >>> dp = fm.sm.dp.get('juniper_srx')
+            >>> fn = 'srx.jar'
+            >>> path = '/path/to/file/srx.jar'
+            >>> dp.upload((fn, open(path, 'rb'))
         """
-        url = '{url}/?overwrite=true'.format(url=self.url)
-        self.session.headers.pop('Content-type', None)  # If "content-type" exists get rid.
-        log.debug('POST {}'.format(url))
-        resp = self.session.post(url, files={'devicepack.jar': file})
-        if resp.status_code == 200:
-            return True
-        else:
-            raise RequestError(resp)
+        files = {'devicepack.jar': file}
+        filters = {'overwrite': True}
+
+        req = Request(
+            base=self.url,
+            filters=filters,
+            session=self.session,
+        )
+        return req.post(files=files)
+
+        #url = '{url}/?overwrite=true'.format(url=self.url)
+        #self.session.headers.pop('Content-type', None)  # If "content-type" exists get rid.
+        #log.debug('POST {}'.format(url))
+        #resp = self.session.post(url, files={'devicepack.jar': file})
+        #if resp.status_code == 200:
+        #    return True
+        #else:
+        #    raise RequestError(resp)
 
 
 class ArtifactFile(Record):

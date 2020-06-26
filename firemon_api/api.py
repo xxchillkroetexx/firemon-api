@@ -51,10 +51,10 @@ class FiremonAPI(object):
             If Tuple, ('cert', 'key') pair.
             ex: openssl x509 -in <(openssl s_client -connect {SERVER}:{PORT} \
                 -prexit 2>/dev/null) > {SERVER}.pem
-        domainId (int): the domain.
+        domain_id (int): the domain.
         proxy (str): ip.add.re.ss:port of proxy
 
-    Valid attributes currently are (see domainId setter for updates):
+    Valid attributes currently are (see domain_id setter for updates):
         * sm: SecurityManager()
         * gpc: GlobalPolicyController()
         * pp: PolicyPlanner()
@@ -63,16 +63,16 @@ class FiremonAPI(object):
     Examples:
         Import the API
         >>> import firemon_api as fmapi
-        >>> fm = fmapi.api('hobbes', 'firemon', 'firemon')
+        >>> fm = fmapi.api('carebear-aio', 'firemon', 'firemon')
         >>> fm
-        Firemon: hobbes ver. 8.24.1
+        <Firemon(host='carebear-aio', version='9.2.0')>
 
         >>> fm.sm.dp.all()
 
         >>> fm.sm.devices.all()
 
         Change working domain
-        >>> fm.domainId = 2
+        >>> fm.domain_id = 2
     """
 
     def __init__(
@@ -130,7 +130,7 @@ class FiremonAPI(object):
             base=self._base_url,
             key=key,
             session=self.session,
-        ).post(payload)
+        ).post(data=payload)
 
     def versions(self):
         """All the versions from API"""
@@ -144,12 +144,12 @@ class FiremonAPI(object):
 
     def _verify_domain(self, id):
         """ Verify that requested domain Id exists.
-        Set the domainId that will be used.
+        Set the domain_id that will be used.
         """
-        url = "{}/securitymanager/api/domain/{id}".format(self.base_url,
-                                                        id=str(id))
+        key = "securitymanager/api/domain/{id}".format(id=str(id))
         resp = Request(
-            base=url,
+            base=self._base_url,
+            key=key,
             session=self.session,
         ).get()
         self.domain_name = resp['name']
@@ -168,7 +168,8 @@ class FiremonAPI(object):
 
     @domain_id.setter
     def domain_id(self, id):
-        self._verify_domain(id)  # User may not be authorized to validate domain.
+        self._verify_domain(id)  # User may not be authorized to validate domain
+                                 # or it just does not exist
         self._domain = id  # Set domain regardless and pop a warning if unable to validate
 
     @property
