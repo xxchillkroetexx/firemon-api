@@ -54,7 +54,7 @@ class CentralSyslog(Record):
             key=key,
             session=self.session,
         )
-        return req.post(None)
+        return req.post()
 
     def device_unset(self, id: int):
         """Unset a device to this Central Syslog
@@ -88,7 +88,7 @@ class CentralSyslog(Record):
             key=key,
             session=self.session,
         )
-        return req.put(None)
+        return req.put()
 
     def devices(self):
         # todo: return all devices assigned to this CS

@@ -65,7 +65,7 @@ class CollectionConfig(Record):
             key=key,
             session=self.session,
         )
-        return req.put(None)
+        return req.put()
 
     def devicepack_unset(self) -> bool:
         """ Unset CollectionConfig for Device Pack assignment.
@@ -100,7 +100,7 @@ class CollectionConfig(Record):
             key=key,
             session=self.session,
         )
-        return req.put(None)
+        return req.put()
 
     def device_unset(self, id) -> bool:
         """ Unset a device from CollectionConfig

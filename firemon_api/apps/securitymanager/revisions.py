@@ -80,11 +80,12 @@ class Revision(Record):
             bytes: zip file
         """
         if meta:
-            url = '{url}/export'.format(url=self.url)
+            key = 'export'
         else:
-            url = '{url}/export/config'.format(url=self.url)
+            key = 'export/config'
         req = Request(
-            base=url,
+            base=self.url,
+            key=key,
             session=self.session,
         )
         return req.get_content()

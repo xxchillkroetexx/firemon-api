@@ -170,7 +170,7 @@ class Endpoint(object):
             base=self.url,
             key=self._ep['create'],
             session=self.api.session,
-        ).post(args[0] if args else kwargs)
+        ).post(data=args[0] if args else kwargs)
 
         if isinstance(req, list):
             return [self._response_loader(i) for i in req]
@@ -192,7 +192,7 @@ class Endpoint(object):
         return ret.get_count()
 
     def __repr__(self):
-        return("<Endpoint({})>".format(self.name))
+        return("<Endpoint({})>".format(self.url))
 
     def __str__(self):
-        return('{}'.format(self.name))
+        return('{}'.format(self.url))

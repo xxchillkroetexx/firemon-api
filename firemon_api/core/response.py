@@ -104,8 +104,9 @@ class Record(object):
         return item
 
     def __str__(self):
-        return (getattr(self, "name", None) or 
-                getattr(self, "id", None) or "__unknown__")
+        return str((getattr(self, "name", None)) or 
+                str(getattr(self, "id", None)) or 
+                "__unknown__")
 
     def __repr__(self):
         #return("Record<({})>".format(str(self)))
@@ -312,8 +313,7 @@ class Record(object):
                     key=self.id if not self.url else None,
                     session=self.api.session,
                 )
-                if req.put(serialized):
-                    return True
+                return req.put(serialized)
 
         return False
 

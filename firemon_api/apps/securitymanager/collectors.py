@@ -120,7 +120,7 @@ class CollectorGroup(Record):
             key=key,
             session=self.session,
         )
-        return req.put(None)
+        return req.put()
 
     #def member_unset(self, cid):
         # Need to get this working to make set useful
@@ -139,7 +139,7 @@ class CollectorGroup(Record):
             key=key,
             session=self.session,
         )
-        return req.put(None)
+        return req.put()
 
     def __repr__(self):
         if len(str(self.id)) > 10:
