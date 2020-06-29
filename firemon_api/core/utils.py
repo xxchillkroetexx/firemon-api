@@ -51,6 +51,7 @@ def _build_dict(seq: list, key: str) -> dict:
     """
     return dict((d[key], dict(d, index=index)) for (index, d) in enumerate(seq))
 
+
 class Hashabledict(dict):
     def __hash__(self):
         return hash(frozenset(self))

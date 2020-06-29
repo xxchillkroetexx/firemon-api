@@ -80,6 +80,7 @@ class SecurityManager(App):
         self.revisions = Revisions(self.api, self)
         self.users = Users(self.api, self)
         self.usergroups = UserGroups(self.api, self)
+        self.siql = Siql(self.api, self)
 
     # Make an es endpoint
     #def es_reindex(self):

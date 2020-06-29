@@ -16,6 +16,7 @@ from .devicepacks import DevicePacks, DevicePack
 from .devices import Devices, Device
 from .revisions import Revisions, Revision, NormalizedData
 from .users import Users, User, UserGroup, UserGroups
+from .siql import Siql
 
 __all__ = ['CentralSyslogs',
            'CentralSyslog',
@@ -38,4 +39,5 @@ __all__ = ['CentralSyslogs',
            'User',
            'UserGroup',
            'UserGroups',
+           'Siql',
            ]

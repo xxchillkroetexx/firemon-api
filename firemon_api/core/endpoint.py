@@ -192,7 +192,7 @@ class Endpoint(object):
         return ret.get_count()
 
     def __repr__(self):
-        return("<Endpoint({})>".format(self.name))
+        return("<Endpoint({})>".format(self.url))
 
     def __str__(self):
-        return('{}'.format(self.name))
+        return('{}'.format(self.url))
