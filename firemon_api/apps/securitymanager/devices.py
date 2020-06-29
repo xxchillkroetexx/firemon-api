@@ -319,11 +319,12 @@ class Device(Record):
         Kwargs:
             debug (bool): Unsure what this does
         """
-
-        filters = {'manualretrieval': debug}
+        key = 'manualretrieval'
+        filters = {'debug': debug}
 
         req = Request(
             base=self.url,
+            key=key,
             filters=filters,
             session=self.session,
         )
