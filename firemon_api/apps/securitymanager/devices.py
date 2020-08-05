@@ -234,7 +234,7 @@ class Device(Record):
             ...     f_list.append(('file', (fn, open(path, 'rb'), 'text/plain')))
             >>> dev.import_config(f_list)
         """
-        changeUser = '{}_api_py'.format(self.api.username)  # Not really needed
+        changeUser = '{}_api_py'.format(self.app.api.username)  # Not really needed
         correlationId = str(uuid.uuid1())  # Not really needed
         filters = {'action': 'IMPORT', 'changeUser': changeUser,
                     'correlationId': correlationId}
@@ -444,7 +444,7 @@ class Devices(Endpoint):
         req = Request(
             base=self.url,
             filters=filters,
-            session=self.api.session,
+            session=self.session,
         ).post(data=dev_config)
 
         return self._response_loader(req)

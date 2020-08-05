@@ -114,7 +114,7 @@ class GlobalPolicyController(App):
         super().__init__(api)
 
         # Endpoints
-        #self.xx = EndPoint(self)
+        self.policycompute = PolicyCompute(self.api, self)
 
 
 class PolicyOptimizer(App):

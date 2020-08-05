@@ -16,7 +16,7 @@ with open(ver_path) as f:
     exec(f.read(), main_ns)
 
 setup(
-    name='firemon-api',
+    name=PROJECT,
     version=main_ns['__version__'],
     description='NetSec Python Wrapper for Firemon API',
     long_description=readme,
