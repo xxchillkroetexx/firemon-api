@@ -215,7 +215,9 @@ class Device(Record):
         return req.get_content()
 
 
-    def config_import(self, f_list: list) -> bool:
+    def config_import(self, f_list: list,
+                      change_user=None,
+                      correlation_id=None) -> bool:
         """Import config files for device to create a new revision
 
         Args:
@@ -223,6 +225,10 @@ class Device(Record):
             as a multipart form using 'requests'. format of the data in the
             tuple is:
             ('file', ('<file-name>', open(<path_to_file>, 'rb'), 'text/plain'))
+
+        Kwargs:
+            change_user (str): A name for display field
+            correlation_id (str): A UUID1
 
         Example:
             >>> import os
@@ -234,10 +240,14 @@ class Device(Record):
             ...     f_list.append(('file', (fn, open(path, 'rb'), 'text/plain')))
             >>> dev.import_config(f_list)
         """
-        changeUser = '{}_api_py'.format(self.app.api.username)  # Not really needed
-        correlationId = str(uuid.uuid1())  # Not really needed
-        filters = {'action': 'IMPORT', 'changeUser': changeUser,
-                    'correlationId': correlationId}
+        if not change_user:
+            # Not needed as server will go on its merry way with nothing
+            change_user = '{}:[firemon_api]'.format(self.app.api.username)
+        if not correlation_id:
+            # Not needed as server will generate one for us. But... whatever.
+            correlation_id = str(uuid.uuid1())
+        filters = {'action': 'IMPORT', 'changeUser': change_user,
+                    'correlationId': correlation_id}
         key = 'rev'
 
         req = Request(
@@ -247,21 +257,6 @@ class Device(Record):
             session=self.session,
         )
         return req.post(files=f_list)
-
-        #self.session.headers.update({'Content-Type': 'multipart/form-data'})
-        #changeUser = '{}_api_py'.format(self.api.username)  # Not really needed
-        #correlationId = str(uuid.uuid1())  # Not really needed
-        #url = ('{url}/rev?action=IMPORT&changeUser={cu}'
-        #                '&correlationId={ci}'.format(url=self.url,
-        #                                             cu=changeUser,
-        #                                             ci=correlationId))
-        #log.debug('POST {}'.format(self.url))
-        #response = self.session.post(url, files=f_list)
-        ##self.session.headers.pop('Content-type', None)
-        #if response.status_code == 200:
-        #    return True
-        #else:
-        #    raise RequestError(response)
 
     def support_import(self, zip_file: bytes, renormalize: bool=False):
         """ Todo: Import a 'support' file, a zip file with the expected device
@@ -300,18 +295,6 @@ class Device(Record):
             session=self.session,
         )
         return req.post(files=files)
-
-        #self.session.headers.update({'Content-Type': 'multipart/form-data'})
-        #url = '{url}/import?renormalize={tonorm}'.format(url=self.url,
-        #                                            tonorm=str(renormalize))
-        #files = {'file': zip_file}
-        #log.debug('POST {}'.format(self.url))
-        #response = self.session.post(url, files=files)
-        #self.session.headers.pop('Content-type', None)
-        #if response.status_code == 200:
-        #    return True
-        #else:
-        #    raise RequestError(response)
 
     def retrieval_exec(self, debug: bool=False):
         """Execute a manual retrieval for device.
@@ -448,19 +431,3 @@ class Devices(Endpoint):
         ).post(data=dev_config)
 
         return self._response_loader(req)
-
-
-        #assert(isinstance(dev_config, dict)), 'Configuration needs to be a dict'
-        #url = self.url + '?manualRetrieval={retrieve}'.format(
-        #                                                retrieve=str(retrieve))
-        #self.session.headers.update({'Content-Type': 'application/json'})
-        #log.debug('POST {}'.format(self.url))
-        #response = self.session.post(url, json=dev_config)
-        #if response.status_code == 200:
-        #    config = json.loads(response.content)
-        #    return self.get(config['id'])
-        #else:
-        #    raise DeviceError("ERROR installing device! HTTP code: {}  "
-        #                      "Server response: {}".format(
-        #                                    response.status_code,
-        #                                    response.text))
