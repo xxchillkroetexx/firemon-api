@@ -41,7 +41,7 @@ from logging import NullHandler
 import urllib3
 
 # Local
-from firemon_api.api import FiremonAPI as api
+from firemon_api.core.api import FiremonAPI as api
 from firemon_api.version import __version__
 
 logging.getLogger(__name__).addHandler(NullHandler())
