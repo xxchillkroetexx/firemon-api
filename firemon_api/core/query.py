@@ -109,7 +109,7 @@ class Request(object):
         data=None, files=None
         ):
         if verb in ('post') and files:
-            {'Content-Type': 'multipart/form-data'}
+            headers = {'Content-Type': 'multipart/form-data'}
         elif verb in ("post", "put"):
             headers = {"Content-Type": "application/json;"}
         else:
