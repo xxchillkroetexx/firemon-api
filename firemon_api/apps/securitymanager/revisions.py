@@ -123,14 +123,6 @@ class Revision(Record):
         )
         return req.get()
 
-    def __repr__(self):
-        return("<Revision(id='{}', device='{}')>".format(
-                                                    self.id,
-                                                    self.deviceId))
-
-    def __str__(self):
-        return("{}".format(self.id))
-
 
 class Revisions(Endpoint):
     """Revisions Endpoint.
@@ -283,8 +275,5 @@ class NormalizedData(Record):
                                  id=self._config['revisionId'])
         return url
 
-    def __repr__(self):
-        return("NormalizedData<(id='{}')>".format(self.revisionId))
-
     def __str__(self):
-        return("{}".format(self.revisionId))
+        return str(self.revisionId)

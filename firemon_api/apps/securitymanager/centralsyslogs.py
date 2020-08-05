@@ -94,12 +94,6 @@ class CentralSyslog(Record):
         # todo: return all devices assigned to this CS
         pass
 
-    def __repr__(self):
-        return("<CentralSyslog(id='{}', name='{}')>".format(self.id, self.name))
-
-    def __str__(self):
-        return("{}".format(self.name))
-
 
 class CentralSyslogs(Endpoint):
     """Central Syslogs Endpoint

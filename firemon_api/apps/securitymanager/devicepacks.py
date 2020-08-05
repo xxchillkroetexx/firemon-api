@@ -131,11 +131,8 @@ class DevicePack(Record):
                 template['extendedSettingsJson'][response["key"]] = response["defaultValue"]
         return template
 
-    def __repr__(self):
-        return("<DevicePack(artifactId='{}')>".format(self.artifactId))
-
     def __str__(self):
-        return("{}".format(self.artifactId))
+        return str(self.artifactId)
 
 
 class DevicePacks(Endpoint):
