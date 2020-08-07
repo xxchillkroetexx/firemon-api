@@ -34,13 +34,6 @@ class CentralSyslogConfig(Record):
     def __init__(self, config, app):
         super().__init__(config, app)
 
-    def __repr__(self):
-        return("<CentralSyslogConfig(id='{}, name='{}')>".format(
-                                                self.id, self.name))
-
-    def __str__(self):
-        return("{}".format(self.name))
-
 
 class CentralSyslogConfigs(Endpoint):
     """Central Syslog Configs Endpoint

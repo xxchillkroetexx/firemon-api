@@ -121,13 +121,6 @@ class CollectionConfig(Record):
         )
         return req.delete()
 
-    def __repr__(self):
-        return("<CollectionConfig(id='{}', name='{}')>".format(
-                                                        self.id, self.name))
-
-    def __str__(self):
-        return("{}".format(self.name))
-
 
 class CollectionConfigs(Endpoint):
     """Collection Configs Endpoint

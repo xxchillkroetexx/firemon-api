@@ -41,14 +41,6 @@ class SiqlData(Record):
             "Writes are not supported for this Record."
         )
 
-    def __str__(self):
-        return str((getattr(self, "name", None)) or 
-                str(getattr(self, "id", None)) or 
-                "__unknown__")
-
-    def __repr__(self):
-        return str(self)
-
 
 class Siql(object):
     """Represent actions on the SIQL endpoint. All functions

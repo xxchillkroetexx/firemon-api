@@ -108,9 +108,8 @@ class FiremonAPI(object):
 
         self.host = host
 
-        # Many of the APIs requires a domain ID. There is also a fair amount
-        #   that does not require a Domain ID. There may be a better way to
-        #   code this but this appears good enough.
+        # Many of the APIs requires a domain ID. In order to be
+        # broadly useful require this to be set.
         self.domain_id = domain_id
 
         self.sm = SecurityManager(self)
@@ -156,11 +155,11 @@ class FiremonAPI(object):
         self.domain_description = resp['description']
 
     def __repr__(self):
-        return("<Firemon(host='{}', "
+        return ("<Firemon(host='{}', "
             "version='{}')>".format(self.host, self.version))
 
     def __str__(self):
-        return("FMOS: {} ver. {}".format(self.host, self.version))
+        return self.host
 
     @property
     def domain_id(self):

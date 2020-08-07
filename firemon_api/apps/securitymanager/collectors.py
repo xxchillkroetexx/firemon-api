@@ -55,20 +55,6 @@ class Collector(Record):
 
         return [Device(config, self.app) for config in req.get()]
 
-    def __repr__(self):
-        if len(str(self.id)) > 10:
-            id = '{}...'.format(self.id[0:9])
-        else:
-            id = self.id
-        if len(self.name) > 10:
-            name = '{}...'.format(self.name[0:9])
-        else:
-            name = self.name
-        return("<Collector(id='{}', name='{}')>".format(id, name))
-
-    def __str__(self):
-        return("{}".format(self.name))
-
 
 class Collectors(Endpoint):
     """ Represents the Data Collectors
@@ -140,20 +126,6 @@ class CollectorGroup(Record):
             session=self.session,
         )
         return req.put()
-
-    def __repr__(self):
-        if len(str(self.id)) > 10:
-            id = '{}...'.format(self.id[0:9])
-        else:
-            id = self.id
-        if len(self.name) > 10:
-            name = '{}...'.format(self.name[0:9])
-        else:
-            name = self.name
-        return("<CollectorGroup(id='{}', name='{}')>".format(id, name))
-
-    def __str__(self):
-        return("{}".format(self.name))
 
 
 class CollectorGroups(Endpoint):

@@ -109,8 +109,11 @@ class Record(object):
                 "__unknown__")
 
     def __repr__(self):
-        #return("Record<({})>".format(str(self)))
-        return str(self)
+        #return str(self)
+        return ("<{}({})>".format(
+            self.__class__.__name__,
+            str(self)
+        ))
 
     def __getstate__(self):
         return self.__dict__

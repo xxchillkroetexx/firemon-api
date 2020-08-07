@@ -41,11 +41,8 @@ class User(Record):
     def __init__(self, config, app):
         super().__init__(config, app)
 
-    def __repr__(self):
-        return("<User(id='{}', username={})>".format(self.id, self.username))
-
     def __str__(self):
-        return("{}".format(self.username))
+        return str(self.username)
 
 
 class Users(Endpoint):
