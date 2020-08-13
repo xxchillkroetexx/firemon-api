@@ -316,9 +316,3 @@ class ArtifactFile(Record):
             session=self.session,
         )
         return req.get_content()
-
-    def __repr__(self):
-        return("ArtifactFile<(name='{}')>".format(self.name))
-
-    def __str__(self):
-        return("{}".format(self.name))
