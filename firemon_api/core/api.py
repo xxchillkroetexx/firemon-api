@@ -10,8 +10,9 @@ limitations under the License.
 # Standard packages
 import json
 import logging
-from typing import Optional
+from urllib.parse import urlparse
 import warnings
+from typing import Optional
 
 # Third-Party packages
 import requests  # performing web requests
@@ -65,7 +66,8 @@ class FiremonAPI(object):
         >>> import firemon_api as fmapi
         >>> fm = fmapi.api('carebear-aio', 'firemon', 'firemon')
         >>> fm
-        <Firemon(host='carebear-aio', version='9.2.0')>
+        >>> fm
+        <Firemon(url='https://redfin-aio', version='10.0.0')>
 
         >>> fm.sm.dp.all()
 
@@ -126,7 +128,7 @@ class FiremonAPI(object):
         key = 'securitymanager/api/authentication/login'
         payload = {'username': self.username, 'password': self.password}
         Request(
-            base=self._base_url,
+            base=self.base_url,
             key=key,
             session=self.session,
         ).post(data=payload)
@@ -135,7 +137,7 @@ class FiremonAPI(object):
         """All the versions from API"""
         key = 'securitymanager/api/version'
         resp = Request(
-            base=self._base_url,
+            base=self.base_url,
             key=key,
             session=self.session,
         ).get()
@@ -147,7 +149,7 @@ class FiremonAPI(object):
         """
         key = "securitymanager/api/domain/{id}".format(id=str(id))
         resp = Request(
-            base=self._base_url,
+            base=self.base_url,
             key=key,
             session=self.session,
         ).get()
@@ -155,8 +157,8 @@ class FiremonAPI(object):
         self.domain_description = resp['description']
 
     def __repr__(self):
-        return ("<Firemon(host='{}', "
-            "version='{}')>".format(self.host, self.version))
+        return ("<Firemon(url='{}', "
+            "version='{}')>".format(self._base_url, self.version))
 
     def __str__(self):
         return self.host
@@ -182,7 +184,11 @@ class FiremonAPI(object):
     @host.setter
     def host(self, host):
         self._host = host
-        self._base_url = 'https://{}'.format(host)
+        p_host = urlparse(host)
+        if p_host.netloc:
+            self._base_url = 'https://{}'.format(p_host.netloc)
+        else:
+            self._base_url = 'https://{}'.format(host)
         self._auth()
         self._version = self.versions()['fmosVersion']
 

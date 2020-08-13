@@ -12,3 +12,47 @@ From the command line execute `pip` pointing at the repository.
 ```
 $ pip install git+https://stash.securepassage.com/scm/nsu/firemon-api#egg=firemon-api
 ```
+
+# Usage
+
+Import module. Disable unverfied https certificate warnings. Switch https verification off.
+
+```
+>>> import firemon_api as fmapi
+>>> fmapi.disable_warnings()
+>>> fm = fmapi.api('saffron', 'firemon', 'firemon', verify=False)
+>>> fm
+<Firemon(url='https://saffron', version='10.0.0')>
+>>> for dev in fm.sm.devices.all():
+...   print(dev.name)
+...
+asa-2961.lab.firemon.com
+ASA5505-8-3-2
+ciscoASA8dot2
+CSM-2
+vSRX-3
+```
+
+Create a new Device. Newer versions of Firemon require we specify which Collector Group and ID to use. Grab the first Collector Group. 
+
+Use all the default information from the device pack for our device.
+
+Add in some required information and other settings to our dictionary.
+
+Create the device.
+
+```
+>>> cg = fm.sm.collectorgroups.all()[0]
+>>> config = fm.sm.dp.get('juniper_srx').template()
+>>> config['name'] = 'Conan'
+>>> config['description'] = 'A test of the API'
+>>> config['managementIp'] = '10.2.2.2'
+>>> config['collectorGroupId'] = cg.id
+>>> config['collectorGroupName'] = cg.name
+>>> config['extendedSettingsJson']['password'] = 'abc12345'
+>>> dev = fm.sm.devices.create(config)
+>>> dev
+<Device(Conan)>
+```
+
+
