@@ -77,24 +77,12 @@ class SecurityManager(App):
         self.collectorgroups = CollectorGroups(self.api, self)
         self.devices = Devices(self.api, self)
         self.dp = DevicePacks(self.api, self)  # Todo: create the other /plugin
+        self.es = ElasticSearch(self.api, self)
+        self.license = License(self.api, self)
         self.revisions = Revisions(self.api, self)
         self.users = Users(self.api, self)
         self.usergroups = UserGroups(self.api, self)
         self.siql = Siql(self.api, self)
-
-    # Make an es endpoint
-    #def es_reindex(self):
-    #    """ Mark Elastic Search for reindex """
-    #    url = self.sm_url + '/es/reindex'
-    #    self.session.headers.update({'Content-Type': 'application/json'})
-    #    log.debug('POST {}'.format(self.url))
-    #    response = self.session.post(self.url)
-    #    if response.status_code == 204:
-    #        return True
-    #    if response.status_code == 403:
-    #        warnings.warn('User is not authorized for request. ',
-    #                      AuthenticationWarning)
-    #    return False
 
 
 class GlobalPolicyController(App):

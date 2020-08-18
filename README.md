@@ -13,6 +13,12 @@ From the command line execute `pip` pointing at the repository.
 $ pip install git+https://stash.securepassage.com/scm/nsu/firemon-api#egg=firemon-api
 ```
 
+# Current Design
+
+Everything is basically being coded by hand to attempt to fit a schema that makes sense to me and usage of objects where calls to endpoints are made and return objects which may have their own functions. For example search and manipulation of devices and their data. This is attempt to make the API a bit more user friendly without requiring more interaction by the user.
+
+I may create a dynamic interface that purely reads the swagger.json from the different APIs and let the user figure it out too.
+
 # Usage
 
 Import module. Disable unverfied https certificate warnings. Switch https verification off.
@@ -55,4 +61,6 @@ Create the device.
 <Device(Conan)>
 ```
 
+# To Do (lots)
 
+Since every call is basically being added by hand there is lots to consider. Mostly finding time to add parts that others might find useful beyond what I have already done for myself.

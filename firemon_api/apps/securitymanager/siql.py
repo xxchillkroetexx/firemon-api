@@ -13,7 +13,8 @@ import json
 import logging
 
 # Local packages
-from firemon_api.core.response import Record, JsonField
+#from firemon_api.core.endpoint import Endpoint
+from firemon_api.core.response import Record
 from firemon_api.core.query import Request, url_param_builder
 
 log = logging.getLogger(__name__)
