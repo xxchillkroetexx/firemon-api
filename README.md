@@ -13,6 +13,14 @@ From the command line execute `pip` pointing at the repository.
 $ pip install git+https://stash.securepassage.com/scm/nsu/firemon-api#egg=firemon-api
 ```
 
+# Current Design
+
+Everything is basically being coded by hand to attempt to fit a schema that makes sense to me. Endpoints are made and return objects which may have their own functions. For example search and manipulation of devices and their data. This is attempt to make the API a bit more user friendly without requiring more interaction by the user.
+
+I have attempted to create a dynamic interface for all API calls if there is something needed that does not currently fit within the re-imagining of the API schema for user friendliness. Each application should automatically create these. Unfortunately many of the `operationId` for the API are not helpful in what they actually do:
+
+ex: (`get_1`, `get_2`, `get_3`, ...)
+
 # Usage
 
 Import module. Disable unverfied https certificate warnings. Switch https verification off.
@@ -55,4 +63,25 @@ Create the device.
 <Device(Conan)>
 ```
 
+# Swagger API
 
+I have attempted to dynamically create functions for all the functions referenced in the swagger.json for each application.
+
+To see the swagger.json for each application. Note: It's probably a good idea to enable some logging to see which urls are attempting to be accessed as the swagger operational IDs are not always intuitive. 
+
+```
+>>> import firemon_api as fmapi
+>>> fmapi.disable_warnings()
+>>> fmapi.add_stderr_logger()
+>>> fm = fmapi.api('saffron', 'firemon', 'firemon', verify=False)
+>>> fm.sm.exec.getVersion()
+{'fmosVersion': '10.0.0', 'version': '10.0.0-SNAPSHOT', <snip>
+>>> fm.gpc.exec.getEvents()
+[{'id': 30, 'name': 'Access Profile Created', 'gpcEventRelationshipTypes': ['ACCESSPROFILE']}, {'id': 32, 'name': 'Access Profile Deleted', 'gpcEventRelationshipTypes': []}, {'id': 31, 'name': 'Access Profile Updated', 'gpcEventRelationshipTypes': ['ACCESSPROFILE']}, 
+{'id': 20, 'name': 'Access Rule Approved',
+<snip>
+```
+
+# To Do (lots)
+
+Since every call is basically being added by hand there is lots to consider. Mostly finding time to add parts that others might find useful beyond what I have already done for myself.

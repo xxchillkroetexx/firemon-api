@@ -14,6 +14,8 @@ from .collectionconfigs import CollectionConfigs, CollectionConfig
 from .collectors import Collectors, Collector, CollectorGroups, CollectorGroup
 from .devicepacks import DevicePacks, DevicePack
 from .devices import Devices, Device
+from .elasticsearch import ElasticSearch
+from .license import License
 from .revisions import Revisions, Revision, NormalizedData
 from .users import Users, User, UserGroup, UserGroups
 from .siql import Siql
@@ -32,6 +34,8 @@ __all__ = ['CentralSyslogs',
            'DevicePack',
            'Devices',
            'Device',
+           'ElasticSearch',
+           'License',
            'Revisions',
            'Revision',
            'NormalizedData',
