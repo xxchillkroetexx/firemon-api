@@ -15,9 +15,11 @@ $ pip install git+https://stash.securepassage.com/scm/nsu/firemon-api#egg=firemo
 
 # Current Design
 
-Everything is basically being coded by hand to attempt to fit a schema that makes sense to me and usage of objects where calls to endpoints are made and return objects which may have their own functions. For example search and manipulation of devices and their data. This is attempt to make the API a bit more user friendly without requiring more interaction by the user.
+Everything is basically being coded by hand to attempt to fit a schema that makes sense to me. Endpoints are made and return objects which may have their own functions. For example search and manipulation of devices and their data. This is attempt to make the API a bit more user friendly without requiring more interaction by the user.
 
-I may create a dynamic interface that purely reads the swagger.json from the different APIs and let the user figure it out too.
+I have attempted to create a dynamic interface for all API calls if there is something needed that does not currently fit within the re-imagining of the API schema for user friendliness. Each application should automatically create these. Unfortunately many of the `operationId` for the API are not helpful in what they actually do:
+
+ex: (`get_1`, `get_2`, `get_3`, ...)
 
 # Usage
 
@@ -59,6 +61,25 @@ Create the device.
 >>> dev = fm.sm.devices.create(config)
 >>> dev
 <Device(Conan)>
+```
+
+# Swagger API
+
+I have attempted to dynamically create functions for all the functions referenced in the swagger.json for each application.
+
+To see the swagger.json for each application. Note: It's probably a good idea to enable some logging to see which urls are attempting to be accessed as the swagger operational IDs are not always intuitive. 
+
+```
+>>> import firemon_api as fmapi
+>>> fmapi.disable_warnings()
+>>> fmapi.add_stderr_logger()
+>>> fm = fmapi.api('saffron', 'firemon', 'firemon', verify=False)
+>>> fm.sm.exec.getVersion()
+{'fmosVersion': '10.0.0', 'version': '10.0.0-SNAPSHOT', <snip>
+>>> fm.gpc.exec.getEvents()
+[{'id': 30, 'name': 'Access Profile Created', 'gpcEventRelationshipTypes': ['ACCESSPROFILE']}, {'id': 32, 'name': 'Access Profile Deleted', 'gpcEventRelationshipTypes': []}, {'id': 31, 'name': 'Access Profile Updated', 'gpcEventRelationshipTypes': ['ACCESSPROFILE']}, 
+{'id': 20, 'name': 'Access Rule Approved',
+<snip>
 ```
 
 # To Do (lots)

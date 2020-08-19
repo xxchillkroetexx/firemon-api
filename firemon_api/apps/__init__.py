@@ -22,6 +22,11 @@ from .securitymanager import *
 log = logging.getLogger(__name__)
 
 
+class SwaggerApi(object):
+    """Attempt to dynamically create all the APIs"""
+    pass
+
+
 class App(object):
     """Base class for Firemon Apps
 
@@ -37,6 +42,83 @@ class App(object):
                                             name=self.__class__.name)
         self.domain_url = "{url}/domain/{id}".format(url=self.app_url,
                                             id=str(self.api.domain_id))
+
+        self.exec = SwaggerApi()
+
+        _swagger = self.get_api()
+        for path in _swagger['paths'].keys():
+            for verb in _swagger['paths'][path].keys():
+                oid = _swagger['paths'][path][verb]['operationId']
+                _method = self._make_method(path, verb, oid)
+                setattr(self.exec, oid, _method)
+
+    def _make_method(self, path, verb, oid):
+        if verb == 'get':
+            def _method(filters=None, add_params=None, **kwargs):
+                p = path.lstrip('/')
+                key = p.format(**kwargs)
+                filters=filters
+                req = Request(
+                    base=self.app_url,
+                    key=key,
+                    filters=filters,
+                    session=self.session,
+                )
+                return req.get(add_params=add_params)
+            return _method
+
+        elif verb == 'put':
+            def _method(filters=None, data=None, **kwargs):
+                p = path.lstrip('/')
+                key = p.format(**kwargs)
+                filters=filters
+                req = Request(
+                    base=self.app_url,
+                    key=key,
+                    filters=filters,
+                    session=self.session,
+                )
+                return req.put(data=data)
+            return _method
+
+        elif verb == 'post':
+            def _method(filters=None, data=None, files=None, **kwargs):
+                p = path.lstrip('/')
+                key = p.format(**kwargs)
+                filters=filters
+                req = Request(
+                    base=self.app_url,
+                    key=key,
+                    filters=filters,
+                    session=self.session,
+                )
+                return req.post()
+            return _method
+
+        elif verb == 'delete':
+            def _method(filters=None, **kwargs):
+                p = path.lstrip('/')
+                key = p.format(**kwargs)
+                filters=filters
+                req = Request(
+                    base=self.app_url,
+                    key=key,
+                    filters=filters,
+                    session=self.session,
+                )
+                return req.delete()
+            return _method
+
+    def get_api(self):
+        """Return API specs from the swagger"""
+
+        key = 'swagger.json'
+        req = Request(
+            base=self.app_url,
+            key=key,
+            session=self.session,
+        )
+        return req.get()
 
     def __repr__(self):
         return("<App({})>".format(self.name))

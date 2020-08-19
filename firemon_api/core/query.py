@@ -173,9 +173,6 @@ class Request(object):
         Returns:
             dict: data from the endpoint.
         """
-        #if add_params is None:
-        #    # Limit must be 0 to discover the max page size
-        #    add_params = {"limit": 0}
         if add_params is None:
             # Hopefully this will cut down on queries without breaking things
             add_params = {'pageSize': 100}
