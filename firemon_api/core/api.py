@@ -18,7 +18,9 @@ from typing import Optional
 import requests  # performing web requests
 
 # Local packages
-from firemon_api.core.query import Request, url_param_builder
+from firemon_api.core.query import (Request, 
+                                    url_param_builder,
+                                    RequestError)
 from firemon_api import version
 from firemon_api.apps import (GlobalPolicyController,
                               PolicyOptimizer,
@@ -111,7 +113,8 @@ class FiremonAPI(object):
         self.host = host
 
         # Many of the APIs requires a domain ID. In order to be
-        # broadly useful require this to be set.
+        # broadly useful default this to 1. Display warning if
+        # no access to specified domain/invalid domain
         self.domain_id = domain_id
 
         self.sm = SecurityManager(self)
@@ -134,7 +137,7 @@ class FiremonAPI(object):
         ).post(data=payload)
 
     def versions(self):
-        """All the versions from API"""
+        """All the version info from API"""
         key = 'securitymanager/api/version'
         resp = Request(
             base=self.base_url,
@@ -169,8 +172,10 @@ class FiremonAPI(object):
 
     @domain_id.setter
     def domain_id(self, id):
-        self._verify_domain(id)  # User may not be authorized to validate domain
-                                 # or it just does not exist
+        try:
+            self._verify_domain(id)
+        except RequestError:
+            warnings.warn('User does not have access to requested domain calls')
         self._domain = id  # Set domain regardless and pop a warning if unable to validate
 
     @property

@@ -402,12 +402,17 @@ class Devices(Endpoint):
             Device (obj): a Device() of the newly created device
 
         Examples:
+            >>> cg = fm.sm.collectorgroups.all()[0]
             >>> config = fm.sm.dp.get('juniper_srx').template()
             >>> config['name'] = 'Conan'
             >>> config['description'] = 'A test of the API'
             >>> config['managementIp'] = '10.2.2.2'
+            >>> config['collectorGroupId'] = cg.id
+            >>> config['collectorGroupName'] = cg.name
+            >>> config['extendedSettingsJson']['password'] = 'abc12345'
             >>> dev = fm.sm.devices.create(config)
-            Conan
+            >>> dev
+            <Device(Conan)>
         """
         filters = {'manualRetrieval': retrieve}
         req = Request(
