@@ -144,6 +144,7 @@ class FiremonAPI(object):
         self.gpc = GlobalPolicyController(self)
         self.po = PolicyOptimizer(self)
         self.pp = PolicyPlanner(self)
+        return self
 
     def _versions(self):
         """All the version info from API"""
