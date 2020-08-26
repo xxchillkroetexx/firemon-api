@@ -5,7 +5,7 @@ firemon-api is a library to assist in writing Python scripts using Firemon.
 
     Import the API
     >>> import firemon_api
-    >>> fm = firemon_api.api('hobbes', 'firemon', 'firemon')
+    >>> fm = firemon_api.api('hobbes').auth('firemon', 'firemon')
     >>> fm
     <Firemon(host='hobbes', version='8.25.9')>
 
