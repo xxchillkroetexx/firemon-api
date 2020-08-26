@@ -8,7 +8,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 # Standard packages
-import json
 import logging
 from urllib.parse import urlparse
 import warnings
@@ -18,7 +17,9 @@ from typing import Optional
 import requests  # performing web requests
 
 # Local packages
-from firemon_api.core.query import Request, url_param_builder
+from firemon_api.core.query import (Request, 
+                                    url_param_builder,
+                                    RequestError)
 from firemon_api import version
 from firemon_api.apps import (GlobalPolicyController,
                               PolicyOptimizer,
@@ -31,8 +32,8 @@ log = logging.getLogger(__name__)
 class FiremonAPI(object):
     """ The FiremonAPI object is the entry point to firemon_api
 
-    Instantiate FiremonAPI() with the appropriate named arguments then
-    specify which app and endpoint with which to interact.
+    Instantiate FiremonAPI() with the appropriate named arguments.
+    `auth()` then specify which app and endpoint with which to interact.
 
     Args:
         host (str): host or IP.
@@ -55,7 +56,7 @@ class FiremonAPI(object):
         domain_id (int): the domain.
         proxy (str): ip.add.re.ss:port of proxy
 
-    Valid attributes currently are (see domain_id setter for updates):
+    Valid applications:
         * sm: SecurityManager()
         * gpc: GlobalPolicyController()
         * pp: PolicyPlanner()
@@ -64,8 +65,7 @@ class FiremonAPI(object):
     Examples:
         Import the API
         >>> import firemon_api as fmapi
-        >>> fm = fmapi.api('carebear-aio', 'firemon', 'firemon')
-        >>> fm
+        >>> fm = fmapi.api('redfin-aio').auth('user', 'password')
         >>> fm
         <Firemon(url='https://redfin-aio', version='10.0.0')>
 
@@ -75,13 +75,21 @@ class FiremonAPI(object):
 
         Change working domain
         >>> fm.domain_id = 2
+
+        Set your own requests.Session(). Override other settings here
+        if I forgot to set them.
+        >>> import requests
+        >>> import firemon_api as fmapi
+        >>> fm = fmapi.api('gizmo').auth('username', 'password')
+        >>> s = requests.Session()
+        >>> s.auth = ('foo', 'bar')
+        >>> s.verify = False
+        >>> fm.session = s
     """
 
     def __init__(
         self,
         host: str,
-        username: str,
-        password: str,
         timeout: int = 20,
         verify: Optional = True,
         cert: Optional = None,
@@ -89,14 +97,12 @@ class FiremonAPI(object):
         proxy: str = None,
     ):
 
-        self.username = username
-        self.password = password
         self.timeout = timeout
         self.verify = verify
         self.cert = cert
 
         self.session = requests.Session()
-        self.session.auth = (self.username, self.password)  # Basic auth is used
+        #self.session.auth = (self.username, self.password)  # Basic auth is used
         self.default_headers = {'User-Agent': 'py-firemon-api/{}'.format(
                                                             version.__version__),
                                 'Accept-Encoding': 'gzip, deflate',
@@ -109,32 +115,38 @@ class FiremonAPI(object):
             self.session.proxies = {'http': proxy, 'https': proxy}
 
         self.host = host
-
-        # Many of the APIs requires a domain ID. In order to be
-        # broadly useful require this to be set.
         self.domain_id = domain_id
+        self._version = 'unknown'
+
+    def auth(self, username: str, password: str,):
+        """User must auth to get access to most api. Basic auth 
+        can be set at __init__ and if the u:p is correct access
+        to calls goes fine. But if it is not correct it is easy
+        to lock out a user.
+        """
+        log.debug(
+            "Authenticating Firemon connection: %s",
+            self.host
+        )
+        self.session.auth = (username, password)
+        key = 'securitymanager/api/authentication/login'
+        payload = {'username': username, 'password': password}
+        Request(
+            base=self.base_url,
+            key=key,
+            session=self.session,
+        ).post(json=payload)
+        # Update items of interest
+        self._version = self._versions()['fmosVersion']
+        self._verify_domain(self.domain_id)
 
         self.sm = SecurityManager(self)
         self.gpc = GlobalPolicyController(self)
         self.po = PolicyOptimizer(self)
         self.pp = PolicyPlanner(self)
 
-    def _auth(self):
-        """ Need to auth """
-        log.debug(
-            "Authenticating Firemon connection: %s",
-            self.host
-        )
-        key = 'securitymanager/api/authentication/login'
-        payload = {'username': self.username, 'password': self.password}
-        Request(
-            base=self.base_url,
-            key=key,
-            session=self.session,
-        ).post(data=payload)
-
-    def versions(self):
-        """All the versions from API"""
+    def _versions(self):
+        """All the version info from API"""
         key = 'securitymanager/api/version'
         resp = Request(
             base=self.base_url,
@@ -148,13 +160,43 @@ class FiremonAPI(object):
         Set the domain_id that will be used.
         """
         key = "securitymanager/api/domain/{id}".format(id=str(id))
-        resp = Request(
-            base=self.base_url,
-            key=key,
-            session=self.session,
-        ).get()
+        try:
+            resp = Request(
+                base=self.base_url,
+                key=key,
+                session=self.session,
+            ).get()
+        except RequestError:
+            warnings.warn('User does not have access to requested domain calls')
         self.domain_name = resp['name']
         self.domain_description = resp['description']
+
+    def change_password(self, username: str, oldpw: str, newpw: str):
+        """Allow change of password without being authed for other
+        API calls.
+
+        Args:
+            username (str): Username to change password
+            oldpw (str): Old password
+            newpw (str): New password
+        """
+        key = 'securitymanager/api/user/password'
+        data = {'username': username,
+                'oldPassword': oldpw,
+                'newPassword': newpw,
+                'newPasswordConfirm': newpw}
+
+        headers = {"Content-Type": "application/x-www-form-urlencoded",
+                   "Accept": "application/json",
+                   "Suppress-Auth-Header": 'true'}
+
+        req = Request(
+            base=self.base_url,
+            key=key,
+            headers=headers,
+            session=self.session,
+        )
+        return req.put(data=data)
 
     def __repr__(self):
         return ("<Firemon(url='{}', "
@@ -169,9 +211,7 @@ class FiremonAPI(object):
 
     @domain_id.setter
     def domain_id(self, id):
-        self._verify_domain(id)  # User may not be authorized to validate domain
-                                 # or it just does not exist
-        self._domain = id  # Set domain regardless and pop a warning if unable to validate
+        self._domain = id
 
     @property
     def base_url(self):
@@ -189,8 +229,6 @@ class FiremonAPI(object):
             self._base_url = 'https://{}'.format(p_host.netloc)
         else:
             self._base_url = 'https://{}'.format(host)
-        self._auth()
-        self._version = self.versions()['fmosVersion']
 
     @property
     def version(self):

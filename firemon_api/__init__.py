@@ -21,9 +21,8 @@ firemon-api is a library to assist in writing Python scripts using Firemon.
     Change working domain
     >>> fm.domainId = 2
 
-    Logging for debugging. via urllib3
-    >>> import logging
-    >>> logging.basicConfig(level=logging.DEBUG)
+    Logging for debugging
+    >>> firemon_api.add_stderr_logger()
 
 
 :copyright: (c) 2019 Firemon
@@ -38,7 +37,7 @@ limitations under the License.
 # Standard Modules
 import logging
 from logging import NullHandler
-import urllib3
+#import urllib3
 
 # Local
 from firemon_api.core.api import FiremonAPI as api
@@ -55,6 +54,7 @@ def add_stderr_logger(level=logging.DEBUG):
     # This method needs to be in this __init__.py to get the __name__ correct
     # even if firemon_api is vendored within another package.
     logger = logging.getLogger(__name__)
+    logging.captureWarnings(True)
     handler = logging.StreamHandler()
     handler.setFormatter(
                     logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
@@ -68,6 +68,10 @@ del NullHandler
 
 def disable_warnings():
     """
-    Hate urllib3 warnings? disable them
+    Hate warnings? disable them
     """
-    urllib3.disable_warnings()
+    #urllib3.disable_warnings()
+    import warnings
+    from urllib3.exceptions import InsecureRequestWarning
+    warnings.filterwarnings('ignore', '.*', UserWarning,)
+    warnings.filterwarnings('ignore', '.*', InsecureRequestWarning, 'urllib3')

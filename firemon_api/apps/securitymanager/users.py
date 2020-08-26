@@ -38,6 +38,20 @@ class User(Record):
     ep_name = 'user'
     _domain_url = True
 
+    def set_password(self, password: str) -> bool:
+        key='password'
+        data = {'password': password}
+        headers = {"Content-Type": "application/x-www-form-urlencoded",
+                    "Accept": "application/json",
+                    "Suppress-Auth-Header": 'true'}
+        req = Request(
+            base=self.url,
+            key=key,
+            headers=headers,
+            session=self.session,
+        )
+        return req.put(data=data)
+
     def __init__(self, config, app):
         super().__init__(config, app)
 

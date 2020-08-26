@@ -10,7 +10,7 @@ limitations under the License.
 
 # Standard packages
 import concurrent.futures as cf
-import json
+from json.decoder import JSONDecodeError
 import logging
 from urllib.parse import urlencode, quote
 
@@ -86,6 +86,7 @@ class Request(object):
         filters=None,
         key=None,
         url=None,
+        headers=None,
     ):
         self.base = self.normalize_url(base)
         self.session = session
@@ -93,6 +94,7 @@ class Request(object):
         self.verify = session.verify
         self.key = self.normalize_key(key) if key else None
         self.url = self.base if not key else "{}/{}".format(self.base, key)
+        self.headers = headers
 
     def normalize_url(self, url):
         if url[-1] == "/":
@@ -106,14 +108,17 @@ class Request(object):
 
     def _make_call(
         self, verb="get", url_override=None, add_params=None, 
-        data=None, files=None
+        json=None, data=None, files=None
         ):
-        if verb in ('post') and files:
-            headers = {'Content-Type': 'multipart/form-data'}
-        elif verb in ("post", "put"):
-            headers = {"Content-Type": "application/json;"}
+        if self.headers:
+            headers = self.headers
         else:
-            headers = {"accept": "application/json;"}
+            if verb in ('post') and files:
+                headers = {'Content-Type': 'multipart/form-data'}
+            elif verb in ("post", "put"):
+                headers = {"Content-Type": "application/json;"}
+            else:
+                headers = {"accept": "application/json;"}
 
         params = {}
         if not url_override:
@@ -125,9 +130,16 @@ class Request(object):
         log.debug('{}: {}'.format(verb.upper(), url_override or 
                             '{}?{}'.format(self.url, urlencode(params))))
 
+        if json:
+            log.debug('Json: {}'.format(json))
+        if data:
+            log.debug('Data: {}'.format(data))
+        if files:
+            log.debug('Files present')
+
         req = getattr(self.session, verb)(
             url_override or self.url, headers=headers, verify=self.verify,
-            params=params, json=data, files=files,
+            params=params, json=json, data=data, files=files,
         )
 
         log.debug(req.request.headers)  # sent headers
@@ -140,7 +152,7 @@ class Request(object):
         elif req.ok:
             try:
                 return req.json()
-            except json.JSONDecodeError:
+            except JSONDecodeError:
                 # Assuming an empty body or data download
                 if req.content:
                     return req.content
@@ -198,14 +210,15 @@ class Request(object):
         else:
             return req
 
-    def put(self, data=None):
+    def put(self, json=None, data=None):
         """Makes PUT request.
         Makes a PUT request to Firemon API. Not sure why we have PUT statements
         with no data but it is what it is.
 
-        Args:
-            data (dict): Contains a dict that will be turned 
+        Kwargs:
+            json (dict): Contains a dict that will be turned 
             into a json object and sent to the API.
+            data (dict): x-form-url
 
         Raises:
             RequestError: if req.ok returns false.
@@ -213,15 +226,16 @@ class Request(object):
         Returns:
             dict: data from the endpoint.
         """
-        return self._make_call(verb="put", data=data)
+        return self._make_call(verb="put", json=json, data=data)
 
-    def post(self, data=None, files=None):
+    def post(self, json=None, data=None, files=None):
         """Makes POST request.
         Makes a POST request to Firemon API.
 
         Kwargs:
-            data (dict): Contains a dict that will be turned 
+            json (dict): Contains a dict that will be turned 
             into a json and sent to the API.
+            data (dict): x-form-url
             files (list/dict): See `Requests` how-to
             list of tuples formatted:
                 ('file', bytes, 'text/plain'))
@@ -237,7 +251,7 @@ class Request(object):
         Returns:
             dict: data from the endpoint.
         """
-        return self._make_call(verb="post", data=data, files=files)
+        return self._make_call(verb="post", json=json, data=data, files=files)
 
     def delete(self):
         """Makes DELETE request.

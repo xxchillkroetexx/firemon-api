@@ -314,7 +314,7 @@ class Record(object):
                 req = Request(
                     base=self.url or self.endpoint.ep_url,
                     key=self.id if not self.url else None,
-                    session=self.api.session,
+                    session=self.session,
                 )
                 return req.put(serialized)
 
@@ -358,6 +358,6 @@ class Record(object):
         req = Request(
             base=self.url or self.endpoint.ep_url,
             key=self.id if not self.url else None,
-            session=self.api.session,
+            session=self.session,
         )
         return True if req.delete() else False
