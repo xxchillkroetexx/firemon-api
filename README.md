@@ -28,7 +28,7 @@ Import module. Disable unverfied https certificate warnings. Switch https verifi
 ```
 >>> import firemon_api as fmapi
 >>> fmapi.disable_warnings()
->>> fm = fmapi.api('saffron', 'firemon', 'firemon', verify=False)
+>>> fm = fmapi.api('saffron', verify=False).auth('firemon', 'firemon')
 >>> fm
 <Firemon(url='https://saffron', version='10.0.0')>
 >>> for dev in fm.sm.devices.all():
@@ -73,9 +73,11 @@ To see the swagger.json for each application. Note: It's probably a good idea to
 >>> import firemon_api as fmapi
 >>> fmapi.disable_warnings()
 >>> fmapi.add_stderr_logger()
->>> fm = fmapi.api('saffron', 'firemon', 'firemon', verify=False)
+>>> fm = fmapi.api('saffron', verify=False).auth('firemon', 'firemon')
+>>> fm.sm.get_swagger()
 >>> fm.sm.exec.getVersion()
 {'fmosVersion': '10.0.0', 'version': '10.0.0-SNAPSHOT', <snip>
+>>> fm.gpc.get_swagger()
 >>> fm.gpc.exec.getEvents()
 [{'id': 30, 'name': 'Access Profile Created', 'gpcEventRelationshipTypes': ['ACCESSPROFILE']}, {'id': 32, 'name': 'Access Profile Deleted', 'gpcEventRelationshipTypes': []}, {'id': 31, 'name': 'Access Profile Updated', 'gpcEventRelationshipTypes': ['ACCESSPROFILE']}, 
 {'id': 20, 'name': 'Access Rule Approved',
