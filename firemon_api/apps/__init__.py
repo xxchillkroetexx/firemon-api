@@ -23,34 +23,23 @@ log = logging.getLogger(__name__)
 
 
 class SwaggerApi(object):
-    """Attempt to dynamically create all the APIs"""
-    pass
+    """Attempt to dynamically create all the APIs
 
-
-class App(object):
-    """Base class for Firemon Apps
-
+    Warning:
+        Most of the names are not intuitive to what they do.
+        Good luck and godspeed.
     """
-
-    name = None
-
-    def __init__(self, api):
-        self.api = api
-        self.session = api.session
-        self.base_url = api.base_url
-        self.app_url = "{url}/{name}/api".format(url=api.base_url,
-                                            name=self.__class__.name)
-        self.domain_url = "{url}/domain/{id}".format(url=self.app_url,
-                                            id=str(self.api.domain_id))
-
-        self.exec = SwaggerApi()
-
-        _swagger = self.get_api()
-        for path in _swagger['paths'].keys():
-            for verb in _swagger['paths'][path].keys():
-                oid = _swagger['paths'][path][verb]['operationId']
+    
+    def __init__(self, swagger: dict):
+        """
+        Args:
+            swagger (dict): all the json from `get_api`
+        """
+        for path in swagger['paths'].keys():
+            for verb in swagger['paths'][path].keys():
+                oid = swagger['paths'][path][verb]['operationId']
                 _method = self._make_method(path, verb, oid)
-                setattr(self.exec, oid, _method)
+                setattr(self, oid, _method)
 
     def _make_method(self, path, verb, oid):
         if verb == 'get':
@@ -108,6 +97,30 @@ class App(object):
                 )
                 return req.delete()
             return _method
+
+class App(object):
+    """Base class for Firemon Apps"""
+
+    name = None
+
+    def __init__(self, api):
+        self.api = api
+        self.session = api.session
+        self.base_url = api.base_url
+        self.app_url = "{url}/{name}/api".format(url=api.base_url,
+                                            name=self.__class__.name)
+        self.domain_url = "{url}/domain/{id}".format(url=self.app_url,
+                                            id=str(self.api.domain_id))
+
+    def get_swagger(self):
+        """Attempt to auto create all api calls by reading
+        the swagger api endpoint make a best guess. User must
+        be authorized to read swagger to use this.
+
+        All auto created methods get setattr on `exec` for `App`.
+        """
+        _swagger = self.get_api()
+        setattr(self, 'exec', SwaggerApi(_swagger))
 
     def get_api(self):
         """Return API specs from the swagger"""

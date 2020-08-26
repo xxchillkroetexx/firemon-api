@@ -419,6 +419,6 @@ class Devices(Endpoint):
             base=self.url,
             filters=filters,
             session=self.session,
-        ).post(data=dev_config)
+        ).post(json=dev_config)
 
         return self._response_loader(req)
