@@ -384,12 +384,65 @@ class Devices(Endpoint):
 
     def __init__(self, api, app, record=Device):
         super().__init__(api, app, record=Device)
+        #self._ep = {'all': None,
+        #            'filter': 'filter',
+        #            'create': None,
+        #            'count': None,
+        #           }
+        self._ep.update({'filter': 'filter'})
 
-    def _make_filters(self, values):
-        # Only a 'search' for a single value. Take all key-values
-        # and use the first key's value for search query
-        filters = {'search': values[next(iter(values))]}
-        return filters
+    def get(self, *args, **kwargs):
+        """Get single Device
+
+        Args:
+            *args (int): (optional) id to retrieve. If this is not type(int)
+                        dump it into filter and grind it up there.
+            **kwargs (str): (optional) see filter() for available filters
+
+        Examples:
+            Get by ID
+            >>> fm.sm.devices.get(12)
+            <Device(REGRESSION-dc-load-test)>
+
+            Get by name. Case sensative.
+            >>> fm.sm.centralsyslogs.get('REGRESSION-dc-load-test')
+            <Device(REGRESSION-dc-load-test)>
+
+            >>> fm.sm.devices.get(mgmtip='192.168.104.12')
+            <Device(REGRESSION-dc-load-test)>
+        """
+
+        try:
+            key = str(int(args[0]))
+        except ValueError:
+            key = f"name/{args[0]}"
+        except IndexError:
+            key = None
+
+        if not key:
+            if kwargs:
+                filter_lookup = self.filter(**kwargs)
+            else:
+                filter_lookup = self.filter(*args)
+            if filter_lookup:
+                if len(filter_lookup) > 1:
+                    raise ValueError(
+                        "get() returned more than one result. "
+                        "Check that the kwarg(s) passed are valid for this "
+                        "endpoint or use filter() or all() instead."
+                    )
+                else:
+                    return filter_lookup[0]
+            return None
+
+        req = Request(
+            base=self.url,
+            key=key,
+            session=self.api.session,
+        )
+
+        return self._response_loader(req.get())
+
 
     def create(self, dev_config, retrieve: bool=False):
         """  Create a new device
