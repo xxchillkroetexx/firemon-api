@@ -126,6 +126,10 @@ class DevicePack(Record):
         template['devicePack']['version'] = self.version
         template['extendedSettingsJson'] = {}
         for response in _find_dicts_with_key("key", resp):
+            # Get rid of headings that are capitalized
+            # hopefully all Json name format is followed 
+            if response['key'][0].isupper():
+                continue
             template['extendedSettingsJson'][response["key"]] = None
             if "defaultValue" in response:
                 template['extendedSettingsJson'][response["key"]] = response["defaultValue"]
