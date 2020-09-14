@@ -18,6 +18,7 @@ from .globalpolicycontroller import *
 from .policyoptimizer import *
 from .policyplanner import *
 from .securitymanager import *
+from .controlpanel import *
 
 log = logging.getLogger(__name__)
 
@@ -38,10 +39,10 @@ class SwaggerApi(object):
         for path in swagger['paths'].keys():
             for verb in swagger['paths'][path].keys():
                 oid = swagger['paths'][path][verb]['operationId']
-                _method = self._make_method(path, verb, oid)
+                _method = self._make_method(path, verb)
                 setattr(self, oid, _method)
 
-    def _make_method(self, path, verb, oid):
+    def _make_method(self, path, verb):
         if verb == 'get':
             def _method(filters=None, add_params=None, **kwargs):
                 p = path.lstrip('/')
@@ -107,10 +108,8 @@ class App(object):
         self.api = api
         self.session = api.session
         self.base_url = api.base_url
-        self.app_url = "{url}/{name}/api".format(url=api.base_url,
-                                            name=self.__class__.name)
-        self.domain_url = "{url}/domain/{id}".format(url=self.app_url,
-                                            id=str(self.api.domain_id))
+        self.app_url = f"{api.base_url}/{self.__class__.name}/api"
+        self.domain_url = f"{self.app_url}/domain/{str(self.api.domain_id)}"
 
     def get_swagger(self):
         """Attempt to auto create all api calls by reading
@@ -238,3 +237,76 @@ class PolicyPlanner(App):
 
         # Endpoints
         #self.xx = EndPoint(self)
+
+
+class ControlPanel(App):
+    """ Represents Control Panel in Firemon
+
+    Args:
+        api (obj): FiremonAPI()
+        name (str): name of the application
+
+    Valid attributes are:
+        * xx: EndPoint()
+    """
+
+    def __init__(self, api):
+        super().__init__(api)
+        self.domain_url = None
+        if self.api._cpl_proxy:
+            self.app_url = f"{api.base_url}/__fmos-cpl__/api"
+        else:
+            self.app_url = f"{api.base_url}:55555/api"
+
+        # Endpoints
+        self.config = Config(self.api, self)
+
+    def get_swagger(self):
+        """Maybe later"""
+        raise NotImplementedError(
+            "Maybe some other time"
+        )
+
+    def get_api(self):
+        """Return API specs if the 5555 port is up."""
+
+        key = 'api-doc'
+        try:
+            req = Request(
+                base=f"{self.base_url}:55555",
+                key=key,
+                session=self.session,
+            )
+            return req.get()
+        except:
+            raise NotImplementedError(
+                "No access to api-doc endpoint"
+            )
+
+    def info(self):
+        key = 'info'
+        r = Request(
+            base=self.app_url,
+            key=key,
+            session=self.session,
+        ).get()
+        return r
+
+    def state(self):
+        key = 'state'
+        r = Request(
+            base=self.app_url,
+            key=key,
+            session=self.session,
+        ).get()
+        return r
+
+    def perf(self):
+        key = 'perf'
+        r = Request(
+            base=self.app_url,
+            key=key,
+            session=self.session,
+        ).get()
+        return r
+

@@ -24,7 +24,8 @@ from firemon_api import version
 from firemon_api.apps import (GlobalPolicyController,
                               PolicyOptimizer,
                               PolicyPlanner,
-                              SecurityManager
+                              SecurityManager,
+                              ControlPanel
                              )
 log = logging.getLogger(__name__)
 
@@ -129,6 +130,7 @@ class FiremonAPI(object):
             self.host
         )
         self.session.auth = (username, password)
+        self.username = username
         key = 'securitymanager/api/authentication/login'
         payload = {'username': username, 'password': password}
         Request(
@@ -144,6 +146,30 @@ class FiremonAPI(object):
         self.gpc = GlobalPolicyController(self)
         self.po = PolicyOptimizer(self)
         self.pp = PolicyPlanner(self)
+        return self
+
+    def auth_cpl(self, username: str, password: str, cpl_proxy=False):
+        """Control Panel that is normally accessed via 55555"""
+        log.debug(
+            "Authenticating Firemon Control Panel: %s",
+            self.host
+        )
+        self._cpl_proxy=cpl_proxy
+        self._cpl_cookies = requests.cookies.RequestsCookieJar()
+        key = 'api/login'
+        if cpl_proxy:
+            url = f'{self.base_url}/__fmos-cpl__'
+        else:
+            url = f"{self.base_url}:55555"
+        payload = {'username': username, 'password': password}
+        r = Request(
+            base=url,
+            key=key,
+            session=self.session,
+        ).post_cpl_auth(data=payload)
+        self._cpl_cookies = r.cookies
+        log.debug(r.json())
+        self.cpl = ControlPanel(self)
         return self
 
     def _versions(self):
@@ -173,7 +199,7 @@ class FiremonAPI(object):
         self.domain_description = resp['description']
 
     def change_password(self, username: str, oldpw: str, newpw: str):
-        """Allow change of password without being authed for other
+        """Allow change of SecMgr password without being authed for other
         API calls.
 
         Args:
@@ -227,9 +253,9 @@ class FiremonAPI(object):
         self._host = host
         p_host = urlparse(host)
         if p_host.netloc:
-            self._base_url = 'https://{}'.format(p_host.netloc)
+            self._base_url = f'https://{p_host.netloc}'
         else:
-            self._base_url = 'https://{}'.format(host)
+            self._base_url = f'https://{host}'
 
     @property
     def version(self):
