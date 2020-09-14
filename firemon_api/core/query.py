@@ -87,6 +87,7 @@ class Request(object):
         key=None,
         url=None,
         headers=None,
+        cookies=None,
     ):
         self.base = self.normalize_url(base)
         self.session = session
@@ -95,6 +96,7 @@ class Request(object):
         self.key = self.normalize_key(key) if key else None
         self.url = self.base if not key else "{}/{}".format(self.base, key)
         self.headers = headers
+        self.cookies = cookies
 
     def normalize_url(self, url):
         if url[-1] == "/":
@@ -108,7 +110,7 @@ class Request(object):
 
     def _make_call(
         self, verb="get", url_override=None, add_params=None, 
-        json=None, data=None, files=None
+        json=None, data=None, files=None,
         ):
         if self.headers:
             headers = self.headers
@@ -138,8 +140,9 @@ class Request(object):
             log.debug('Files present')
 
         req = getattr(self.session, verb)(
-            url_override or self.url, headers=headers, verify=self.verify,
+            url_override or self.url, headers=headers, 
             params=params, json=json, data=data, files=files,
+            verify=self.verify, cookies=self.cookies
         )
 
         log.debug(req.request.headers)  # sent headers
@@ -292,3 +295,15 @@ class Request(object):
             return req.content
         else:
             raise RequestError(req)
+
+    def post_cpl_auth(self, data=None):
+        """Authorize to the Control Panel and get Cookie Jar
+        """
+        log.debug('POST: {}'.format(self.url))
+
+        req = getattr(self.session, 'post')(self.url, data=data, verify=self.verify)
+        if req.ok:
+            return req
+        else:
+            raise RequestError(req)
+        

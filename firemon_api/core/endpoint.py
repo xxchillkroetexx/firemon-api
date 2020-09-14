@@ -198,3 +198,33 @@ class Endpoint(object):
 
     def __str__(self):
         return('{}'.format(self.url))
+
+
+class EndpointCpl(object):
+    """Represent actions available on endpoints
+    
+    Args:
+        api (obj): FiremonAPI()
+        app (obj): App()
+        record (obj): optional `Record` to use
+    """
+
+    url = None
+    ep_name = None
+
+    def __init__(self, api, app, record=None):
+        if record:
+            self.return_obj = record
+        else:
+            self.return_obj = Record
+        self.api = api
+        self.session = api.session
+        self.app = app
+        self.base_url = api.base_url
+        self.app_url = app.app_url
+        self.url = None
+        if self.__class__.ep_name:
+            self.url = f"{self.app_url}/{self.__class__.ep_name}"
+
+    def _response_loader(self, values):
+        return self.return_obj(values, self.app)
