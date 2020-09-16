@@ -166,7 +166,8 @@ class Revisions(Endpoint):
             session=self.session,
         )
 
-        return [self._response_loader(i) for i in req.get()]
+        revs = [self._response_loader(i) for i in req.get()]
+        return sorted(revs, key=lambda x: x.id, reverse=True)
 
     def filter(self, *args, **kwargs):
         """ Retrieve a filterd list of Revisions.
@@ -189,7 +190,8 @@ class Revisions(Endpoint):
         if not kwargs:
             raise ValueError("filter must have kwargs")
 
-        return [rev for rev in rev_all if kwargs.items() <= dict(rev).items()]
+        revs = [rev for rev in rev_all if kwargs.items() <= dict(rev).items()]
+        return sorted(revs, key=lambda x: x.id, reverse=True)
 
     @property
     def device_id(self):
