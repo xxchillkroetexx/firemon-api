@@ -28,7 +28,7 @@ class CentralSyslogConfig(Record):
         app (obj): App()
     """
 
-    ep_name = 'centralsyslogconfig'
+    ep_name = "centralsyslogconfig"
     _domain_url = True
 
     def __init__(self, config, app):
@@ -37,7 +37,7 @@ class CentralSyslogConfig(Record):
 
 class CentralSyslogConfigs(Endpoint):
     """Central Syslog Configs Endpoint
-    
+
     Args:
         api (obj): FiremonAPI()
         app (obj): App()
@@ -46,7 +46,7 @@ class CentralSyslogConfigs(Endpoint):
         record (obj): default `Record` object
     """
 
-    ep_name = 'centralsyslogconfig'
+    ep_name = "centralsyslogconfig"
     _domain_url = True
 
     def __init__(self, api, app, record=CentralSyslogConfig):
@@ -61,4 +61,3 @@ class CentralSyslogConfigs(Endpoint):
 
     def count(self):
         return len(self.all())
-

@@ -21,12 +21,12 @@ log = logging.getLogger(__name__)
 
 
 class User(Record):
-    """ Represents a User in Firemon
+    """Represents a User in Firemon
 
     Args:
         config (dict): dictionary of things values from json
         app (obj): App()
-        
+
     Examples:
         Unlock and Enable all users
         >>> for user in fm.sm.users.all():
@@ -35,15 +35,17 @@ class User(Record):
         ...   user.save()
     """
 
-    ep_name = 'user'
+    ep_name = "user"
     _domain_url = True
 
     def set_password(self, password: str) -> bool:
-        key='password'
-        data = {'password': password}
-        headers = {"Content-Type": "application/x-www-form-urlencoded",
-                    "Accept": "application/json",
-                    "Suppress-Auth-Header": 'true'}
+        key = "password"
+        data = {"password": password}
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "application/json",
+            "Suppress-Auth-Header": "true",
+        }
         req = Request(
             base=self.url,
             key=key,
@@ -60,7 +62,7 @@ class User(Record):
 
 
 class Users(Endpoint):
-    """ Represents the Users
+    """Represents the Users
 
     Args:
         api (obj): FiremonAPI()
@@ -71,16 +73,15 @@ class Users(Endpoint):
         record (obj): default `Record` object
     """
 
-    ep_name = 'user'
+    ep_name = "user"
     _domain_url = True
 
     def __init__(self, api, app, record=User):
         super().__init__(api, app, record=User)
 
     def all(self):
-        """Get all `Record`
-        """
-        filters = {'includeSystem': True, 'includeDisabled': True}
+        """Get all `Record`"""
+        filters = {"includeSystem": True, "includeDisabled": True}
 
         req = Request(
             base=self.url,
@@ -91,71 +92,71 @@ class Users(Endpoint):
         return [self._response_loader(i) for i in req.get()]
 
     def template(self):
-        """ Create a template of a simple user
+        """Create a template of a simple user
 
         Return:
             dict: dictionary of data to pass to create
         """
         conf = {}
-        conf['username'] = None
-        conf['firstName'] = None
-        conf['lastName'] = None
-        conf['email'] = None
-        conf['password'] = None
-        conf['existingPassword'] = None
-        conf['passwordExpired'] = False
-        conf['locked'] = False
-        conf['expired'] = False
-        conf['enabled'] = True
-        conf['authType'] = 'LOCAL'
-        conf['authServerId'] = None  # 0
+        conf["username"] = None
+        conf["firstName"] = None
+        conf["lastName"] = None
+        conf["email"] = None
+        conf["password"] = None
+        conf["existingPassword"] = None
+        conf["passwordExpired"] = False
+        conf["locked"] = False
+        conf["expired"] = False
+        conf["enabled"] = True
+        conf["authType"] = "LOCAL"
+        conf["authServerId"] = None  # 0
         return conf
 
 
 class UserGroup(Record):
-    """ Represents a UserGroup in Firemon
+    """Represents a UserGroup in Firemon
 
     Args:
         config (dict): dictionary of things values from json
         app (obj): App()
-        
+
     """
 
-    ep_name = 'usergroup'
+    ep_name = "usergroup"
     _domain_url = True
 
     def __init__(self, config, app):
         super().__init__(config, app)
 
     def permission_list(self):
-        """ List all available permissions in Firemon. 
+        """List all available permissions in Firemon.
 
         Return:
-            list: list of available permissions. 
+            list: list of available permissions.
         """
 
-        key = 'permissiondefinition'
+        key = "permissiondefinition"
         resp = Request(
             base=self.app.domain_url,
             key=key,
             session=self.session,
-            ).get()
+        ).get()
 
         perms = []
         for rg in resp:
-            #perms.extend(rg['permissions'])
-            for p in rg['permissions']:
+            # perms.extend(rg['permissions'])
+            for p in rg["permissions"]:
                 perms.append(Permission(p, self.app))
 
         return perms
 
     def permission_show(self):
-        key = 'permissions'
+        key = "permissions"
         resp = Request(
             base=self.url,
             key=key,
             session=self.session,
-            ).get()
+        ).get()
 
         perms = []
         for p in resp:
@@ -169,12 +170,12 @@ class UserGroup(Record):
         Args:
             id (int): see permission_list() for id values and meaning
         """
-        key = 'permission/{}'.format(id)
+        key = f"permission/{id}"
         resp = Request(
             base=self.url,
             key=key,
             session=self.session,
-            ).post()
+        ).post()
 
         return resp
 
@@ -184,12 +185,12 @@ class UserGroup(Record):
         Args:
             id (int): see permission_list() for id values and meaning
         """
-        key = 'permission/{}'.format(id)
+        key = f"permission/{id}"
         resp = Request(
             base=self.url,
             key=key,
             session=self.session,
-            ).delete()
+        ).delete()
 
         return resp
 
@@ -206,16 +207,15 @@ class UserGroups(Endpoint):
         record (obj): default `Record` object
     """
 
-    ep_name = 'usergroup'
+    ep_name = "usergroup"
     _domain_url = True
 
     def __init__(self, api, app, record=UserGroup):
         super().__init__(api, app, record=UserGroup)
 
     def all(self):
-        """Get all `Record`
-        """
-        filters = {'includeMapping': True}
+        """Get all `Record`"""
+        filters = {"includeMapping": True}
 
         req = Request(
             base=self.url,
@@ -227,30 +227,24 @@ class UserGroups(Endpoint):
 
 
 class Permission(Record):
-    """A Permission.
-    """
-    ep_name = 'permissions'
+    """A Permission."""
+
+    ep_name = "permissions"
 
     def __init__(self, config, app):
         super().__init__(config, app)
 
     def save(self):
-        raise NotImplementedError(
-            "Writes are not supported for this Record."
-        )
+        raise NotImplementedError("Writes are not supported for this Record.")
 
     def update(self):
-        raise NotImplementedError(
-            "Writes are not supported for this Record."
-        )
+        raise NotImplementedError("Writes are not supported for this Record.")
 
     def delete(self):
-        raise NotImplementedError(
-            "Writes are not supported for this Record."
-        )
+        raise NotImplementedError("Writes are not supported for this Record.")
 
     def __repr__(self):
-        return("Permission<(id='{}')>".format(self.id))
+        return f"Permission<(id='{self.id}')>"
 
     def __str__(self):
-        return("{}".format(self.id))
+        return f"{self.id}"

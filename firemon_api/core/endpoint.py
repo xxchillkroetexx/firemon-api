@@ -17,7 +17,7 @@ from firemon_api.core.response import Record, JsonField
 
 class Endpoint(object):
     """Represent actions available on endpoints
-    
+
     Args:
         api (obj): FiremonAPI()
         app (obj): App()
@@ -41,21 +41,20 @@ class Endpoint(object):
         self.domain_url = app.domain_url
         self.url = None
         if self.__class__._domain_url and self.__class__.ep_name:
-            self.url = "{url}/{ep}".format(url=self.domain_url,
-                                            ep=self.__class__.ep_name)
+            self.url = f"{self.domain_url}/{self.__class__.ep_name}"
         elif self.__class__.ep_name:
-            self.url = "{url}/{ep}".format(url=self.app_url,
-                                            ep=self.__class__.ep_name)
+            self.url = f"{self.app_url}/{self.__class__.ep_name}"
 
         # These will be used update `key` values for `query.Request`
         # (i.e. they will be appended to 'self.url' to get full path)
         # All child classes can then update to append endpoint actions
         # or add new actions, hopefully for read-ability
-        self._ep = {'all': None,
-                    'filter': None,
-                    'create': None,
-                    'count': None,
-                   }
+        self._ep = {
+            "all": None,
+            "filter": None,
+            "create": None,
+            "count": None,
+        }
 
     def _response_loader(self, values):
         return self.return_obj(values, self.app)
@@ -65,16 +64,15 @@ class Endpoint(object):
         # end points. Try and work around them at child classes
         l = []
         for k in values.keys():
-            l.append('{}={}'.format(k, values[k]))
-        filters = {'filter': l}
+            l.append(f"{k}={values[k]}")
+        filters = {"filter": l}
         return filters
 
     def all(self):
-        """Get all `Record`
-        """
+        """Get all `Record`"""
         req = Request(
             base=self.url,
-            key=self._ep['all'],
+            key=self._ep["all"],
             session=self.api.session,
         )
 
@@ -137,16 +135,14 @@ class Endpoint(object):
             kwargs.update({"name": args[0]})
 
         if not kwargs:
-            raise ValueError(
-                "filter must be passed kwargs. Perhaps use all() instead."
-            )
+            raise ValueError("filter must be passed kwargs. Perhaps use all() instead.")
 
         filters = self._make_filters(kwargs)
 
         req = Request(
             base=self.url,
             filters=filters,
-            key=self._ep['filter'],
+            key=self._ep["filter"],
             session=self.api.session,
         )
 
@@ -168,7 +164,7 @@ class Endpoint(object):
 
         req = Request(
             base=self.url,
-            key=self._ep['create'],
+            key=self._ep["create"],
             session=self.api.session,
         ).post(data=args[0] if args else kwargs)
 
@@ -185,24 +181,22 @@ class Endpoint(object):
         """
         ret = Request(
             base=self.url,
-            key=self._ep['count'],
+            key=self._ep["count"],
             session=self.api.session,
         )
 
         return ret.get_count()
 
     def __repr__(self):
-        return str("<{}({})>".format(
-            self.__class__.__name__,
-            self.url))
+        return str(f"<{self.__class__.__name__}({self.url})>")
 
     def __str__(self):
-        return('{}'.format(self.url))
+        return f"{self.url}"
 
 
 class EndpointCpl(object):
     """Represent actions available on endpoints
-    
+
     Args:
         api (obj): FiremonAPI()
         app (obj): App()

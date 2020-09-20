@@ -43,23 +43,26 @@ class CollectionConfig(Record):
         >>> cc.devicepack_set()
         True
     """
-    ep_name = 'collectionconfig'
+
+    ep_name = "collectionconfig"
 
     def __init__(self, config, app):
-        super().__init__(config, app,)
+        super().__init__(
+            config,
+            app,
+        )
 
-        self.no_no_keys = ['index',
-			               'createdBy',
-			               'createdDate',
-			               'lastModifiedBy',
-			               'lastModifiedDate'
-			               ]
+        self.no_no_keys = [
+            "index",
+            "createdBy",
+            "createdDate",
+            "lastModifiedBy",
+            "lastModifiedDate",
+        ]
 
     def devicepack_set(self) -> bool:
         """ Set CollectionConfig for Device Pack assignment. """
-        key = 'devicepack/{devicepack_id}/assignment/{id}'.format(
-                                            devicepack_id=self.devicePackId,
-                                            id=self.id)
+        key = f"devicepack/{self.devicePackId}/assignment/{self.id}"
         req = Request(
             base=self.url,
             key=key,
@@ -68,11 +71,10 @@ class CollectionConfig(Record):
         return req.put()
 
     def devicepack_unset(self) -> bool:
-        """ Unset CollectionConfig for Device Pack assignment.
+        """Unset CollectionConfig for Device Pack assignment.
         Effectively sets back to 'default'
         """
-        key = 'devicepack/{devicepack_id}/assignment'.format(
-                                            devicepack_id=self.devicePackId)
+        key = f"devicepack/{self.devicePackId}/assignment"
         req = Request(
             base=self.url,
             key=key,
@@ -81,9 +83,9 @@ class CollectionConfig(Record):
         return req.delete()
 
     def device_set(self, id) -> bool:
-        """ Set CollectionConfig for a device by ID. If requested 
+        """Set CollectionConfig for a device by ID. If requested
         device IDs device pack does not match CC device pack server
-        handles mismatch and will NOT set. If device ID is not 
+        handles mismatch and will NOT set. If device ID is not
         found server handles mismatch and will NOT set.
 
         Args:
@@ -92,9 +94,7 @@ class CollectionConfig(Record):
         Return:
             bool: True if device set
         """
-        key = 'device/{device_id}/assignment/{id}'.format(
-                                                    device_id=id,
-                                                    id=self.id)
+        key = f"device/{id}/assignment/{self.id}"
         req = Request(
             base=self.url,
             key=key,
@@ -103,7 +103,7 @@ class CollectionConfig(Record):
         return req.put()
 
     def device_unset(self, id) -> bool:
-        """ Unset a device from CollectionConfig
+        """Unset a device from CollectionConfig
 
         Args:
             id (int): The ID for the device as understood by Firemon
@@ -111,13 +111,11 @@ class CollectionConfig(Record):
         Return:
             bool: True if device unset
         """
-        key = 'device/{device_id}/assignment'.format(
-                                                device_id=id)
+        key = f"device/{id}/assignment"
         req = Request(
             base=self.url,
             key=key,
-            session=self.
-            session,
+            session=self.session,
         )
         return req.delete()
 
@@ -141,14 +139,18 @@ class CollectionConfigs(Endpoint):
                 devicePackArtifactId='juniper_srx')[0]
     """
 
-    ep_name = 'collectionconfig'
+    ep_name = "collectionconfig"
 
-    def __init__(self, api, app, 
-                record=CollectionConfig,
-                device_id: int=None,
-                devicepack_id: int=None):
+    def __init__(
+        self,
+        api,
+        app,
+        record=CollectionConfig,
+        device_id: int = None,
+        devicepack_id: int = None,
+    ):
         super().__init__(api, app, record=CollectionConfig)
-        
+
         self._device_id = device_id
         self._devicepack_id = devicepack_id
 
@@ -156,7 +158,7 @@ class CollectionConfigs(Endpoint):
         """Get all `Record` """
         filters = None
         if self.device_id:
-            filters = {'devicePackId': self.devicepack_id}
+            filters = {"devicePackId": self.devicepack_id}
 
         req = Request(
             base=self.url,
@@ -167,7 +169,7 @@ class CollectionConfigs(Endpoint):
         return [self._response_loader(i) for i in req.get()]
 
     def filter(self, *args, **kwargs):
-        """ Retrieve a filterd list of CollectionConfigs
+        """Retrieve a filterd list of CollectionConfigs
         Note: review the dictionary for all keywords
         Args:
             **kwargs: key value pairs in a collectionconfig dictionary
@@ -185,7 +187,7 @@ class CollectionConfigs(Endpoint):
         """
         cc_all = self.all()
         if args:
-            kwargs.update({'name': args[0]})
+            kwargs.update({"name": args[0]})
 
         if not kwargs:
             raise ValueError("filter must have kwargs")

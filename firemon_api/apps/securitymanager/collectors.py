@@ -16,27 +16,28 @@ import uuid
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
 from firemon_api.core.query import Request, url_param_builder
-#from .devices import Devices, Device
+
+# from .devices import Devices, Device
 
 log = logging.getLogger(__name__)
 
 
 class Collector(Record):
-    """ Represents the Data Collector
+    """Represents the Data Collector
 
     Args:
         config (dict): dictionary of things values from json
         app (obj): App()
     """
 
-    ep_name = 'collector'
+    ep_name = "collector"
 
     def __init__(self, config, app):
         super().__init__(config, app)
 
     def status(self):
         """Get status of Collector"""
-        key = 'status/{id}'.format(id=self.id)
+        key = f"status/{self.id}"
         req = Request(
             base=self.url,
             key=key,
@@ -46,7 +47,7 @@ class Collector(Record):
 
     def devices(self):
         """Get all devices assigned to collector"""
-        key = 'device'
+        key = "device"
         req = Request(
             base=self.url,
             key=key,
@@ -57,7 +58,7 @@ class Collector(Record):
 
 
 class Collectors(Endpoint):
-    """ Represents the Data Collectors
+    """Represents the Data Collectors
 
     Args:
         api (obj): FiremonAPI()
@@ -67,7 +68,7 @@ class Collectors(Endpoint):
         record (obj): default `Record` object
     """
 
-    ep_name = 'collector'
+    ep_name = "collector"
 
     def __init__(self, api, app, record=Collector):
         super().__init__(api, app, record=Collector)
@@ -75,19 +76,19 @@ class Collectors(Endpoint):
     def _make_filters(self, values):
         # Only a 'search' for a single value. Take all key-values
         # and use the first key's value for search query
-        filters = {'search': values[next(iter(values))]}
+        filters = {"search": values[next(iter(values))]}
         return filters
 
 
 class CollectorGroup(Record):
-    """ Represents the Collector Group
+    """Represents the Collector Group
 
     Args:
         config (dict): dictionary of things values from json
         app (obj): App()
     """
 
-    ep_name = 'collector/group'
+    ep_name = "collector/group"
 
     def __init__(self, config, app):
         super().__init__(config, app)
@@ -100,7 +101,7 @@ class CollectorGroup(Record):
         Args:
             cid (int): Collector ID
         """
-        key = 'member/{collectorId}'.format(collectorId=cid)
+        key = f"member/{cid}"
         req = Request(
             base=self.url,
             key=key,
@@ -108,18 +109,18 @@ class CollectorGroup(Record):
         )
         return req.put()
 
-    #def member_unset(self, cid):
-        # Need to get this working to make set useful
+    # def member_unset(self, cid):
+    # Need to get this working to make set useful
     #    pass
 
     def device_set(self, id):
-        """ Assign a Device
+        """Assign a Device
         note: no changes if device is already assigned. How to unassign?
 
         Args:
             id (int): Device id
         """
-        key = 'member/{deviceId}'.format(deviceId=id)
+        key = f"member/{id}"
         req = Request(
             base=self.url,
             key=key,
@@ -129,7 +130,7 @@ class CollectorGroup(Record):
 
 
 class CollectorGroups(Endpoint):
-    """ Represents the Data Collector Groups
+    """Represents the Data Collector Groups
 
     Args:
         api (obj): FiremonAPI()
@@ -139,7 +140,7 @@ class CollectorGroups(Endpoint):
         record (obj): default `Record` object
     """
 
-    ep_name = 'collector/group'
+    ep_name = "collector/group"
 
     def __init__(self, api, app, record=CollectorGroup):
         super().__init__(api, app, record=CollectorGroup)
@@ -147,7 +148,7 @@ class CollectorGroups(Endpoint):
     def _make_filters(self, values):
         # Only a 'search' for a single value. Take all key-values
         # and use the first key's value for search query
-        filters = {'search': values[next(iter(values))]}
+        filters = {"search": values[next(iter(values))]}
         return filters
 
     def count(self):

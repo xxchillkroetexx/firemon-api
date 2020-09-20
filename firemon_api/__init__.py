@@ -37,13 +37,15 @@ limitations under the License.
 # Standard Modules
 import logging
 from logging import NullHandler
-#import urllib3
+
+# import urllib3
 
 # Local
 from firemon_api.core.api import FiremonAPI as api
 from firemon_api.version import __version__
 
 logging.getLogger(__name__).addHandler(NullHandler())
+
 
 def add_stderr_logger(level=logging.DEBUG):
     """
@@ -56,22 +58,28 @@ def add_stderr_logger(level=logging.DEBUG):
     logger = logging.getLogger(__name__)
     logging.captureWarnings(True)
     handler = logging.StreamHandler()
-    handler.setFormatter(
-                    logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
     logger.addHandler(handler)
     logger.setLevel(level)
     logger.debug("Added a stderr logging handler to logger: %s", __name__)
     return handler
 
+
 # ... Clean up.
 del NullHandler
+
 
 def disable_warnings():
     """
     Hate warnings? disable them
     """
-    #urllib3.disable_warnings()
+    # urllib3.disable_warnings()
     import warnings
     from urllib3.exceptions import InsecureRequestWarning
-    warnings.filterwarnings('ignore', '.*', UserWarning,)
-    warnings.filterwarnings('ignore', '.*', InsecureRequestWarning, 'urllib3')
+
+    warnings.filterwarnings(
+        "ignore",
+        ".*",
+        UserWarning,
+    )
+    warnings.filterwarnings("ignore", ".*", InsecureRequestWarning, "urllib3")

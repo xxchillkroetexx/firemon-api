@@ -61,33 +61,34 @@ class Device(Record):
     """
 
     _domain_url = True
-    ep_name = 'device'
+    ep_name = "device"
     extendedSettingsJson = JsonField
     devicePack = DevicePack
 
-    def __init__(self, config , app):
+    def __init__(self, config, app):
         super().__init__(config, app)
 
-        #self.url = '{ep}/{id}'.format(ep=self.ep_url, 
+        # self.url = '{ep}/{id}'.format(ep=self.ep_url,
         #                                id=config['id'])
-        self._no_no_keys = ['securityConcernIndex',
-                            'gpcComputeDate',
-                            'gpcDirtyDate',
-                            'gpcImplementDate',
-                            'gpcStatus',
-                           ]
+        self._no_no_keys = [
+            "securityConcernIndex",
+            "gpcComputeDate",
+            "gpcDirtyDate",
+            "gpcImplementDate",
+            "gpcStatus",
+        ]
 
         # Add attributes to Record() so we can get more info
-        self.revisions = Revisions(self.app.api, 
-                                   self.app, 
-                                   device_id=config['id'])
+        self.revisions = Revisions(self.app.api, self.app, device_id=config["id"])
 
-        self.collectionconfigs = CollectionConfigs(self.app.api, 
-                                self.app, 
-                                device_id=config['id'],
-                                devicepack_id=config['devicePack']['id'])
+        self.collectionconfigs = CollectionConfigs(
+            self.app.api,
+            self.app,
+            device_id=config["id"],
+            devicepack_id=config["devicePack"]["id"],
+        )
 
-    def save(self, retrieve: bool=False) -> bool:
+    def save(self, retrieve: bool = False) -> bool:
         """Saves changes to an existing object.
         Checks the state of `_diff` and sends the entire
         `serialize` to Request.put().
@@ -111,10 +112,10 @@ class Device(Record):
             if diff:
                 serialized = self.serialize()
                 # Make sure this is set appropriately. Cannot change.
-                serialized['id'] = self._config['id']
+                serialized["id"] = self._config["id"]
                 # Put all this redundant nonsense back in. Why api, why?
-                serialized['devicePack'] = self._config['devicePack']
-                params = {'manualRetrieval': retrieve}
+                serialized["devicePack"] = self._config["devicePack"]
+                params = {"manualRetrieval": retrieve}
                 req = Request(
                     base=self.url,
                     filters=params,
@@ -124,7 +125,7 @@ class Device(Record):
 
         return False
 
-    def update(self, data: dict, retrieve: bool=False) -> bool:
+    def update(self, data: dict, retrieve: bool = False) -> bool:
         """Update an object with a dictionary.
         Accepts a dict and uses it to update the record and call save().
         For nested and choice fields you'd pass an int the same as
@@ -150,9 +151,14 @@ class Device(Record):
             self.attr_set(k, v)
         return self.save(retrieve=retrieve)
 
-    def delete(self, deleteChildren: bool=False, a_sync: bool=False,
-                    sendNotification: bool=False, postProcessing: bool=True):
-        """ Delete the device (and child devices)
+    def delete(
+        self,
+        deleteChildren: bool = False,
+        a_sync: bool = False,
+        sendNotification: bool = False,
+        postProcessing: bool = True,
+    ):
+        """Delete the device (and child devices)
 
         Kwargs:
             deleteChildren (bool): delete all associated child devices
@@ -170,9 +176,12 @@ class Device(Record):
             True
         """
 
-        filters = {'deleteChildren': deleteChildren, 'async': a_sync,
-                  'sendNotification': sendNotification,
-                  'postProcessing': postProcessing}
+        filters = {
+            "deleteChildren": deleteChildren,
+            "async": a_sync,
+            "sendNotification": sendNotification,
+            "postProcessing": postProcessing,
+        }
 
         req = Request(
             base=self.url,
@@ -181,13 +190,13 @@ class Device(Record):
         )
         return req.delete()
 
-    def rev_export(self, meta: bool=True):
-        """Export latest configuration files as a zip file 
-        
+    def rev_export(self, meta: bool = True):
+        """Export latest configuration files as a zip file
+
         Support files include all NORMALIZED data and other meta data.
-        Raw configs include only those files as found by Firemon 
+        Raw configs include only those files as found by Firemon
         during a retrieval.
-        
+
         Kwargs:
             meta (bool): True gets a SUPPORT file. False is Raw only
 
@@ -204,9 +213,9 @@ class Device(Record):
             38047
         """
         if meta:
-            key = 'export'
+            key = "export"
         else:
-            key = 'export/config'
+            key = "export/config"
         req = Request(
             base=self.url,
             key=key,
@@ -214,10 +223,9 @@ class Device(Record):
         )
         return req.get_content()
 
-
-    def config_import(self, f_list: list,
-                      change_user=None,
-                      correlation_id=None) -> bool:
+    def config_import(
+        self, f_list: list, change_user=None, correlation_id=None
+    ) -> bool:
         """Import config files for device to create a new revision
 
         Args:
@@ -242,13 +250,16 @@ class Device(Record):
         """
         if not change_user:
             # Not needed as server will go on its merry way with nothing
-            change_user = '{}:[firemon_api]'.format(self.app.api.username)
+            change_user = f"{self.app.api.username}:[firemon_api]"
         if not correlation_id:
             # Not needed as server will generate one for us. But... whatever.
             correlation_id = str(uuid.uuid1())
-        filters = {'action': 'IMPORT', 'changeUser': change_user,
-                    'correlationId': correlation_id}
-        key = 'rev'
+        filters = {
+            "action": "IMPORT",
+            "changeUser": change_user,
+            "correlationId": correlation_id,
+        }
+        key = "rev"
 
         req = Request(
             base=self.url,
@@ -258,8 +269,8 @@ class Device(Record):
         )
         return req.post(files=f_list)
 
-    def support_import(self, zip_file: bytes, renormalize: bool=False):
-        """ Todo: Import a 'support' file, a zip file with the expected device
+    def support_import(self, zip_file: bytes, renormalize: bool = False):
+        """Todo: Import a 'support' file, a zip file with the expected device
         config files along with 'NORMALIZED' and meta-data files. Use this
         function and set 'renormalize = True' and mimic 'import_config'.
 
@@ -284,9 +295,9 @@ class Device(Record):
             >>> path = '/path/to/file/vsrx-2.zip'
             >>> dev.import_support((fn, open(path, 'rb'))
         """
-        filters = {'renormalize': renormalize}
-        files = {'file': zip_file}
-        key = 'import'
+        filters = {"renormalize": renormalize}
+        files = {"file": zip_file}
+        key = "import"
 
         req = Request(
             base=self.url,
@@ -296,14 +307,14 @@ class Device(Record):
         )
         return req.post(files=files)
 
-    def retrieval_exec(self, debug: bool=False):
+    def retrieval_exec(self, debug: bool = False):
         """Execute a manual retrieval for device.
 
         Kwargs:
             debug (bool): Unsure what this does
         """
-        key = 'manualretrieval'
-        filters = {'debug': debug}
+        key = "manualretrieval"
+        filters = {"debug": debug}
 
         req = Request(
             base=self.url,
@@ -313,7 +324,7 @@ class Device(Record):
         )
         return req.post()
 
-    def rule_usage(self, type: str='total'):
+    def rule_usage(self, type: str = "total"):
         """Get rule usage for device.
         total hits for all rules on the device.
 
@@ -324,7 +335,7 @@ class Device(Record):
             json: daily == {'hitDate': '....', 'totalHits': int}
                   total == {'totalHits': int}
         """
-        key = 'ruleusagestat/{type}'.format(type=type)
+        key = f"ruleusagestat/{type}"
         req = Request(
             base=self.url,
             key=key,
@@ -333,9 +344,8 @@ class Device(Record):
         return req.get()
 
     def nd_problem(self):
-        """Retrieve problems with latest normalization
-        """
-        key = 'device/{id}/nd/problem'.format(id=self.id)
+        """Retrieve problems with latest normalization"""
+        key = f"device/{self.id}/nd/problem"
         req = Request(
             base=self.app_url,
             key=key,
@@ -345,7 +355,7 @@ class Device(Record):
 
     def nd_latest_get(self):
         """Gets the latest revision as a fully parsed object """
-        key = 'rev/latest/nd/all'
+        key = "rev/latest/nd/all"
         req = Request(
             base=self.url,
             key=key,
@@ -359,7 +369,7 @@ class Device(Record):
         Notes:
             SSH Key location: /var/lib/firemon/dc/.ssh/known_hosts
         """
-        key = 'sshhostkey'
+        key = "sshhostkey"
         req = Request(
             base=self.url,
             key=key,
@@ -369,7 +379,7 @@ class Device(Record):
 
 
 class Devices(Endpoint):
-    """ Represents the Devices
+    """Represents the Devices
 
     Args:
         api (obj): FiremonAPI()
@@ -379,17 +389,17 @@ class Devices(Endpoint):
         record (obj): default `Record` object
     """
 
-    ep_name = 'device'
+    ep_name = "device"
     _domain_url = True
 
     def __init__(self, api, app, record=Device):
         super().__init__(api, app, record=Device)
-        #self._ep = {'all': None,
+        # self._ep = {'all': None,
         #            'filter': 'filter',
         #            'create': None,
         #            'count': None,
         #           }
-        self._ep.update({'filter': 'filter'})
+        self._ep.update({"filter": "filter"})
 
     def get(self, *args, **kwargs):
         """Get single Device
@@ -443,9 +453,8 @@ class Devices(Endpoint):
 
         return self._response_loader(req.get())
 
-
-    def create(self, dev_config, retrieve: bool=False):
-        """  Create a new device
+    def create(self, dev_config, retrieve: bool = False):
+        """Create a new device
 
         Args:
             dev_config (dict): dictionary of configuration data.
@@ -467,7 +476,7 @@ class Devices(Endpoint):
             >>> dev
             <Device(Conan)>
         """
-        filters = {'manualRetrieval': retrieve}
+        filters = {"manualRetrieval": retrieve}
         req = Request(
             base=self.url,
             filters=filters,

@@ -14,6 +14,7 @@ from firemon_api.core.utils import Hashabledict
 
 log = logging.getLogger(__name__)
 
+
 def get_return(lookup, return_fields=None):
     """Returns simple representations for items passed to lookup. """
     for i in return_fields or ["id", "value", "nested_return"]:
@@ -28,10 +29,11 @@ def get_return(lookup, return_fields=None):
 
 class JsonField(object):
     """Explicit field type for values that are not to be converted
-    to a JsonRecord object. 
-    
+    to a JsonRecord object.
+
     Basically anything that does not have an `id`
     """
+
     _json_field = True
 
 
@@ -57,7 +59,7 @@ class Record(object):
 
     def __init__(self, config, app):
         self._config = config
-        self._init_cache = []   
+        self._init_cache = []
         self.default_ret = Record
         self.app = app
         self.session = app.session
@@ -66,11 +68,9 @@ class Record(object):
         self.domain_url = app.domain_url
         self.ep_url = None
         if self.__class__._domain_url and self.__class__.ep_name:
-            self.ep_url = "{url}/{ep}".format(url=self.domain_url,
-                                            ep=self.__class__.ep_name)
+            self.ep_url = f"{self.domain_url}/{self.__class__.ep_name}"
         elif self.__class__.ep_name:
-            self.ep_url = "{url}/{ep}".format(url=self.app_url,
-                                            ep=self.__class__.ep_name)
+            self.ep_url = f"{self.app_url}/{self.__class__.ep_name}"
 
         if config:
             self._parse_config(config)
@@ -84,8 +84,7 @@ class Record(object):
 
     def _url_create(self):
         """ General self.url create """
-        url = '{ep}/{id}'.format(ep=self.ep_url, 
-                                        id=self._config['id'])
+        url = f"{self.ep_url}/{self._config['id']}"
         return url
 
     def __iter__(self):
@@ -104,16 +103,15 @@ class Record(object):
         return item
 
     def __str__(self):
-        return str((getattr(self, "name", None)) or 
-                str(getattr(self, "id", None)) or 
-                "__unknown__")
+        return str(
+            (getattr(self, "name", None))
+            or str(getattr(self, "id", None))
+            or "__unknown__"
+        )
 
     def __repr__(self):
-        #return str(self)
-        return ("<{}({})>".format(
-            self.__class__.__name__,
-            str(self)
-        ))
+        # return str(self)
+        return f"<{self.__class__.__name__}({str(self)})>"
 
     def __getstate__(self):
         return self.__dict__
@@ -125,7 +123,7 @@ class Record(object):
         if hasattr(self, "id"):
             return (self.name, self.id)
         else:
-            return (self.name)
+            return self.name
 
     def __hash__(self):
         return hash(self.__key__())
@@ -140,12 +138,11 @@ class Record(object):
         self._init_cache.append((key, get_return(value)))
 
     def _parse_config(self, config):
-
         def list_parser(list_item):
             if isinstance(list_item, dict):
                 # Only attempt creating `Record` if there is an id.
-                if 'id' in list_item.keys():
-                     return self.default_ret(list_item, self.app)
+                if "id" in list_item.keys():
+                    return self.default_ret(list_item, self.app)
             return list_item
 
         for k, v in config.items():
@@ -189,7 +186,7 @@ class Record(object):
                 d.pop(k)
             except KeyError:
                 continue
-        return(d)
+        return d
 
     def serialize(self, nested=False, init=False):
         """Serializes an object
@@ -220,14 +217,11 @@ class Record(object):
             log.debug(current_val)
 
             if isinstance(current_val, Record):
-                current_val = getattr(current_val, "serialize")(
-                    nested=True
-                )
+                current_val = getattr(current_val, "serialize")(nested=True)
 
             if isinstance(current_val, list):
                 current_val = [
-                    v.id if isinstance(v, Record) else v
-                    for v in current_val
+                    v.id if isinstance(v, Record) else v for v in current_val
                 ]
 
             ret[i] = current_val
@@ -241,9 +235,7 @@ class Record(object):
                 return k, ",".join(map(str, v))
             return k, v
 
-        current = Hashabledict(
-            {fmt_dict(k, v) for k, v in self.serialize().items()}
-        )
+        current = Hashabledict({fmt_dict(k, v) for k, v in self.serialize().items()})
         init = Hashabledict(
             {fmt_dict(k, v) for k, v in self.serialize(init=True).items()}
         )
@@ -270,12 +262,12 @@ class Record(object):
                 setattr(self, k, v)
             else:
                 setattr(self, k, v)
-                self._add_cache((k, ''))
+                self._add_cache((k, ""))
 
     def attr_unset(self, k):
         """Unset an attribute and remove from the cache.
 
-        This is to ensure that the `serialize` picks up 
+        This is to ensure that the `serialize` picks up
         attribute and `_diff`.
 
         Args:

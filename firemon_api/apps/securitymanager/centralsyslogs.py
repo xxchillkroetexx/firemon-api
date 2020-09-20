@@ -29,26 +29,26 @@ class CentralSyslog(Record):
         app (obj): App()
     """
 
-    ep_name = 'central-syslog'
-    _domain_url = True    
+    ep_name = "central-syslog"
+    _domain_url = True
     centralSyslogConfig = CentralSyslogConfig
 
     def __init__(self, config, app):
         super().__init__(config, app)
 
         # not needed for `serialize` update using ep function
-        self._no_no_keys = ['centralSyslogConfig']
+        self._no_no_keys = ["centralSyslogConfig"]
 
     def device_set(self, id: int):
         """Set a device to this Central Syslog
 
         Args:
             id (int): device id to assign
-        
+
         Returns:
             (bool): True if assigned
         """
-        key = 'devices/{id}'.format(id=id)
+        key = f"devices/{id}"
         req = Request(
             base=self.url,
             key=key,
@@ -61,11 +61,11 @@ class CentralSyslog(Record):
 
         Args:
             id (int): device id to assign
-        
+
         Returns:
             (bool): True if assigned
         """
-        key = 'devices/{id}'.format(id=id)
+        key = f"devices/{id}"
         req = Request(
             base=self.url,
             key=key,
@@ -78,11 +78,11 @@ class CentralSyslog(Record):
 
         Args:
             id (int): Central Syslog Config id to assign
-        
+
         Returns:
             (bool): True if assigned
         """
-        key = 'config/{id}'.format(id=id)
+        key = f"config/{id}"
         req = Request(
             base=self.url,
             key=key,
@@ -97,7 +97,7 @@ class CentralSyslog(Record):
 
 class CentralSyslogs(Endpoint):
     """Central Syslogs Endpoint
-    
+
     Args:
         api (obj): FiremonAPI()
         app (obj): App()
@@ -106,7 +106,7 @@ class CentralSyslogs(Endpoint):
         record (obj): default `Record` object
     """
 
-    ep_name = 'central-syslog'
+    ep_name = "central-syslog"
     _domain_url = True
 
     def __init__(self, api, app, record=CentralSyslog):
@@ -115,5 +115,5 @@ class CentralSyslogs(Endpoint):
     def _make_filters(self, values):
         # Only a 'search' for a single value. Take all key-values
         # and use the first key's value for search query
-        filters = {'search': values[next(iter(values))]}
+        filters = {"search": values[next(iter(values))]}
         return filters

@@ -13,7 +13,7 @@ import json
 import logging
 
 # Local packages
-#from firemon_api.core.endpoint import Endpoint
+# from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
 from firemon_api.core.query import Request, url_param_builder
 
@@ -21,56 +21,48 @@ log = logging.getLogger(__name__)
 
 
 class SiqlData(Record):
-    """A Siql Record.
-    """
+    """A Siql Record."""
 
     def __init__(self, config, app):
         super().__init__(config, app)
 
     def save(self):
-        raise NotImplementedError(
-            "Writes are not supported for this Record."
-        )
+        raise NotImplementedError("Writes are not supported for this Record.")
 
     def update(self):
-        raise NotImplementedError(
-            "Writes are not supported for this Record."
-        )
+        raise NotImplementedError("Writes are not supported for this Record.")
 
     def delete(self):
-        raise NotImplementedError(
-            "Writes are not supported for this Record."
-        )
+        raise NotImplementedError("Writes are not supported for this Record.")
 
 
 class Siql(object):
     """Represent actions on the SIQL endpoint. All functions
     take a `query` which is a string containing the siql.
-    
+
     Args:
         api (obj): FiremonAPI()
         app (obj): App()
     """
 
     url = None
-    ep_name = 'siql'
+    ep_name = "siql"
     _domain_url = False
 
     def __init__(self, api, app):
         self.return_obj = SiqlData
-        #self.return_obj = JsonField
+        # self.return_obj = JsonField
         self.api = api
         self.session = api.session
         self.app = app
         self.base_url = api.base_url
         self.app_url = app.app_url
         self.domain_url = app.domain_url
-        self.url = "{url}/{ep}".format(url=self.app_url,
-                                            ep=self.__class__.ep_name)
+        self.url = f"{self.app_url}/{self.__class__.ep_name}"
 
     def _response_loader(self, values):
         return self.return_obj(values, self.app)
-        #return self.return_obj()
+        # return self.return_obj()
 
     def _raw(self, query, key):
         """Raw SIQL query. The incantation used to summon Cthulu.
@@ -92,62 +84,62 @@ class Siql(object):
             ...     dst['name'], dst['hitcount']
             ...   for srv in rule.services:
             ...     srv['name'], srv['hitcount']
-            ...            
+            ...
         """
-        filters = {'q': query}
+        filters = {"q": query}
         resp = Request(
             base=self.url,
             key=key,
             filters=filters,
             session=self.api.session,
-            ).get()
+        ).get()
 
         return [self._response_loader(i) for i in resp]
 
     def appobj(self, query):
-        return self._raw(query, key='appobj/paged-search')
+        return self._raw(query, key="appobj/paged-search")
 
     def assessment(self, query):
-        return self._raw(query, key='assessment/paged-search')
+        return self._raw(query, key="assessment/paged-search")
 
     def asset(self, query):
-        return self._raw(query, key='asset/paged-search')
+        return self._raw(query, key="asset/paged-search")
 
     def control(self, query):
-        return self._raw(query, key='control/paged-search')
+        return self._raw(query, key="control/paged-search")
 
     def device(self, query):
-        return self._raw(query, key='device/paged-search')
+        return self._raw(query, key="device/paged-search")
 
     def devicegroup(self, query):
-        return self._raw(query, key='devicegroup/paged-search')
+        return self._raw(query, key="devicegroup/paged-search")
 
     def networkobj(self, query):
-        return self._raw(query, key='networkobj/paged-search')
+        return self._raw(query, key="networkobj/paged-search")
 
     def natrule(self, query):
-        return self._raw(query, key='natrule/paged-search')
+        return self._raw(query, key="natrule/paged-search")
 
     def policy(self, query):
-        return self._raw(query, key='policy/paged-search')
+        return self._raw(query, key="policy/paged-search")
 
     def profileobj(self, query):
-        return self._raw(query, key='profileobj/paged-search')
+        return self._raw(query, key="profileobj/paged-search")
 
     def scheduleobj(self, query):
-        return self._raw(query, key='scheduleobj/paged-search')
+        return self._raw(query, key="scheduleobj/paged-search")
 
     def secrule(self, query):
-        return self._raw(query, key='secrule/paged-search')
+        return self._raw(query, key="secrule/paged-search")
 
     def serviceobj(self, query):
-        return self._raw(query, key='serviceobj/paged-search')
+        return self._raw(query, key="serviceobj/paged-search")
 
     def userobj(self, query):
-        return self._raw(query, key='userobj/paged-search')
+        return self._raw(query, key="userobj/paged-search")
 
     def __repr__(self):
-        return("<Endpoint({})>".format(self.url))
+        return f"<Endpoint({self.url})>"
 
     def __str__(self):
-        return('{}'.format(self.url))
+        return f"{self.url}"

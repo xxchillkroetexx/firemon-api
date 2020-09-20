@@ -20,11 +20,9 @@ from firemon_api.core.query import Request, url_param_builder
 log = logging.getLogger(__name__)
 
 
-
-
 class PolicyCompute(Endpoint):
     """Policy Compute Endpoint
-    
+
     Args:
         api (obj): FiremonAPI()
         app (obj): App()
@@ -33,17 +31,15 @@ class PolicyCompute(Endpoint):
         record (obj): default `Record` object
     """
 
-    ep_name = 'policycompute'
+    ep_name = "policycompute"
     _domain_url = True
 
     def __init__(self, api, app, record=Record):
         super().__init__(api, app, record=Record)
 
-
     def exec(self):
-        """Execute a Compute for the domain
-        """
-        key = 'computation'
+        """Execute a Compute for the domain"""
+        key = "computation"
 
         req = Request(
             base=self.url,
@@ -53,16 +49,10 @@ class PolicyCompute(Endpoint):
         return req.post()
 
     def all(self):
-        raise NotImplementedError(
-            "Writes are not supported for this Record."
-        )
+        raise NotImplementedError("Writes are not supported for this Record.")
 
     def get(self):
-        raise NotImplementedError(
-            "Writes are not supported for this Record."
-        )
+        raise NotImplementedError("Writes are not supported for this Record.")
 
     def filter(self):
-        raise NotImplementedError(
-            "Writes are not supported for this Record."
-        )
+        raise NotImplementedError("Writes are not supported for this Record.")
