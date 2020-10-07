@@ -226,7 +226,7 @@ class FiremonAPI(object):
         return req.put(data=data)
 
     def __repr__(self):
-        return f"<Firemon(url='{self._base_url}', " "version='{self.version}')>"
+        return f"<Firemon(url={self._base_url}, version={self.version})>"
 
     def __str__(self):
         return self.host

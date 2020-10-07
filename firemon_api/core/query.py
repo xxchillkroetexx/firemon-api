@@ -131,7 +131,7 @@ class Request(object):
                 params.update(add_params)
 
         log.debug(
-            f"{verb.upper()}: {url_override}" or f"{self.url}?{urlencode(params)}"
+            f"{verb.upper()}: {url_override or f'{self.url}?{urlencode(params)}'}"
         )
 
         if json:

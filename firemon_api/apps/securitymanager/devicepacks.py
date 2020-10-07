@@ -250,16 +250,14 @@ class DevicePacks(Endpoint):
             bool: The return value. True for success upload, False otherwise
 
         Example:
-            >>> dp = fm.sm.dp.get('juniper_srx')
             >>> fn = '/path/to/file/srx.jar'
             >>> with open(fn, 'rb') as f:
             >>>     file = f.read()
-            >>> dp.upload(file)
+            >>> fm.sm.dp.upload(file)
 
-            >>> dp = fm.sm.dp.get('juniper_srx')
             >>> fn = 'srx.jar'
             >>> path = '/path/to/file/srx.jar'
-            >>> dp.upload((fn, open(path, 'rb'))
+            >>> fm.sm.dp.upload((fn, open(path, 'rb'))
         """
         files = {"devicepack.jar": file}
         filters = {"overwrite": True}

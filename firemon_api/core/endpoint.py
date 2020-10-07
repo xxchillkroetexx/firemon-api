@@ -166,7 +166,7 @@ class Endpoint(object):
             base=self.url,
             key=self._ep["create"],
             session=self.api.session,
-        ).post(data=args[0] if args else kwargs)
+        ).post(json=args[0] if args else kwargs)
 
         if isinstance(req, list):
             return [self._response_loader(i) for i in req]
@@ -195,7 +195,7 @@ class Endpoint(object):
 
 
 class EndpointCpl(object):
-    """Represent actions available on endpoints
+    """Represent actions available on Control Panel
 
     Args:
         api (obj): FiremonAPI()
