@@ -10,7 +10,10 @@ limitations under the License.
 
 # Standard packages
 import concurrent.futures as cf
-from json.decoder import JSONDecodeError
+try:
+    from simplejson.errors import JSONDecodeError
+except ModuleNotFoundError:
+    from json.decoder import JSONDecodeError
 import logging
 from urllib.parse import urlencode, quote
 
@@ -19,12 +22,14 @@ import requests
 
 log = logging.getLogger(__name__)
 
+
 def url_param_builder(param_dict):
     """Builds url parameters
     Creates URL paramters (e.g. '.../?xyz=r21&abc=123') from a dict
     passed in param_dict
     """
-    return "?{}".format(urlencode(param_dict))
+    return f"?{urlencode(param_dict)}"
+
 
 def calc_pages(pageSize, total):
     """ Calculate number of pages required for full results set. """
@@ -43,20 +48,14 @@ class RequestError(Exception):
         req = message
 
         if req.status_code == 404:
-            message = "The requested url: {} could not be found.".format(
-                req.url
-            )
+            message = f"The requested url: {req.url} could not be found."
         else:
             try:
-                message = "The request failed with code {} {}: {}".format(
-                    req.status_code, req.reason, req.json()
-                )
+                message = f"The request failed with code {req.status_code} {req.reason}: {req.json()}"
             except ValueError:
                 message = (
-                    "The request failed with code {} {} but more specific "
-                    "details were not returned in json.".format(
-                        req.status_code, req.reason
-                    )
+                    f"The request failed with code {req.status_code} {req.reason} but more specific "
+                    "details were not returned in json."
                 )
 
         super(RequestError, self).__init__(message)
@@ -94,29 +93,34 @@ class Request(object):
         self.filters = filters
         self.verify = session.verify
         self.key = self.normalize_key(key) if key else None
-        self.url = self.base if not key else "{}/{}".format(self.base, key)
+        self.url = self.base if not key else f"{self.base}/{key}"
         self.headers = headers
         self.cookies = cookies
 
     def normalize_url(self, url):
         if url[-1] == "/":
-            return url.strip('/')
+            return url.strip("/")
         return url
 
     def normalize_key(self, key):
         if key[0] == "/":
-            return key.lstrip('/')
+            return key.lstrip("/")
         return key
 
     def _make_call(
-        self, verb="get", url_override=None, add_params=None, 
-        json=None, data=None, files=None,
-        ):
+        self,
+        verb="get",
+        url_override=None,
+        add_params=None,
+        json=None,
+        data=None,
+        files=None,
+    ):
         if self.headers:
             headers = self.headers
         else:
-            if verb in ('post') and files:
-                headers = {'Content-Type': 'multipart/form-data'}
+            if verb in ("post") and files:
+                headers = {"Content-Type": "multipart/form-data"}
             elif verb in ("post", "put"):
                 headers = {"Content-Type": "application/json;"}
             else:
@@ -129,20 +133,26 @@ class Request(object):
             if add_params:
                 params.update(add_params)
 
-        log.debug('{}: {}'.format(verb.upper(), url_override or 
-                            '{}?{}'.format(self.url, urlencode(params))))
+        log.debug(
+            f"{verb.upper()}: {url_override or f'{self.url}?{urlencode(params)}'}"
+        )
 
         if json:
-            log.debug('Json: {}'.format(json))
+            log.debug(f"Json: {json}")
         if data:
-            log.debug('Data: {}'.format(data))
+            log.debug(f"Data: {data}")
         if files:
-            log.debug('Files present')
+            log.debug("Files present")
 
         req = getattr(self.session, verb)(
-            url_override or self.url, headers=headers, 
-            params=params, json=json, data=data, files=files,
-            verify=self.verify, cookies=self.cookies
+            url_override or self.url,
+            headers=headers,
+            params=params,
+            json=json,
+            data=data,
+            files=files,
+            verify=self.verify,
+            cookies=self.cookies,
         )
 
         log.debug(req.request.headers)  # sent headers
@@ -190,21 +200,21 @@ class Request(object):
         """
         if add_params is None:
             # Hopefully this will cut down on queries without breaking things
-            add_params = {'pageSize': 100}
+            add_params = {"pageSize": 100}
         req = self._make_call(add_params=add_params)
         if isinstance(req, dict) and req.get("results") is not None:
             ret = req["results"]
             if req.get("total"):
-                #page_size = len(req["results"])
-                page_size = req['pageSize']
+                # page_size = len(req["results"])
+                page_size = req["pageSize"]
                 pages = calc_pages(page_size, req["total"])
-                #page_offsets = [
+                # page_offsets = [
                 #    increment * page_size for increment in range(1, pages)
-                #]
+                # ]
                 page_range = range(1, pages)
                 if pages == 1:
-                    #req = self._make_call(url_override=req.get("next"))
-                    #ret.extend(req["results"])
+                    # req = self._make_call(url_override=req.get("next"))
+                    # ret.extend(req["results"])
                     return ret
                 else:
                     self.concurrent_get(ret, page_size, page_range)
@@ -219,7 +229,7 @@ class Request(object):
         with no data but it is what it is.
 
         Kwargs:
-            json (dict): Contains a dict that will be turned 
+            json (dict): Contains a dict that will be turned
             into a json object and sent to the API.
             data (dict): x-form-url
 
@@ -236,13 +246,13 @@ class Request(object):
         Makes a POST request to Firemon API.
 
         Kwargs:
-            json (dict): Contains a dict that will be turned 
+            json (dict): Contains a dict that will be turned
             into a json and sent to the API.
             data (dict): x-form-url
             files (list/dict): See `Requests` how-to
             list of tuples formatted:
                 ('file', bytes, 'text/plain'))
-                ('file', ('<file-name>', open(<path_to_file>, 'rb'))            
+                ('file', ('<file-name>', open(<path_to_file>, 'rb'))
             dict formatted:
                 {'file': bytes}
                 {'file': ('<file-name>', open(<path_to_file>, 'rb')}
@@ -285,25 +295,23 @@ class Request(object):
     def get_content(self):
         """Get content
         In some cases the appending of default pageSize
-        my break our API calls. Appears to happen 
+        my break our API calls. Appears to happen
         when requesting data blobs but not always.
         """
-        log.debug('GET: {}'.format(self.url))
+        log.debug(f"GET: {self.url}")
 
-        req = getattr(self.session, 'get')(self.url, verify=self.verify)
+        req = getattr(self.session, "get")(self.url, verify=self.verify)
         if req.ok:
             return req.content
         else:
             raise RequestError(req)
 
     def post_cpl_auth(self, data=None):
-        """Authorize to the Control Panel and get Cookie Jar
-        """
-        log.debug('POST: {}'.format(self.url))
+        """Authorize to the Control Panel and get Cookie Jar"""
+        log.debug(f"POST: {self.url}")
 
-        req = getattr(self.session, 'post')(self.url, data=data, verify=self.verify)
+        req = getattr(self.session, "post")(self.url, data=data, verify=self.verify)
         if req.ok:
             return req
         else:
             raise RequestError(req)
-        

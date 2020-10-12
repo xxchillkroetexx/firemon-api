@@ -17,16 +17,16 @@ from typing import Optional
 import requests  # performing web requests
 
 # Local packages
-from firemon_api.core.query import (Request, 
-                                    url_param_builder,
-                                    RequestError)
+from firemon_api.core.query import Request, url_param_builder, RequestError
 from firemon_api import version
-from firemon_api.apps import (GlobalPolicyController,
-                              PolicyOptimizer,
-                              PolicyPlanner,
-                              SecurityManager,
-                              ControlPanel
-                             )
+from firemon_api.apps import (
+    GlobalPolicyController,
+    PolicyOptimizer,
+    PolicyPlanner,
+    SecurityManager,
+    ControlPanel,
+)
+
 log = logging.getLogger(__name__)
 
 
@@ -103,43 +103,42 @@ class FiremonAPI(object):
         self.cert = cert
 
         self.session = requests.Session()
-        #self.session.auth = (self.username, self.password)  # Basic auth is used
-        self.default_headers = {'User-Agent': 'py-firemon-api/{}'.format(
-                                                            version.__version__),
-                                'Accept-Encoding': 'gzip, deflate',
-                                'Accept': '*/*', 'Connection': 'keep-alive'}
+        # self.session.auth = (self.username, self.password)  # Basic auth is used
+        self.default_headers = {
+            "User-Agent": f"py-firemon-api/{version.__version__}",
+            "Accept-Encoding": "gzip, deflate",
+            "Accept": "*/*",
+            "Connection": "keep-alive",
+        }
         self.session.headers.update(self.default_headers)
         self.session.verify = self.verify
         self.session.cert = self.cert
         self.session.timeout = self.timeout
         if proxy:
-            self.session.proxies = {'http': proxy, 'https': proxy}
+            self.session.proxies = {"http": proxy, "https": proxy}
 
         self.host = host
         self.domain_id = domain_id
-        self._version = 'unknown'
+        self._version = "unknown"
 
-    def auth(self, username: str, password: str,):
-        """User must auth to get access to most api. Basic auth 
+    def auth(self, username: str, password: str):
+        """User must auth to get access to most api. Basic auth
         can be set at __init__ and if the u:p is correct access
         to calls goes fine. But if it is not correct it is easy
         to lock out a user.
         """
-        log.debug(
-            "Authenticating Firemon connection: %s",
-            self.host
-        )
+        log.debug("Authenticating Firemon connection: %s", self.host)
         self.session.auth = (username, password)
         self.username = username
-        key = 'securitymanager/api/authentication/login'
-        payload = {'username': username, 'password': password}
+        key = "securitymanager/api/authentication/login"
+        payload = {"username": username, "password": password}
         Request(
             base=self.base_url,
             key=key,
             session=self.session,
         ).post(json=payload)
         # Update items of interest
-        self._version = self._versions()['fmosVersion']
+        self._version = self._versions()["fmosVersion"]
         self._verify_domain(self.domain_id)
 
         self.sm = SecurityManager(self)
@@ -150,18 +149,15 @@ class FiremonAPI(object):
 
     def auth_cpl(self, username: str, password: str, cpl_proxy=False):
         """Control Panel that is normally accessed via 55555"""
-        log.debug(
-            "Authenticating Firemon Control Panel: %s",
-            self.host
-        )
-        self._cpl_proxy=cpl_proxy
+        log.debug("Authenticating Firemon Control Panel: %s", self.host)
+        self._cpl_proxy = cpl_proxy
         self._cpl_cookies = requests.cookies.RequestsCookieJar()
-        key = 'api/login'
+        key = "api/login"
         if cpl_proxy:
-            url = f'{self.base_url}/__fmos-cpl__'
+            url = f"{self.base_url}/__fmos-cpl__"
         else:
             url = f"{self.base_url}:55555"
-        payload = {'username': username, 'password': password}
+        payload = {"username": username, "password": password}
         r = Request(
             base=url,
             key=key,
@@ -174,19 +170,19 @@ class FiremonAPI(object):
 
     def _versions(self):
         """All the version info from API"""
-        key = 'securitymanager/api/version'
+        key = "securitymanager/api/version"
         resp = Request(
             base=self.base_url,
             key=key,
             session=self.session,
         ).get()
-        return(resp)
+        return resp
 
     def _verify_domain(self, id):
-        """ Verify that requested domain Id exists.
+        """Verify that requested domain Id exists.
         Set the domain_id that will be used.
         """
-        key = "securitymanager/api/domain/{id}".format(id=str(id))
+        key = f"securitymanager/api/domain/{str(id)}"
         try:
             resp = Request(
                 base=self.base_url,
@@ -194,9 +190,9 @@ class FiremonAPI(object):
                 session=self.session,
             ).get()
         except RequestError:
-            warnings.warn('User does not have access to requested domain calls')
-        self.domain_name = resp['name']
-        self.domain_description = resp['description']
+            warnings.warn("User does not have access to requested domain calls")
+        self.domain_name = resp["name"]
+        self.domain_description = resp["description"]
 
     def change_password(self, username: str, oldpw: str, newpw: str):
         """Allow change of SecMgr password without being authed for other
@@ -207,15 +203,19 @@ class FiremonAPI(object):
             oldpw (str): Old password
             newpw (str): New password
         """
-        key = 'securitymanager/api/user/password'
-        data = {'username': username,
-                'oldPassword': oldpw,
-                'newPassword': newpw,
-                'newPasswordConfirm': newpw}
+        key = "securitymanager/api/user/password"
+        data = {
+            "username": username,
+            "oldPassword": oldpw,
+            "newPassword": newpw,
+            "newPasswordConfirm": newpw,
+        }
 
-        headers = {"Content-Type": "application/x-www-form-urlencoded",
-                   "Accept": "application/json",
-                   "Suppress-Auth-Header": 'true'}
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "application/json",
+            "Suppress-Auth-Header": "true",
+        }
 
         req = Request(
             base=self.base_url,
@@ -226,8 +226,7 @@ class FiremonAPI(object):
         return req.put(data=data)
 
     def __repr__(self):
-        return ("<Firemon(url='{}', "
-            "version='{}')>".format(self._base_url, self.version))
+        return f"<Firemon(url={self._base_url}, version={self.version})>"
 
     def __str__(self):
         return self.host
@@ -253,9 +252,9 @@ class FiremonAPI(object):
         self._host = host
         p_host = urlparse(host)
         if p_host.netloc:
-            self._base_url = f'https://{p_host.netloc}'
+            self._base_url = f"https://{p_host.netloc}"
         else:
-            self._base_url = f'https://{host}'
+            self._base_url = f"https://{host}"
 
     @property
     def version(self):

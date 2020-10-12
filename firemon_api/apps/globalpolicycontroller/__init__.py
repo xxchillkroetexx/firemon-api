@@ -10,5 +10,6 @@ limitations under the License.
 
 from .policycompute import PolicyCompute
 
-__all__ = ['PolicyCompute',
-          ]
+__all__ = [
+    "PolicyCompute",
+]

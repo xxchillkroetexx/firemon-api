@@ -19,18 +19,18 @@ log = logging.getLogger(__name__)
 
 
 class License(Endpoint):
-    """Represent actions on the License endpoint. 
+    """Represent actions on the License endpoint.
     Most of the other endpoint objects return some `Record`.
-    It does not seem to fit here so just a plain `dict` for 
+    It does not seem to fit here so just a plain `dict` for
     most things is being returned until I figure out better way.
-    
+
     Args:
         api (obj): FiremonAPI()
         app (obj): App()
     """
 
     url = None
-    ep_name = 'license'
+    ep_name = "license"
     _domain_url = True
 
     def __init__(self, api, app):
@@ -41,21 +41,17 @@ class License(Endpoint):
             base=self.url,
             session=self.api.session,
         )
-    
+
         return req.get()
 
     def get(self):
         return self.all()
 
     def filter(self):
-        raise NotImplementedError(
-            "Filter is not supported for this Endpoint."
-        )
+        raise NotImplementedError("Filter is not supported for this Endpoint.")
 
     def count(self):
-        raise NotImplementedError(
-            "Count is not supported for this Endpoint."
-        )
+        raise NotImplementedError("Count is not supported for this Endpoint.")
 
     def load(self, lic: bytes):
         """Load license file
@@ -68,7 +64,7 @@ class License(Endpoint):
             >>>     file = f.read()
             >>> fm.sm.license.load(file)
         """
-        file = {'file': lic}
+        file = {"file": lic}
         req = Request(
             base=self.url,
             session=self.session,

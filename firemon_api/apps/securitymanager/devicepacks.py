@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 
 
 class DevicePack(Record):
-    """ Representation of the device pack
+    """Representation of the device pack
 
     Args:
         config (dict): dictionary of things values from json
@@ -36,38 +36,31 @@ class DevicePack(Record):
         '1.24.10'
     """
 
-    ep_name = 'plugin'
+    ep_name = "plugin"
     collectionConfig = CollectionConfig
-    #collectionConfig = JsonField
+    # collectionConfig = JsonField
 
     def __init__(self, config, app):
         super().__init__(config, app)
 
-        self.name = config['artifactId']
-        self.artifacts = [ArtifactFile(f, self.app, self.url) for f in 
-                    self.artifacts]
+        self.name = config["artifactId"]
+        self.artifacts = [ArtifactFile(f, self.app, self.url) for f in self.artifacts]
 
     def _url_create(self):
         """ General self.url create """
-        url = '{ep}/{gid}/{aid}'.format(ep=self.ep_url, 
-                                        gid=self.groupId,
-                                        aid=self.artifactId)
+        url = f"{self.ep_url}/{self.groupId}/{self.artifactId}"
         return url
 
     def update(self):
         """Nothing to update"""
-        raise NotImplementedError(
-            "Writes are not supported for this endpoint."
-        )
+        raise NotImplementedError("Writes are not supported for this endpoint.")
 
     def save(self):
-        raise NotImplementedError(
-            "Writes are not supported for this endpoint."
-        )
+        raise NotImplementedError("Writes are not supported for this endpoint.")
 
     def layout(self):
-        key = 'layout'
-        filters = {'layoutName': 'layout.json'}
+        key = "layout"
+        filters = {"layoutName": "layout.json"}
         req = Request(
             base=self.url,
             key=key,
@@ -76,7 +69,7 @@ class DevicePack(Record):
         )
         return req.post()
 
-    def get(self, name='dc.zip'):
+    def get(self, name="dc.zip"):
         """Get the blob (artifact) from Device Pack
 
         Kwargs:
@@ -93,9 +86,9 @@ class DevicePack(Record):
         return req.get_content()
 
     def template(self):
-        """ Get default template format for a device.
-        
-        :..note that a number of fields can take bad information, 
+        """Get default template format for a device.
+
+        :..note that a number of fields can take bad information,
         like empty strings, '', and Secmanager appears to happily
         create devices and things will appear to work. Problems may
         arise on device update calls though where other parts of
@@ -108,31 +101,33 @@ class DevicePack(Record):
         resp = self.layout()
 
         template = {}
-        template['name'] = None
-        template['description'] = None
-        template['managementIp'] = None
-        template['domainId'] = self.app.api.domain_id
+        template["name"] = None
+        template["description"] = None
+        template["managementIp"] = None
+        template["domainId"] = self.app.api.domain_id
         # Fix? in later versions we require a Group
-        #template['dataCollectorId'] = 1  # Assuming
-        #template['collectorGroupId] = ''
-        #template['collectorGroupName'] = ''
-        template['devicePack'] = {}
-        template['devicePack']['artifactId'] = self.artifactId
-        template['devicePack']['deviceName'] = self.deviceName
-        template['devicePack']['groupId'] = self.groupId
-        template['devicePack']['id'] = self.id
-        template['devicePack']['type'] = self.type
-        template['devicePack']['deviceType'] = self.deviceType
-        template['devicePack']['version'] = self.version
-        template['extendedSettingsJson'] = {}
+        # template['dataCollectorId'] = 1  # Assuming
+        # template['collectorGroupId] = ''
+        # template['collectorGroupName'] = ''
+        template["devicePack"] = {}
+        template["devicePack"]["artifactId"] = self.artifactId
+        template["devicePack"]["deviceName"] = self.deviceName
+        template["devicePack"]["groupId"] = self.groupId
+        template["devicePack"]["id"] = self.id
+        template["devicePack"]["type"] = self.type
+        template["devicePack"]["deviceType"] = self.deviceType
+        template["devicePack"]["version"] = self.version
+        template["extendedSettingsJson"] = {}
         for response in _find_dicts_with_key("key", resp):
             # Get rid of headings that are capitalized
-            # hopefully all Json name format is followed 
-            if response['key'][0].isupper():
+            # hopefully all Json name format is followed
+            if response["key"][0].isupper():
                 continue
-            template['extendedSettingsJson'][response["key"]] = None
+            template["extendedSettingsJson"][response["key"]] = None
             if "defaultValue" in response:
-                template['extendedSettingsJson'][response["key"]] = response["defaultValue"]
+                template["extendedSettingsJson"][response["key"]] = response[
+                    "defaultValue"
+                ]
         return template
 
     def __str__(self):
@@ -157,22 +152,22 @@ class DevicePacks(Endpoint):
         Get a list of device packs by config options
         >>> fm.sm.dp.filter(ssh=True)
     """
-    ep_name = 'plugin'
+
+    ep_name = "plugin"
 
     def __init__(self, api, app, record=DevicePack):
         super().__init__(api, app, record=DevicePack)
 
     def all(self):
-        """ Get all device packs
+        """Get all device packs
 
         Examples:
 
         >>> device_packs = fm.sm.dp.all()
         """
 
-        key = 'list/DEVICE_PACK'
-        filters = {'sort': 'artifactId',
-                   'showHidden': True}
+        key = "list/DEVICE_PACK"
+        filters = {"sort": "artifactId", "showHidden": True}
         req = Request(
             base=self.url,
             key=key,
@@ -183,7 +178,7 @@ class DevicePacks(Endpoint):
         return [self._response_loader(i) for i in req.get()]
 
     def get(self, *args, **kwargs):
-        """ Query and retrieve individual DevicePack. Spelling matters.
+        """Query and retrieve individual DevicePack. Spelling matters.
 
         Args:
             *args: device pack name (artifactId)
@@ -208,8 +203,7 @@ class DevicePacks(Endpoint):
             if len(dp_l) == 1:
                 return dp_l[0]
             else:
-                raise Exception("The requested aritfactId: {} could not "
-                                "be found".format(id))
+                raise Exception(f"The requested aritfactId: {id} could not " "be found")
         except IndexError:
             id = None
 
@@ -217,15 +211,17 @@ class DevicePacks(Endpoint):
             filter_lookup = self.filter(**kwargs)
             if filter_lookup:
                 if len(filter_lookup) > 1:
-                    raise ValueError("get() returned more than one result."
-                                    "Check the kwarg(s) passed are valid or"
-                                    "use filter() or all() instead.")
+                    raise ValueError(
+                        "get() returned more than one result."
+                        "Check the kwarg(s) passed are valid or"
+                        "use filter() or all() instead."
+                    )
                 else:
                     return filter_lookup[0]
             return None
 
     def filter(self, **kwargs):
-        """ Retrieve a filterd list of DevicePacks
+        """Retrieve a filterd list of DevicePacks
 
         Args:
             **kwargs: key value pairs in a device pack dictionary
@@ -245,7 +241,7 @@ class DevicePacks(Endpoint):
         return [dp for dp in dp_all if kwargs.items() <= dict(dp).items()]
 
     def upload(self, file: bytes):
-        """ Upload device pack
+        """Upload device pack
 
         Args:
             file (bytes): the bytes to send that make a device pack (JAR)
@@ -254,19 +250,17 @@ class DevicePacks(Endpoint):
             bool: The return value. True for success upload, False otherwise
 
         Example:
-            >>> dp = fm.sm.dp.get('juniper_srx')
             >>> fn = '/path/to/file/srx.jar'
             >>> with open(fn, 'rb') as f:
             >>>     file = f.read()
-            >>> dp.upload(file)
+            >>> fm.sm.dp.upload(file)
 
-            >>> dp = fm.sm.dp.get('juniper_srx')
             >>> fn = 'srx.jar'
             >>> path = '/path/to/file/srx.jar'
-            >>> dp.upload((fn, open(path, 'rb'))
+            >>> fm.sm.dp.upload((fn, open(path, 'rb'))
         """
-        files = {'devicepack.jar': file}
-        filters = {'overwrite': True}
+        files = {"devicepack.jar": file}
+        filters = {"overwrite": True}
 
         req = Request(
             base=self.url,
@@ -275,43 +269,35 @@ class DevicePacks(Endpoint):
         )
         return req.post(files=files)
 
-        #url = '{url}/?overwrite=true'.format(url=self.url)
-        #self.session.headers.pop('Content-type', None)  # If "content-type" exists get rid.
-        #log.debug('POST {}'.format(url))
-        #resp = self.session.post(url, files={'devicepack.jar': file})
-        #if resp.status_code == 200:
+        # url = '{url}/?overwrite=true'.format(url=self.url)
+        # self.session.headers.pop('Content-type', None)  # If "content-type" exists get rid.
+        # log.debug('POST {}'.format(url))
+        # resp = self.session.post(url, files={'devicepack.jar': file})
+        # if resp.status_code == 200:
         #    return True
-        #else:
+        # else:
         #    raise RequestError(resp)
 
 
 class ArtifactFile(Record):
-    """An Artifact File
-    """
+    """An Artifact File"""
 
     def __init__(self, config, app, ep_url):
         super().__init__(config, app)
-        self.url = '{ep}/{name}'.format(ep=ep_url,
-                                    name=config['name'])
+        self.url = f"{ep_url}/{config['name']}"
 
     def save(self):
-        raise NotImplementedError(
-            "Writes are not supported for this Record."
-        )
+        raise NotImplementedError("Writes are not supported for this Record.")
 
     def update(self):
-        raise NotImplementedError(
-            "Writes are not supported for this Record."
-        )
+        raise NotImplementedError("Writes are not supported for this Record.")
 
     def delete(self):
-        raise NotImplementedError(
-            "Writes are not supported for this Record."
-        )
+        raise NotImplementedError("Writes are not supported for this Record.")
 
     def get(self):
         """Get the raw file
-        
+
         Return:
             bytes: the bytes that make up the file
         """

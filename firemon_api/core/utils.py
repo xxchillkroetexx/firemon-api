@@ -8,10 +8,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 # Standard packages
-#import functools
-#from distutils.version import StrictVersion
+# import functools
+# from distutils.version import StrictVersion
 from typing import Generator
-
 
 
 def _find_dicts_with_key(key: str, dictionary: dict) -> Generator[dict, None, None]:
@@ -38,8 +37,9 @@ def _find_dicts_with_key(key: str, dictionary: dict) -> Generator[dict, None, No
                 for response in _find_dicts_with_key(key, item):
                     yield response
 
+
 def _build_dict(seq: list, key: str) -> dict:
-    """ Build a dictionary from a list(of dictionaries) against a given key
+    """Build a dictionary from a list(of dictionaries) against a given key
     https://stackoverflow.com/questions/4391697/find-the-index-of-a-dict-within-a-list-by-matching-the-dicts-value
 
     Args:
@@ -56,12 +56,13 @@ class Hashabledict(dict):
     def __hash__(self):
         return hash(frozenset(self))
 
-#class ApiVersionError(Exception):
+
+# class ApiVersionError(Exception):
 #    """Basic Exception"""
 #    def __init__(self, message):
 #        super(ApiVersionError, self).__init__(message)
 
-#def version_check(min_ver=None, max_ver=None):
+# def version_check(min_ver=None, max_ver=None):
 #    """Decorator maker for _version_check
 #    Not all API calls are available for all versions.
 #

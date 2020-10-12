@@ -30,24 +30,25 @@ class SwaggerApi(object):
         Most of the names are not intuitive to what they do.
         Good luck and godspeed.
     """
-    
+
     def __init__(self, swagger: dict):
         """
         Args:
             swagger (dict): all the json from `get_api`
         """
-        for path in swagger['paths'].keys():
-            for verb in swagger['paths'][path].keys():
-                oid = swagger['paths'][path][verb]['operationId']
+        for path in swagger["paths"].keys():
+            for verb in swagger["paths"][path].keys():
+                oid = swagger["paths"][path][verb]["operationId"]
                 _method = self._make_method(path, verb)
                 setattr(self, oid, _method)
 
     def _make_method(self, path, verb):
-        if verb == 'get':
+        if verb == "get":
+
             def _method(filters=None, add_params=None, **kwargs):
-                p = path.lstrip('/')
+                p = path.lstrip("/")
                 key = p.format(**kwargs)
-                filters=filters
+                filters = filters
                 req = Request(
                     base=self.app_url,
                     key=key,
@@ -55,13 +56,15 @@ class SwaggerApi(object):
                     session=self.session,
                 )
                 return req.get(add_params=add_params)
+
             return _method
 
-        elif verb == 'put':
+        elif verb == "put":
+
             def _method(filters=None, data=None, **kwargs):
-                p = path.lstrip('/')
+                p = path.lstrip("/")
                 key = p.format(**kwargs)
-                filters=filters
+                filters = filters
                 req = Request(
                     base=self.app_url,
                     key=key,
@@ -69,13 +72,15 @@ class SwaggerApi(object):
                     session=self.session,
                 )
                 return req.put(data=data)
+
             return _method
 
-        elif verb == 'post':
+        elif verb == "post":
+
             def _method(filters=None, data=None, files=None, **kwargs):
-                p = path.lstrip('/')
+                p = path.lstrip("/")
                 key = p.format(**kwargs)
-                filters=filters
+                filters = filters
                 req = Request(
                     base=self.app_url,
                     key=key,
@@ -83,13 +88,15 @@ class SwaggerApi(object):
                     session=self.session,
                 )
                 return req.post()
+
             return _method
 
-        elif verb == 'delete':
+        elif verb == "delete":
+
             def _method(filters=None, **kwargs):
-                p = path.lstrip('/')
+                p = path.lstrip("/")
                 key = p.format(**kwargs)
-                filters=filters
+                filters = filters
                 req = Request(
                     base=self.app_url,
                     key=key,
@@ -97,7 +104,9 @@ class SwaggerApi(object):
                     session=self.session,
                 )
                 return req.delete()
+
             return _method
+
 
 class App(object):
     """Base class for Firemon Apps"""
@@ -119,12 +128,12 @@ class App(object):
         All auto created methods get setattr on `exec` for `App`.
         """
         _swagger = self.get_api()
-        setattr(self, 'exec', SwaggerApi(_swagger))
+        setattr(self, "exec", SwaggerApi(_swagger))
 
     def get_api(self):
         """Return API specs from the swagger"""
 
-        key = 'swagger.json'
+        key = "swagger.json"
         req = Request(
             base=self.app_url,
             key=key,
@@ -133,14 +142,14 @@ class App(object):
         return req.get()
 
     def __repr__(self):
-        return("<App({})>".format(self.name))
+        return f"<App({self.name})>"
 
     def __str__(self):
-        return('{}'.format(self.name))
+        return f"{self.name}"
 
 
 class SecurityManager(App):
-    """ Represents Security Manager in Firemon
+    """Represents Security Manager in Firemon
 
     Args:
         api (obj): FiremonAPI()
@@ -158,7 +167,7 @@ class SecurityManager(App):
         * Todo: add more as needed
     """
 
-    name = 'securitymanager'
+    name = "securitymanager"
 
     def __init__(self, api):
         super().__init__(api)
@@ -180,7 +189,7 @@ class SecurityManager(App):
 
 
 class GlobalPolicyController(App):
-    """ Represents Global Policy Controller in Firemon
+    """Represents Global Policy Controller in Firemon
 
     Args:
         api (obj): FiremonAPI()
@@ -190,7 +199,7 @@ class GlobalPolicyController(App):
         * xx: EndPoint()
     """
 
-    name = 'globalpolicycontroller'
+    name = "globalpolicycontroller"
 
     def __init__(self, api):
         super().__init__(api)
@@ -200,7 +209,7 @@ class GlobalPolicyController(App):
 
 
 class PolicyOptimizer(App):
-    """ Represents Policy Optimizer in Firemon
+    """Represents Policy Optimizer in Firemon
 
     Args:
         api (obj): FiremonAPI()
@@ -210,17 +219,17 @@ class PolicyOptimizer(App):
         * xx: EndPoint()
     """
 
-    name = 'policyoptimizer'
+    name = "policyoptimizer"
 
     def __init__(self, api):
         super().__init__(api)
 
         # Endpoints
-        #self.xx = EndPoint(self)
+        # self.xx = EndPoint(self)
 
 
 class PolicyPlanner(App):
-    """ Represents Policy Planner in Firemon
+    """Represents Policy Planner in Firemon
 
     Args:
         api (obj): FiremonAPI()
@@ -230,17 +239,17 @@ class PolicyPlanner(App):
         * xx: EndPoint()
     """
 
-    name = 'policyplanner'
+    name = "policyplanner"
 
     def __init__(self, api):
         super().__init__(api)
 
         # Endpoints
-        #self.xx = EndPoint(self)
+        # self.xx = EndPoint(self)
 
 
 class ControlPanel(App):
-    """ Represents Control Panel in Firemon
+    """Represents Control Panel in Firemon
 
     Args:
         api (obj): FiremonAPI()
@@ -263,14 +272,12 @@ class ControlPanel(App):
 
     def get_swagger(self):
         """Maybe later"""
-        raise NotImplementedError(
-            "Maybe some other time"
-        )
+        raise NotImplementedError("Maybe some other time")
 
     def get_api(self):
         """Return API specs if the 5555 port is up."""
 
-        key = 'api-doc'
+        key = "api-doc"
         try:
             req = Request(
                 base=f"{self.base_url}:55555",
@@ -279,12 +286,10 @@ class ControlPanel(App):
             )
             return req.get()
         except:
-            raise NotImplementedError(
-                "No access to api-doc endpoint"
-            )
+            raise NotImplementedError("No access to api-doc endpoint")
 
     def info(self):
-        key = 'info'
+        key = "info"
         r = Request(
             base=self.app_url,
             key=key,
@@ -293,7 +298,7 @@ class ControlPanel(App):
         return r
 
     def state(self):
-        key = 'state'
+        key = "state"
         r = Request(
             base=self.app_url,
             key=key,
@@ -302,11 +307,10 @@ class ControlPanel(App):
         return r
 
     def perf(self):
-        key = 'perf'
+        key = "perf"
         r = Request(
             base=self.app_url,
             key=key,
             session=self.session,
         ).get()
         return r
-
