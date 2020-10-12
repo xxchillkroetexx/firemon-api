@@ -10,7 +10,10 @@ limitations under the License.
 
 # Standard packages
 import concurrent.futures as cf
-from json.decoder import JSONDecodeError
+try:
+    from simplejson.errors import JSONDecodeError
+except ModuleNotFoundError:
+    from json.decoder import JSONDecodeError
 import logging
 from urllib.parse import urlencode, quote
 
