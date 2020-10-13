@@ -7,7 +7,13 @@ Learn more on the [Confluence page.](https://confluence.securepassage.com/displa
 
 # Quick Install
 
-From the command line execute `pip` pointing at the repository.
+Use Lab PyPi. From command line execute `pip`.
+
+```
+$ pip install --extra-index-url https://pypi.lab.firemon.com --trusted-host pypi.lab.firemon.com firemon-api
+```
+
+Use repo directly. From the command line execute `pip` pointing at the repository.
 
 ```
 $ pip install git+https://stash.securepassage.com/scm/nsu/firemon-api#egg=firemon-api
