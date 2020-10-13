@@ -10,6 +10,7 @@ limitations under the License.
 
 # Standard packages
 import concurrent.futures as cf
+
 try:
     from simplejson.errors import JSONDecodeError
 except ModuleNotFoundError:
