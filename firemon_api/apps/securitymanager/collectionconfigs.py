@@ -64,7 +64,7 @@ class CollectionConfig(Record):
         """ Set CollectionConfig for Device Pack assignment. """
         key = f"devicepack/{self.devicePackId}/assignment/{self.id}"
         req = Request(
-            base=self.url,
+            base=self.ep_url,
             key=key,
             session=self.session,
         )
@@ -76,7 +76,7 @@ class CollectionConfig(Record):
         """
         key = f"devicepack/{self.devicePackId}/assignment"
         req = Request(
-            base=self.url,
+            base=self.ep_url,
             key=key,
             session=self.session,
         )
@@ -96,7 +96,7 @@ class CollectionConfig(Record):
         """
         key = f"device/{id}/assignment/{self.id}"
         req = Request(
-            base=self.url,
+            base=self.ep_url,
             key=key,
             session=self.session,
         )
@@ -113,7 +113,7 @@ class CollectionConfig(Record):
         """
         key = f"device/{id}/assignment"
         req = Request(
-            base=self.url,
+            base=self.ep_url,
             key=key,
             session=self.session,
         )
