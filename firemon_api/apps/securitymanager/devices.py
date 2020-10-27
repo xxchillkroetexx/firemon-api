@@ -113,8 +113,14 @@ class Device(Record):
                 serialized = self.serialize()
                 # Make sure this is set appropriately. Cannot change.
                 serialized["id"] = self._config["id"]
+                # Check if parents or children `Records` weren't overwritten.
+                if not "parents" in diff:
+                    serialized["parents"] = self._config["parents"]
+                if not "children" in diff:
+                    serialized["children"] = self._config["children"]
                 # Put all this redundant nonsense back in. Why api, why?
                 serialized["devicePack"] = self._config["devicePack"]
+                log.debug(serialized)
                 params = {"manualRetrieval": retrieve}
                 req = Request(
                     base=self.url,

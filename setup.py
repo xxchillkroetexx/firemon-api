@@ -25,9 +25,11 @@ setup(
     url="https://www.firemon.com/",
     project_urls={
         "Repository": "https://stash.securepassage.com/scm/nsu/firemon-api",
+        "Documentation": "https://confluence.securepassage.com/display/DEVNETSEC/FMAPI%3A+Python+Firemon+API+module",
     },
     packages=find_packages(exclude=("tests", "docs")),
     include_package_data=True,
+    python_requires=">=3.6",
     install_requires=[
         "requests",
     ],

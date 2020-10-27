@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 
 def get_return(lookup, return_fields=None):
     """Returns simple representations for items passed to lookup. """
-    for i in return_fields or ["id", "value", "nested_return"]:
+    for i in return_fields or ["name", "id", "value", "nested_return"]:
         if isinstance(lookup, dict) and lookup.get(i):
             return lookup[i]
 
@@ -29,7 +29,7 @@ def get_return(lookup, return_fields=None):
 
 class JsonField(object):
     """Explicit field type for values that are not to be converted
-    to a JsonRecord object.
+    to a Record object.
 
     Basically anything that does not have an `id`
     """
@@ -281,7 +281,10 @@ class Record(object):
     def save(self):
         """Saves changes to an existing object.
         Checks the state of `_diff` and sends the entire
-        `serialize` to Request.put().
+        `serialize` to Request.put(). Note that serialization creates
+        a simplified view for all nested objects. These MUST be updated
+        at the `Record` level if they go unmodified with `save` being
+        overwritten from this simplified version.
 
         Return:
             (bool): True if PUT request was successful.
