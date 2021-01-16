@@ -45,16 +45,16 @@ class Collector(Record):
         )
         return req.get()
 
-    def devices(self):
-        """Get all devices assigned to collector"""
-        key = "device"
-        req = Request(
-            base=self.url,
-            key=key,
-            session=self.session,
-        )
+    # def devices(self):
+    #    """Get all devices assigned to collector"""
+    #    key = "device"
+    #    req = Request(
+    #        base=self.url,
+    #        key=key,
+    #        session=self.session,
+    #    )
 
-        return [Device(config, self.app) for config in req.get()]
+    #    return [Device(config, self.app) for config in req.get()]
 
 
 class Collectors(Endpoint):

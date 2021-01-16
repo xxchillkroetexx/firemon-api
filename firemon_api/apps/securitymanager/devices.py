@@ -20,6 +20,8 @@ from firemon_api.core.query import Request, url_param_builder, RequestError
 from .devicepacks import DevicePack
 from .collectionconfigs import CollectionConfigs
 from .revisions import Revisions, NormalizedData
+from .routes import Routes
+from .zones import Zones
 
 log = logging.getLogger(__name__)
 
@@ -79,14 +81,15 @@ class Device(Record):
         ]
 
         # Add attributes to Record() so we can get more info
-        self.revisions = Revisions(self.app.api, self.app, device_id=config["id"])
-
         self.collectionconfigs = CollectionConfigs(
             self.app.api,
             self.app,
             device_id=config["id"],
             devicepack_id=config["devicePack"]["id"],
         )
+        self.revisions = Revisions(self.app.api, self.app, device_id=config["id"])
+        self.routes = Routes(self.app.api, self.app, device_id=config["id"])
+        self.zones = Zones(self.app.api, self.app, device_id=config["id"])
 
     def save(self, retrieve: bool = False) -> bool:
         """Saves changes to an existing object.

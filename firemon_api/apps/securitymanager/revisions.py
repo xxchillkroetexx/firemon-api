@@ -144,8 +144,8 @@ class Revisions(Endpoint):
 
     def all(self):
         """Get all `Record`"""
-        if self.device_id:
-            all_key = f"device/{self.device_id}/{self.__class__.ep_name}"
+        if self._device_id:
+            all_key = f"device/{self._device_id}/{self.__class__.ep_name}"
         else:
             all_key = f"{self.__class__.ep_name}"
 

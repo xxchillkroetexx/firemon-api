@@ -114,6 +114,9 @@ class Siql(object):
     def devicegroup(self, query):
         return self._raw(query, key="devicegroup/paged-search")
 
+    def interface(self, query):
+        return self._raw(query, key="interface/paged-search")
+
     def networkobj(self, query):
         return self._raw(query, key="networkobj/paged-search")
 

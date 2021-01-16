@@ -17,8 +17,10 @@ from .devices import Devices, Device
 from .elasticsearch import ElasticSearch
 from .license import License
 from .revisions import Revisions, Revision, NormalizedData
+from .routes import Route, Routes
 from .users import Users, User, UserGroup, UserGroups
 from .siql import Siql
+from .zones import Zone, Zones, FmZone, FmZones
 
 __all__ = [
     "CentralSyslogs",
@@ -36,6 +38,8 @@ __all__ = [
     "Devices",
     "Device",
     "ElasticSearch",
+    "FmZone",
+    "FmZones",
     "License",
     "Revisions",
     "Revision",
@@ -44,5 +48,9 @@ __all__ = [
     "User",
     "UserGroup",
     "UserGroups",
+    "Route",
+    "Routes",
     "Siql",
+    "Zone",
+    "Zones",
 ]
