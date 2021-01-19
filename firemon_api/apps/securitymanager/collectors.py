@@ -17,7 +17,7 @@ from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
 from firemon_api.core.query import Request, url_param_builder
 
-# from .devices import Devices, Device
+from .devices import Device
 
 log = logging.getLogger(__name__)
 
@@ -39,22 +39,21 @@ class Collector(Record):
         """Get status of Collector"""
         key = f"status/{self.id}"
         req = Request(
-            base=self.url,
+            base=self.ep_url,
             key=key,
             session=self.session,
         )
         return req.get()
 
-    # def devices(self):
-    #    """Get all devices assigned to collector"""
-    #    key = "device"
-    #    req = Request(
-    #        base=self.url,
-    #        key=key,
-    #        session=self.session,
-    #    )
-
-    #    return [Device(config, self.app) for config in req.get()]
+    def devices(self):
+        """Get all devices assigned to collector"""
+        key = "device"
+        req = Request(
+            base=self.url,
+            key=key,
+            session=self.session,
+        )
+        return [Device(config, self.app) for config in req.get()]
 
 
 class Collectors(Endpoint):
@@ -127,6 +126,16 @@ class CollectorGroup(Record):
             session=self.session,
         )
         return req.put()
+
+    def assigned(self):
+        """Get assigned devices"""
+        key = f"assigned"
+        req = Request(
+            base=self.url,
+            key=key,
+            session=self.session,
+        )
+        return req.get()
 
 
 class CollectorGroups(Endpoint):
