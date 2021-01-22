@@ -178,6 +178,7 @@ class SecurityManager(App):
         self.collectionconfigs = CollectionConfigs(self.api, self)
         self.collectors = Collectors(self.api, self)
         self.collectorgroups = CollectorGroups(self.api, self)
+        self.deviceclusters = DeviceClusters(self.api, self)
         self.devices = Devices(self.api, self)
         self.dp = DevicePacks(self.api, self)  # Todo: create the other /plugin
         self.es = ElasticSearch(self.api, self)

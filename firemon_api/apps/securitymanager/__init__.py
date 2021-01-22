@@ -12,6 +12,7 @@ from .centralsyslogconfigs import CentralSyslogConfigs, CentralSyslogConfig
 from .centralsyslogs import CentralSyslogs, CentralSyslog
 from .collectionconfigs import CollectionConfigs, CollectionConfig
 from .collectors import Collectors, Collector, CollectorGroups, CollectorGroup
+from .deviceclusters import DeviceCluster, DeviceClusters
 from .devicepacks import DevicePacks, DevicePack
 from .devices import Devices, Device
 from .elasticsearch import ElasticSearch
@@ -37,6 +38,8 @@ __all__ = [
     "DevicePack",
     "Devices",
     "Device",
+    "DeviceCluster",
+    "DeviceClusters",
     "ElasticSearch",
     "FmZone",
     "FmZones",
