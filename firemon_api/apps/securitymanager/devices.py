@@ -10,7 +10,7 @@ limitations under the License.
 # Standard packages
 import json
 import logging
-from urllib.parse import urlencode, quote, quote_plus
+from urllib.parse import quote
 import uuid
 
 # Local packages
@@ -434,7 +434,7 @@ class Devices(Endpoint):
         try:
             key = str(int(args[0]))
         except ValueError:
-            key = f"name/{quote_plus(args[0])}"
+            key = f"name/{quote(args[0], safe='')}"
         except IndexError:
             key = None
 
