@@ -414,14 +414,16 @@ class Devices(Endpoint):
         """Get single Device
 
         Args:
-            *args (int): (optional) id to retrieve. If this is not type(int)
-                        dump it into filter and grind it up there.
+            *args (int/str): (optional) id or name to retrieve.
             **kwargs (str): (optional) see filter() for available filters
 
         Examples:
             Get by ID
             >>> fm.sm.devices.get(12)
             <Device(REGRESSION-dc-load-test)>
+
+            >>> fm.sm.devices.get("vSRX-2")
+            <Device(vSRX-2)>
 
             Get by name. Case sensative.
             >>> fm.sm.centralsyslogs.get('REGRESSION-dc-load-test')

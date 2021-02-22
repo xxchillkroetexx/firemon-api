@@ -203,7 +203,7 @@ class DevicePacks(Endpoint):
             if len(dp_l) == 1:
                 return dp_l[0]
             else:
-                raise Exception(f"The requested aritfactId: {id} could not " "be found")
+                raise Exception(f"The requested aritfactId: {id} could not be found")
         except IndexError:
             id = None
 

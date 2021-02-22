@@ -79,6 +79,13 @@ class Users(Endpoint):
     def __init__(self, api, app, record=User):
         super().__init__(api, app, record=User)
 
+    def _make_filters(self, values):
+        # Only a 'search' for a single value. Take all key-values
+        # and use the first key's value for search query
+        filters = {"search": values[next(iter(values))]}
+        filters.update({"includeSystem": True, "includeDisabled": True})
+        return filters
+
     def all(self):
         """Get all `Record`"""
         filters = {"includeSystem": True, "includeDisabled": True}
@@ -90,6 +97,58 @@ class Users(Endpoint):
         )
 
         return [self._response_loader(i) for i in req.get()]
+
+    def get(self, *args, **kwargs):
+        """Get single User
+
+        Args:
+            *args (int/str): (optional) id or name to retrieve.
+            **kwargs (str): (optional) see filter() for available filters
+
+        Examples:
+            Get by ID
+            >>> fm.sm.devices.get(1)
+            <User(firemon)>
+
+            >>> fm.sm.devices.get("workflow")
+            <User(workflow)>
+        """
+
+        try:
+            key = str(int(args[0]))
+            req = Request(
+                base=self.url,
+                key=key,
+                session=self.api.session,
+            )
+            return self._response_loader(req.get())
+        except ValueError:
+            # Attempt to get the 'username'
+            user_all = self.all()
+            id = args[0]
+            user_l = [user for user in user_all if user.username == id]
+            if len(user_l) == 1:
+                return user_l[0]
+            else:
+                raise Exception(f"The requested username: {id} could not be found")
+        except IndexError:
+            key = None
+
+        if not key:
+            if kwargs:
+                filter_lookup = self.filter(**kwargs)
+            else:
+                filter_lookup = self.filter(*args)
+            if filter_lookup:
+                if len(filter_lookup) > 1:
+                    raise ValueError(
+                        "get() returned more than one result. "
+                        "Check that the kwarg(s) passed are valid for this "
+                        "endpoint or use filter() or all() instead."
+                    )
+                else:
+                    return filter_lookup[0]
+            return None
 
     def template(self):
         """Create a template of a simple user
