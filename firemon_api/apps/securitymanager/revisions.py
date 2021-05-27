@@ -58,6 +58,23 @@ class Revision(Record):
     def update(self):
         raise NotImplementedError("Writes are not supported.")
 
+    def delete(self):
+        """Deletes an existing object.
+        :returns: True if DELETE operation was successful.
+        :example:
+        >>> dev = fm.sm.devices.get(name='vsrx2')
+        >>> rev = dev.revisions.get(224)
+        >>> rev.delete()
+        True
+        >>>
+        """
+        req = Request(
+            base=self.app_url,
+            key=f"domain/{self.domainId}/device/{self.deviceId}/rev/{self.id}",
+            session=self.session,
+        )
+        return True if req.delete() else False
+
     def export(self, meta: bool = True):
         """Export a zip file contain the config data.
 

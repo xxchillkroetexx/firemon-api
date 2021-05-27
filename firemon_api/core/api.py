@@ -9,8 +9,10 @@ limitations under the License.
 """
 # Standard packages
 import logging
-from urllib.parse import urlparse
+import socket
 import warnings
+
+from urllib.parse import urlparse
 from typing import Optional
 
 # Third-Party packages
@@ -249,6 +251,10 @@ class FiremonAPI(object):
 
     @host.setter
     def host(self, host):
+        try:
+            socket.gethostbyname(host)
+        except socket.gaierror:
+            warnings.warn(f"Host {host} does not resolve")
         self._host = host
         p_host = urlparse(host)
         if p_host.netloc:

@@ -13,6 +13,7 @@ import logging
 
 # Local packages
 from firemon_api.core.query import Request, url_param_builder
+from firemon_api.core.response import Record
 
 from .globalpolicycontroller import *
 from .policyoptimizer import *
@@ -31,11 +32,22 @@ class SwaggerApi(object):
         Good luck and godspeed.
     """
 
-    def __init__(self, swagger: dict):
+    def __init__(self, swagger: dict, api, app, record=None):
         """
         Args:
             swagger (dict): all the json from `get_api`
         """
+        if record:
+            self.return_obj = record
+        else:
+            self.return_obj = Record
+        self.api = api
+        self.session = api.session
+        self.app = app
+        self.base_url = api.base_url
+        self.app_url = app.app_url
+        self.domain_url = app.domain_url
+        self.url = None
         for path in swagger["paths"].keys():
             for verb in swagger["paths"][path].keys():
                 oid = swagger["paths"][path][verb]["operationId"]
@@ -128,12 +140,12 @@ class App(object):
         All auto created methods get setattr on `exec` for `App`.
         """
         _swagger = self.get_api()
-        setattr(self, "exec", SwaggerApi(_swagger))
+        setattr(self, "exec", SwaggerApi(_swagger, self.api, self))
 
     def get_api(self):
         """Return API specs from the swagger"""
 
-        key = "swagger.json"
+        key = "openapi.json"
         req = Request(
             base=self.app_url,
             key=key,

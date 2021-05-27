@@ -16,10 +16,10 @@ try:
 except ModuleNotFoundError:
     from json.decoder import JSONDecodeError
 import logging
-from urllib.parse import urlencode, quote
+from urllib.parse import urlencode
 
 # third-party
-import requests
+# import requests
 
 log = logging.getLogger(__name__)
 
@@ -144,6 +144,8 @@ class Request(object):
             log.debug(f"Data: {data}")
         if files:
             log.debug("Files present")
+            for file in files:
+                log.debug(f"File : {file}")
 
         req = getattr(self.session, verb)(
             url_override or self.url,
