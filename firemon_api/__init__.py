@@ -77,9 +77,5 @@ def disable_warnings():
     import warnings
     from urllib3.exceptions import InsecureRequestWarning
 
-    warnings.filterwarnings(
-        "ignore",
-        ".*",
-        UserWarning,
-    )
+    warnings.filterwarnings("ignore", ".*", UserWarning)
     warnings.filterwarnings("ignore", ".*", InsecureRequestWarning, "urllib3")

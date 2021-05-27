@@ -233,7 +233,12 @@ class Device(Record):
         return req.get_content()
 
     def config_import(
-        self, f_list: list, change_user=None, correlation_id=None
+        self,
+        f_list: list,
+        change_user=None,
+        correlation_id=None,
+        action="IMPORT",
+        file_type="CONFIG",
     ) -> bool:
         """Import config files for device to create a new revision
 
@@ -241,11 +246,13 @@ class Device(Record):
             f_list (list): a list of tuples. Tuples are intended to uploaded
             as a multipart form using 'requests'. format of the data in the
             tuple is:
-            ('file', ('<file-name>', open(<path_to_file>, 'rb'), 'text/plain'))
+            ('<file-name>', ('<file-name>', open(<path_to_file>, 'rb'), 'text/plain'))
 
         Kwargs:
             change_user (str): A name for display field
             correlation_id (str): A UUID1
+            action (str): AUTOMATIC, INSTALL, MANUAL, SAVE, SCHEDULED, MIGRATE, IMPORT
+            file_type (str): OS, LOG, CONFIG, NORMALIZED, BEHAVIOR, LEGACY_NORMALIZED_XML
 
         Example:
             >>> import os
@@ -254,8 +261,8 @@ class Device(Record):
             >>> f_list = []
             >>> for fn in os.listdir(dir):
             ...     path = os.path.join(dir, fn)
-            ...     f_list.append(('file', (fn, open(path, 'rb'), 'text/plain')))
-            >>> dev.import_config(f_list)
+            ...     f_list.append((fn, (fn, open(path, 'rb'), 'text/plain')))
+            >>> dev.config_import(f_list)
         """
         if not change_user:
             # Not needed as server will go on its merry way with nothing
@@ -264,7 +271,8 @@ class Device(Record):
             # Not needed as server will generate one for us. But... whatever.
             correlation_id = str(uuid.uuid1())
         filters = {
-            "action": "IMPORT",
+            "action": action,
+            "filetype": file_type,
             "changeUser": change_user,
             "correlationId": correlation_id,
         }
@@ -385,6 +393,36 @@ class Device(Record):
             session=self.session,
         )
         return req.put()
+
+    def capabilities(self):
+        """Retrieve device capabilities"""
+        key = f"capabilities"
+        req = Request(
+            base=self.url,
+            key=key,
+            session=self.session,
+        )
+        return req.get()
+
+    def status(self):
+        """Retrieve device status"""
+        key = f"status"
+        req = Request(
+            base=self.url,
+            key=key,
+            session=self.session,
+        )
+        return req.get()
+
+    def health(self):
+        """Retrieve device health testSuites"""
+        key = f"health"
+        req = Request(
+            base=self.url,
+            key=key,
+            session=self.session,
+        ).get()
+        return req.get("testSuites", [])
 
 
 class Devices(Endpoint):
