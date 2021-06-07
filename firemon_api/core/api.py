@@ -191,10 +191,10 @@ class FiremonAPI(object):
                 key=key,
                 session=self.session,
             ).get()
+            self.domain_name = resp["name"]
+            self.domain_description = resp["description"]
         except RequestError:
             warnings.warn("User does not have access to requested domain calls")
-        self.domain_name = resp["name"]
-        self.domain_description = resp["description"]
 
     def change_password(self, username: str, oldpw: str, newpw: str):
         """Allow change of SecMgr password without being authed for other
