@@ -305,12 +305,12 @@ class Device(Record):
             >>> fn = '/path/to/file/vsrx-2.zip'
             >>> with open(fn, 'rb') as f:
             >>>     zip_file = f.read()
-            >>> dev.import_support(zip_file)
+            >>> dev.support_import(zip_file)
 
             >>> dev = fm.sm.devices.get(name='vsrx-2')
             >>> fn = 'vsrx-2.zip'
             >>> path = '/path/to/file/vsrx-2.zip'
-            >>> dev.import_support((fn, open(path, 'rb'))
+            >>> dev.support_import((fn, open(path, 'rb'))
         """
         filters = {"renormalize": renormalize}
         files = {"file": zip_file}
