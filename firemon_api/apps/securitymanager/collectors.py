@@ -78,6 +78,57 @@ class Collectors(Endpoint):
         filters = {"search": values[next(iter(values))]}
         return filters
 
+    def save_usage(self, config, async_aggregation: bool = True):
+        """Save usage
+
+        Args:
+            config (dict): dictionary of usage data.
+                {
+                    "endDate": "YYYY-MM-DDTHH:mm:ss+0000",
+                    "ruleUsages": [
+                        {
+                            "deviceId": <id>,
+                            "ruleId": <rule guid>,
+                            "hitCount": int,
+                            "sources": [
+                                {
+                                    "id": <guid for?>,
+                                    "parentId": <guid for?>,
+                                    "hitCount": int
+                                }
+                            ],
+                            "destinations": [
+                                <same as sources>
+                            ],
+                            "services": [
+                                <same as sources>
+                            ],
+                            "apps": [
+                                <same as sources>
+                            ],
+                            "users": [
+                                <same as sources>
+                            ]
+                        }
+                    ]
+                }
+            async_aggregation (bool): ?
+
+        Return:
+            ? (?): ?
+
+        """
+        filters = {"asyncAggregation": async_aggregation}
+        key = "usage"
+        req = Request(
+            base=self.url,
+            key=key,
+            filters=filters,
+            session=self.session,
+        )
+
+        return req.post(json=config)
+
 
 class CollectorGroup(Record):
     """Represents the Collector Group
