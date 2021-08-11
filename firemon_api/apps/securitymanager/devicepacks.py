@@ -123,9 +123,22 @@ class DevicePack(Record):
             # hopefully all Json name format is followed
             if response["key"][0].isupper():
                 continue
-            template["extendedSettingsJson"][response["key"]] = None
-            if "defaultValue" in response:
-                template["extendedSettingsJson"][response["key"]] = response[
+            # apparently we are serializing values `key.subkey` "interestingly".
+            #   unsure if this is an Angular thing. Told that max of 1 key deep?
+            key = None
+            sub_key = None
+            k_s = response["key"].split(".", maxsplit=1)
+            if len(k_s) == 1:
+                key = response["key"]
+                template["extendedSettingsJson"].setdefault(key)
+            else:
+                key = k_s[0]
+                sub_key = k_s[1]
+                template["extendedSettingsJson"].setdefault(key, {}).setdefault(sub_key)
+            if "defaultValue" in response and not sub_key:
+                template["extendedSettingsJson"][key] = response["defaultValue"]
+            elif "defaultValue" in response:
+                template["extendedSettingsJson"][key][sub_key] = response[
                     "defaultValue"
                 ]
         return template
