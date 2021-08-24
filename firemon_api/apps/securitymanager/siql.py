@@ -141,6 +141,9 @@ class Siql(object):
     def userobj(self, query):
         return self._raw(query, key="userobj/paged-search")
 
+    def urlmatcher(self, query):
+        return self._raw(query, key="urlmatcher/paged-search")
+
     def __repr__(self):
         return f"<Endpoint({self.url})>"
 

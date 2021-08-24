@@ -241,6 +241,9 @@ class Device(Record):
         file_type="CONFIG",
     ) -> bool:
         """Import config files for device to create a new revision
+        * NOTE: The API seems buggy and regardless of what `file_type` you attempt
+        they will always be sent to the `normalizer`. Use `support_import` if you
+        need to upload `.NORMALIZED` files to create a new revision.
 
         Args:
             f_list (list): a list of tuples. Tuples are intended to uploaded
