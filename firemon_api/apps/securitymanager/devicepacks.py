@@ -98,8 +98,6 @@ class DevicePack(Record):
             dict: template information for a device with defaults included
         """
 
-        resp = self.layout()
-
         template = {}
         template["name"] = None
         template["description"] = None
@@ -118,6 +116,14 @@ class DevicePack(Record):
         template["devicePack"]["deviceType"] = self.deviceType
         template["devicePack"]["version"] = self.version
         template["extendedSettingsJson"] = {}
+
+        try:
+            # We have 'devices' that are not devices which no longer have layout.json files
+            resp = self.layout()
+        except RequestError:
+            log.debug(f"No layout.json for {self.artifactId}.")
+            return template
+
         for response in _find_dicts_with_key("key", resp):
             # Get rid of headings that are capitalized
             # hopefully all Json name format is followed
