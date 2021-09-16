@@ -24,7 +24,7 @@ from .controlpanel import *
 log = logging.getLogger(__name__)
 
 
-class SwaggerApi(object):
+class DynamicApi(object):
     """Attempt to dynamically create all the APIs
 
     Warning:
@@ -32,10 +32,10 @@ class SwaggerApi(object):
         Good luck and godspeed.
     """
 
-    def __init__(self, swagger: dict, api, app, record=None):
+    def __init__(self, dynamic_api: dict, api, app, record=None):
         """
         Args:
-            swagger (dict): all the json from `get_api`
+            dynamic_api (dict): all the json from `get_api`
         """
         if record:
             self.return_obj = record
@@ -48,9 +48,9 @@ class SwaggerApi(object):
         self.app_url = app.app_url
         self.domain_url = app.domain_url
         self.url = None
-        for path in swagger["paths"].keys():
-            for verb in swagger["paths"][path].keys():
-                oid = swagger["paths"][path][verb]["operationId"]
+        for path in dynamic_api["paths"].keys():
+            for verb in dynamic_api["paths"][path].keys():
+                oid = dynamic_api["paths"][path][verb]["operationId"]
                 _method = self._make_method(path, verb)
                 setattr(self, oid, _method)
 
@@ -132,18 +132,18 @@ class App(object):
         self.app_url = f"{api.base_url}/{self.__class__.name}/api"
         self.domain_url = f"{self.app_url}/domain/{str(self.api.domain_id)}"
 
-    def get_swagger(self):
+    def set_api(self):
         """Attempt to auto create all api calls by reading
-        the swagger api endpoint make a best guess. User must
-        be authorized to read swagger to use this.
+        the dynamic api endpoint make a best guess. User must
+        be authorized to read api documentation to use this.
 
         All auto created methods get setattr on `exec` for `App`.
         """
-        _swagger = self.get_api()
-        setattr(self, "exec", SwaggerApi(_swagger, self.api, self))
+        _dynamic_api = self.get_api()
+        setattr(self, "exec", DynamicApi(_dynamic_api, self.api, self))
 
     def get_api(self):
-        """Return API specs from the swagger"""
+        """Return API specs from the dynamic documentation"""
 
         key = "openapi.json"
         req = Request(
@@ -202,6 +202,26 @@ class SecurityManager(App):
         self.siql = Siql(self.api, self)
         self.zones = Zones(self.api, self)
         self.fmzones = FmZones(self.api, self)
+
+
+class Orchestration(App):
+    """Represents Orchestration in Firemon
+
+    Args:
+        api (obj): FiremonAPI()
+        name (str): name of the application
+
+    Valid attributes are:
+        * xx: EndPoint()
+    """
+
+    name = "orchestration"
+
+    def __init__(self, api):
+        super().__init__(api)
+
+        # Endpoints
+        # self.xx = EndPoint(self)
 
 
 class GlobalPolicyController(App):
@@ -286,7 +306,7 @@ class ControlPanel(App):
         # Endpoints
         self.config = Config(self.api, self)
 
-    def get_swagger(self):
+    def set_api(self):
         """Maybe later"""
         raise NotImplementedError("Maybe some other time")
 

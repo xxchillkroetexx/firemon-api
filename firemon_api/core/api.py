@@ -23,6 +23,7 @@ from firemon_api.core.query import Request, url_param_builder, RequestError
 from firemon_api import version
 from firemon_api.apps import (
     GlobalPolicyController,
+    Orchestration,
     PolicyOptimizer,
     PolicyPlanner,
     SecurityManager,
@@ -144,6 +145,7 @@ class FiremonAPI(object):
         self._verify_domain(self.domain_id)
 
         self.sm = SecurityManager(self)
+        self.orc = Orchestration(self)
         self.gpc = GlobalPolicyController(self)
         self.po = PolicyOptimizer(self)
         self.pp = PolicyPlanner(self)
