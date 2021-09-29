@@ -49,7 +49,6 @@ class Revision(Record):
 
         self.domain_id = config["domainId"]
         self.device_id = config["deviceId"]
-        self.d_url = f"{self.app_url}/domain/{self.domain_id}/device/{self.device_id}/rev/{str(config['id'])}"
         self.files = self._files_load()
 
     def save(self):

@@ -135,11 +135,15 @@ class FiremonAPI(object):
         self.username = username
         key = "securitymanager/api/authentication/login"
         payload = {"username": username, "password": password}
-        Request(
+        resp = Request(
             base=self.base_url,
             key=key,
             session=self.session,
         ).post(json=payload)
+        # Get and set the token? Basic Auth is easy and doesn not have timeout issues
+        # self.token = resp["token"]
+        # self.session.headers.update({"X-FM-AUTH-Token": self.token})
+
         # Update items of interest
         self._version = self._versions()["fmosVersion"]
         self._verify_domain(self.domain_id)

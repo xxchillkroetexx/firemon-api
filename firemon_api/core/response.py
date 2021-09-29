@@ -311,7 +311,8 @@ class Record(object):
                     key=self.id if not self.url else None,
                     session=self.session,
                 )
-                return req.put(serialized)
+                req.put(serialized)
+                return True
 
         return False
 
