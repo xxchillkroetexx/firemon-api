@@ -130,7 +130,8 @@ class Device(Record):
                     filters=params,
                     session=self.session,
                 )
-                return req.put(serialized)
+                req.put(serialized)
+                return True
 
         return False
 
@@ -158,6 +159,7 @@ class Device(Record):
 
         for k, v in data.items():
             self.attr_set(k, v)
+
         return self.save(retrieve=retrieve)
 
     def delete(
@@ -426,6 +428,41 @@ class Device(Record):
             session=self.session,
         ).get()
         return req.get("testSuites", [])
+
+    def license_add(self, product_key: str):
+        """License device for feature
+
+        Args:
+            product_key (str): SM, PO, PP, RA, GPC, AUTO
+        """
+        key = f"device/license/{self.id}/product/{product_key}"
+        req = Request(
+            base=self.domain_url,
+            key=key,
+            session=self.session,
+        )
+        try:
+            return req.post()
+        except RequestError as e:
+            if e.req.status_code == 409:
+                # Device is already licensed. We good.
+                return True
+            else:
+                raise e
+
+    def license_del(self, product_key: str):
+        """License device for feature
+
+        Args:
+            product_key (str): SM, PO, PP, RA, GPC, AUTO
+        """
+        key = f"device/license/{self.id}/product/{product_key}"
+        req = Request(
+            base=self.domain_url,
+            key=key,
+            session=self.session,
+        )
+        return req.delete()
 
 
 class Devices(Endpoint):

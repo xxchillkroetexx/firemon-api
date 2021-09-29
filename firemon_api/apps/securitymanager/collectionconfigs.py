@@ -52,7 +52,7 @@ class CollectionConfig(Record):
             app,
         )
 
-        self.no_no_keys = [
+        self._no_no_keys = [
             "index",
             "createdBy",
             "createdDate",

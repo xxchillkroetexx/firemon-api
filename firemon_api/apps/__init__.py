@@ -281,7 +281,9 @@ class PolicyPlanner(App):
         super().__init__(api)
 
         # Endpoints
-        # self.xx = EndPoint(self)
+        self.siql = SiqlPP(self.api, self)
+        self.tasks = Tasks(self.api, self)
+        self.workflows = Workflows(self.api, self)
 
 
 class ControlPanel(App):

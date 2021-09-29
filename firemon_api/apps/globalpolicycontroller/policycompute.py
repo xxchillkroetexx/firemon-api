@@ -49,10 +49,10 @@ class PolicyCompute(Endpoint):
         return req.post()
 
     def all(self):
-        raise NotImplementedError("Writes are not supported for this Record.")
+        raise NotImplementedError("Not supported for this Endpoint.")
 
     def get(self):
-        raise NotImplementedError("Writes are not supported for this Record.")
+        raise NotImplementedError("Not supported for this Endpoint.")
 
     def filter(self):
-        raise NotImplementedError("Writes are not supported for this Record.")
+        raise NotImplementedError("Not supported for this Endpoint.")
