@@ -7,19 +7,11 @@ from distutils.util import convert_path
 
 PROJECT = "firemon-api"
 
-with open("README.md") as f:
-    readme = f.read()
-
-main_ns = {}
-ver_path = convert_path("firemon_api/version.py")
-with open(ver_path) as f:
-    exec(f.read(), main_ns)
-
 setup(
     name=PROJECT,
-    version=main_ns["__version__"],
+    use_scm_version=True,
+    setup_requires=["setuptools_scm"],
     description="NetSec Python Wrapper for Firemon API",
-    long_description=readme,
     author="Firemon NetSec <dev-netsec@firemon.com>",
     author_email="dev-netsec@firemon.com",
     url="https://www.firemon.com/",
@@ -29,9 +21,10 @@ setup(
     },
     packages=find_packages(exclude=("tests", "docs")),
     include_package_data=True,
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     install_requires=[
         "requests",
+        "setuptools_scm>=6.2",
     ],
     zip_safe=False,
 )

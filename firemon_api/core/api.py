@@ -19,8 +19,8 @@ from typing import Optional
 import requests  # performing web requests
 
 # Local packages
+import firemon_api
 from firemon_api.core.query import Request, url_param_builder, RequestError
-from firemon_api import version
 from firemon_api.apps import (
     GlobalPolicyController,
     Orchestration,
@@ -108,7 +108,7 @@ class FiremonAPI(object):
         self.session = requests.Session()
         # self.session.auth = (self.username, self.password)  # Basic auth is used
         self.default_headers = {
-            "User-Agent": f"py-firemon-api/{version.__version__}",
+            "User-Agent": f"py-firemon-api/{firemon_api.__version__}",
             "Accept-Encoding": "gzip, deflate",
             "Accept": "*/*",
             "Connection": "keep-alive",

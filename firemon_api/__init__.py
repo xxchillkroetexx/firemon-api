@@ -37,12 +37,19 @@ limitations under the License.
 # Standard Modules
 import logging
 from logging import NullHandler
+from importlib.metadata import version, PackageNotFoundError
 
 # import urllib3
 
 # Local
 from firemon_api.core.api import FiremonAPI as api
-from firemon_api.version import __version__
+
+try:
+    __version__ = version(__name__)
+except PackageNotFoundError:
+    # package is not installed
+    pass
+
 
 logging.getLogger(__name__).addHandler(NullHandler())
 
