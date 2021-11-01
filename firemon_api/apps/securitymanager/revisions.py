@@ -98,17 +98,27 @@ class Revision(Record):
         )
         return req.get_content()
 
-    def nd_get(self):
+    def nd_get(self, sections: list = []):
         """Get normalized data as a fully parsed object
 
         Retrieve all the revision data in a single payload.
+
+        Kwargs:
+            sections (list): different sections of Normalized Data to retrieve
+                "empty" (default): every section
+                "app":
+                "... etc": all the different things
+
         """
-        key = "nd/all"
+        key = f"nd/all"
         req = Request(
             base=self.url,
             key=key,
             session=self.session,
         )
+        if sections:
+            filters = {"types": ",".join(sections)}
+            req.filters = filters
         return NormalizedData(req.get(), self.app)
 
     def _files_load(self):
