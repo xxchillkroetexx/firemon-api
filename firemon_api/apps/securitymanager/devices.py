@@ -19,7 +19,7 @@ from firemon_api.core.response import Record, JsonField
 from firemon_api.core.query import Request, url_param_builder, RequestError
 from .devicepacks import DevicePack
 from .collectionconfigs import CollectionConfigs
-from .revisions import Revisions, NormalizedData
+from .revisions import Revision, Revisions, NormalizedData
 from .routes import Routes
 from .zones import Zones
 
@@ -384,6 +384,16 @@ class Device(Record):
             session=self.session,
         )
         return NormalizedData(req.get(), self.app)
+
+    def rev_latest_get(self):
+        """Gets the latest revision object """
+        key = "rev/latest"
+        req = Request(
+            base=self.url,
+            key=key,
+            session=self.session,
+        )
+        return Revision(req.get(), self.app)
 
     def ssh_key_remove(self):
         """Remove ssh key from all Collectors for Device.
