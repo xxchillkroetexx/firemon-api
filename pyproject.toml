@@ -1,13 +1,11 @@
 # pyproject.toml
 [build-system]
 requires = [
-    "setuptools>=45",
+    "setuptools",
     "wheel",
-    "setuptools_scm>=6.2",
-    "setuptools_scm_git_archive>=1.0",
+    "setuptools_scm",
     ]
 
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
-write_to = "firemon_api/version.py"
