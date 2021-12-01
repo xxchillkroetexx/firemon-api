@@ -92,3 +92,6 @@ ENV/
 
 # VSCode
 .vscode
+
+# scm version
+version.py
