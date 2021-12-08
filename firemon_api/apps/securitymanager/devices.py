@@ -17,6 +17,7 @@ import uuid
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record, JsonField
 from firemon_api.core.query import Request, url_param_builder, RequestError
+from .access_path import AccessPath
 from .devicepacks import DevicePack
 from .collectionconfigs import CollectionConfigs
 from .revisions import Revision, Revisions, NormalizedData
@@ -200,6 +201,68 @@ class Device(Record):
             session=self.session,
         )
         return req.delete()
+
+    def apa(
+        self,
+        interface: str,
+        source_ip: str,
+        dest_ip: str,
+        protocol: int,
+        source_port: int = None,
+        dest_port: int = None,
+        icmp_type: int = None,
+        icmp_code: int = None,
+        user: str = None,
+        application: str = None,
+        accept: bool = True,
+        recommend: bool = True,
+    ):
+        """Perform an Access Path Analysis query
+
+        Args:
+            inboundInterface (str): interface name ex: 'ethernet1/2'
+            source_ip (str): ipv4/6 address ex: '192.168.202.95'
+            dest_ip (str): ipv4/6 address ex: '192.168.203.66'
+            protocol (int): for all practical purposes it is only 1 (icmp), 6 (tcp), 17 (udp), 58 (icmpv6)
+
+        Kwargs:
+            source_port (int): source port
+            dest_port (int): destination port. required if the protocol has ports
+            icmp_type (int): apparently not required
+            icmp_code (int): apparently not required
+            user (str): ???
+            application (str): ???
+            accept (bool): ???
+            recommend (bool): ???
+
+        Return:
+            AccessPath: as always AccessPath().dump() gets you the dictionary. But the AccessPath object
+                gets some parsed data. `events` as a list, `packet_result` as a dictionary.
+        """
+
+        key = "apa"
+        json = {
+            "inboundInterface": interface,
+            "testIpPacket": {
+                "sourceIp": source_ip,
+                "destinationIp": dest_ip,
+                "protocol": protocol,
+                "sourcePort": source_port,
+                "port": dest_port,
+                "icmpType": icmp_type,
+                "icmpCode": icmp_code,
+                "user": user,
+                "application": application,
+                "accept": accept,
+                "recommend": recommend,
+            },
+        }
+        req = Request(
+            base=self.url,
+            key=key,
+            session=self.session,
+        )
+        return AccessPath(req.put(json=json), self, self.id)
 
     def rev_export(self, meta: bool = True):
         """Export latest configuration files as a zip file
