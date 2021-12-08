@@ -71,21 +71,21 @@ class AccessPath(Record):
     def _parse_event(self, event, path):
 
         path["events"].append(AccessPathEvent(event, self, self.url))
+        _ = copy.deepcopy(path)
 
         if event.get("nextEvents"):
             for i, v in enumerate(event["nextEvents"]):
                 if i == 0:
                     # primary path
-                    self._parse_event(v, path)
+                    self._parse_event(v, _)
                 else:
                     # branch
-                    branch = copy.deepcopy(path)
-                    branch["branch"] = v["id"]
-                    self._parse_event(v, branch)
+                    _["branch"] = v["id"]
+                    self._parse_event(v, _)
         else:
             # assume last event in path
-            path["packet_result"] = event.get("ipPacketResult", {})
-            self.paths.append(path)
+            _["packet_result"] = event.get("ipPacketResult", {})
+            self.paths.append(_)
 
     def save(self):
         raise NotImplementedError("Writes are not supported.")
