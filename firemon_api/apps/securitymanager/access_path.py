@@ -8,6 +8,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 # Standard packages
+import copy
 import logging
 
 # Local packages
@@ -50,8 +51,7 @@ class AccessPath(Record):
         self._device_id = device_id
         super().__init__(config, app)
 
-        self.events = []
-        self.packet_result = {}
+        self.paths = []
         self._parse_apa()
 
     def _url_create(self):
@@ -60,23 +60,32 @@ class AccessPath(Record):
         return url
 
     def _parse_apa(self):
-        se = self._config["startingEvent"]
-        self._parse_event(se)
-        if self.events:
-            levent = self.events[-1]
-            if getattr(levent, "ipPacketResult", None):
-                self.packet_result = getattr(levent, "ipPacketResult").dump()
+        se = self._config["startingEvent"].copy()
+        path = {
+            "branch": se["id"],
+            "packet_result": {},
+            "events": [],
+        }
+        self._parse_event(se, path)
 
-    def _parse_event(self, event):
-        ne = None
+    def _parse_event(self, event, path):
+
+        path["events"].append(AccessPathEvent(event, self, self.url))
+
         if event.get("nextEvents"):
-            if len(event["nextEvents"]) > 1:
-                log.debug("multiple events")
-            ne = event["nextEvents"][0]
-            event.pop("nextEvents")
-        self.events.append(AccessPathEvent(event, self, self.url))
-        if ne:
-            self._parse_event(ne)
+            for i, v in enumerate(event["nextEvents"]):
+                if i == 0:
+                    # primary path
+                    self._parse_event(v, path)
+                else:
+                    # branch
+                    branch = copy.deepcopy(path)
+                    branch["branch"] = v["id"]
+                    self._parse_event(v, branch)
+        else:
+            # assume last event in path
+            path["packet_result"] = event.get("ipPacketResult", {})
+            self.paths.append(path)
 
     def save(self):
         raise NotImplementedError("Writes are not supported.")

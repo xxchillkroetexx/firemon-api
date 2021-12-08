@@ -202,12 +202,82 @@ class Device(Record):
         )
         return req.delete()
 
-    def apa(
+    def apa_starting_interface(
         self,
-        interface: str,
+        *,
         source_ip: str,
         dest_ip: str,
         protocol: int,
+        source_port: int = None,
+        dest_port: int = None,
+        icmp_type: int = None,
+        icmp_code: int = None,
+        user: str = None,
+        application: str = None,
+        accept: bool = True,
+        recommend: bool = True,
+    ):
+        """Get apa guessed starting interface
+
+        Args:
+            source_ip (str): ipv4/6 address ex: '192.168.202.95'
+            dest_ip (str): ipv4/6 address ex: '192.168.203.66'
+            protocol (int): for all practical purposes it is only 1 (icmp), 6 (tcp), 17 (udp), 58 (icmpv6)
+
+        Kwargs:
+            source_port (int): source port
+            dest_port (int): destination port. required if the protocol has ports
+            icmp_type (int): apparently not required
+            icmp_code (int): apparently not required
+            user (str): ???
+            application (str): ???
+            accept (bool): ???
+            recommend (bool): ???
+
+        Return:
+            list (???): a list of possible interfaces
+                [
+                    {
+                        'intfName': string,
+                        'virtualRouterId': string (guid),
+                        'routes': bool,
+                        'handles': bool,
+                        'arps': bool,
+                        'gateway': bool
+                    }
+                ]
+        """
+
+        key = "apa/starting-interface"
+        json = {
+            "testIpPacket": {
+                "sourceIp": source_ip,
+                "destinationIp": dest_ip,
+                "protocol": protocol,
+                "sourcePort": source_port,
+                "port": dest_port,
+                "icmpType": icmp_type,
+                "icmpCode": icmp_code,
+                "user": user,
+                "application": application,
+                "accept": accept,
+                "recommend": recommend,
+            },
+        }
+        req = Request(
+            base=self.url,
+            key=key,
+            session=self.session,
+        )
+        return req.put(json=json)
+
+    def apa(
+        self,
+        *,
+        source_ip: str,
+        dest_ip: str,
+        protocol: int,
+        interface: str = None,
         source_port: int = None,
         dest_port: int = None,
         icmp_type: int = None,
@@ -240,9 +310,7 @@ class Device(Record):
                 gets some parsed data. `events` as a list, `packet_result` as a dictionary.
         """
 
-        key = "apa"
         json = {
-            "inboundInterface": interface,
             "testIpPacket": {
                 "sourceIp": source_ip,
                 "destinationIp": dest_ip,
@@ -257,6 +325,29 @@ class Device(Record):
                 "recommend": recommend,
             },
         }
+
+        if interface:
+            json["inboundInterface"] = interface
+        else:
+            kwargs = {
+                "source_ip": source_ip,
+                "dest_ip": dest_ip,
+                "protocol": protocol,
+                "source_port": source_port,
+                "dest_port": dest_port,
+                "icmp_type": icmp_type,
+                "icmp_code": icmp_code,
+                "user": user,
+                "application": application,
+                "accept": accept,
+                "recommend": recommend,
+            }
+            si = self.apa_starting_interface(**kwargs)
+            if si:
+                json["inboundInterface"] = si[0].get("intfName", None)
+
+        key = "apa"
+
         req = Request(
             base=self.url,
             key=key,
