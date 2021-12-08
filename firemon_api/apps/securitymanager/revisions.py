@@ -8,7 +8,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 # Standard packages
-import json
 import logging
 
 # Local packages
