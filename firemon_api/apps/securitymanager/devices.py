@@ -351,6 +351,10 @@ class Device(Record):
         req = Request(
             base=self.url,
             key=key,
+            headers={
+                "Content-Type": "application/json;",
+                "accept": "application/json;",  # in 9.4 earlier I guess default is XML???
+            },
             session=self.session,
         )
         return AccessPath(req.put(json=json), self, self.id)
