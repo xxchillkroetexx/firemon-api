@@ -30,8 +30,8 @@ class Map(Record):
         >>>
     """
 
-    ep_name = "map"
-    _domain_url = True
+    _ep_name = "map"
+    _is_domain_url = True
 
     def __init__(self, config, app, device_id: int = None, group_id: int = 1):
         super().__init__(config, app)
@@ -65,7 +65,7 @@ class Maps(Endpoint):
     """
 
     ep_name = "map"
-    _domain_url = True
+    _is_domain_url = True
 
     def __init__(self, api, app, record=Map, device_id: int = None, group_id: int = 1):
         super().__init__(api, app, record=Map)

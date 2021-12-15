@@ -28,7 +28,7 @@ class ElasticSearch(object):
 
     url = None
     ep_name = "es"
-    _domain_url = False
+    _is_domain_url = False
 
     def __init__(self, api, app):
         # self.return_obj = Record

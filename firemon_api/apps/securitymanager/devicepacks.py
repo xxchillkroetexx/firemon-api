@@ -36,7 +36,7 @@ class DevicePack(Record):
         '1.24.10'
     """
 
-    ep_name = "plugin"
+    _ep_name = "plugin"
     collectionConfig = CollectionConfig
     # collectionConfig = JsonField
 
@@ -44,11 +44,11 @@ class DevicePack(Record):
         super().__init__(config, app)
 
         self.name = config["artifactId"]
-        self.artifacts = [ArtifactFile(f, self.app, self.url) for f in self.artifacts]
+        self.artifacts = [ArtifactFile(f, self._app, self._url) for f in self.artifacts]
 
     def _url_create(self):
         """ General self.url create """
-        url = f"{self.ep_url}/{self.groupId}/{self.artifactId}"
+        url = f"{self._ep_url}/{self.groupId}/{self.artifactId}"
         return url
 
     def update(self):
@@ -62,10 +62,10 @@ class DevicePack(Record):
         key = "layout"
         filters = {"layoutName": "layout.json"}
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
             filters=filters,
-            session=self.session,
+            session=self._session,
         )
         return req.post()
 
@@ -79,9 +79,9 @@ class DevicePack(Record):
             bytes: your blob of stuff
         """
         req = Request(
-            base=self.url,
+            base=self._url,
             key=name,
-            session=self.session,
+            session=self._session,
         )
         return req.get_content()
 
@@ -102,7 +102,7 @@ class DevicePack(Record):
         template["name"] = None
         template["description"] = None
         template["managementIp"] = None
-        template["domainId"] = self.app.api.domain_id
+        template["domainId"] = self._app.api.domain_id  # set and verified in API
         # Fix? in later versions we require a Group
         # template['dataCollectorId'] = 1  # Assuming
         # template['collectorGroupId] = ''
@@ -303,7 +303,7 @@ class ArtifactFile(Record):
 
     def __init__(self, config, app, ep_url):
         super().__init__(config, app)
-        self.url = f"{ep_url}/{config['name']}"
+        self._url = f"{ep_url}/{config['name']}"
 
     def save(self):
         raise NotImplementedError("Writes are not supported for this Record.")
@@ -321,7 +321,7 @@ class ArtifactFile(Record):
             bytes: the bytes that make up the file
         """
         req = Request(
-            base=self.url,
-            session=self.session,
+            base=self._url,
+            session=self._session,
         )
         return req.get_content()

@@ -44,7 +44,7 @@ class CollectionConfig(Record):
         True
     """
 
-    ep_name = "collectionconfig"
+    _ep_name = "collectionconfig"
 
     def __init__(self, config, app):
         super().__init__(
@@ -64,9 +64,9 @@ class CollectionConfig(Record):
         """ Set CollectionConfig for Device Pack assignment. """
         key = f"devicepack/{self.devicePackId}/assignment/{self.id}"
         req = Request(
-            base=self.ep_url,
+            base=self._ep_url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         return req.put()
 
@@ -76,9 +76,9 @@ class CollectionConfig(Record):
         """
         key = f"devicepack/{self.devicePackId}/assignment"
         req = Request(
-            base=self.ep_url,
+            base=self._ep_url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         return req.delete()
 
@@ -96,9 +96,9 @@ class CollectionConfig(Record):
         """
         key = f"device/{id}/assignment/{self.id}"
         req = Request(
-            base=self.ep_url,
+            base=self._ep_url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         return req.put()
 
@@ -113,9 +113,9 @@ class CollectionConfig(Record):
         """
         key = f"device/{id}/assignment"
         req = Request(
-            base=self.ep_url,
+            base=self._ep_url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         return req.delete()
 

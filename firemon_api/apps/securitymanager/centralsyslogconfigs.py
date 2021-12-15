@@ -28,8 +28,8 @@ class CentralSyslogConfig(Record):
         app (obj): App()
     """
 
-    ep_name = "centralsyslogconfig"
-    _domain_url = True
+    _ep_name = "centralsyslogconfig"
+    _is_domain_url = True
 
     def __init__(self, config, app):
         super().__init__(config, app)
@@ -47,7 +47,7 @@ class CentralSyslogConfigs(Endpoint):
     """
 
     ep_name = "centralsyslogconfig"
-    _domain_url = True
+    _is_domain_url = True
 
     def __init__(self, api, app, record=CentralSyslogConfig):
         super().__init__(api, app, record=CentralSyslogConfig)

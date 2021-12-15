@@ -31,15 +31,15 @@ class Zone(Record):
         >>>
     """
 
-    ep_name = "zoneobject"
-    _domain_url = True
+    _ep_name = "zoneobject"
+    _is_domain_url = True
 
     def __init__(self, config, app):
         super().__init__(config, app)
 
     def _url_create(self):
-        """ General self.url create. What is normally 'deviceId'. <sigh> """
-        url = f"{self.ep_url}/{self.deviceid}"
+        """ General self._url create. What is normally 'deviceId'. <sigh> """
+        url = f"{self._ep_url}/{self.deviceid}"
         return url
 
     def save(self):
@@ -65,7 +65,7 @@ class Zones(Endpoint):
     """
 
     ep_name = "zoneobject/paged-search"
-    _domain_url = True
+    _is_domain_url = True
 
     def __init__(self, api, app, record=Zone, device_id: int = None):
         super().__init__(api, app, record=Zone)
@@ -173,8 +173,8 @@ class FmZone(Record):
         >>>
     """
 
-    ep_name = "zone"
-    _domain_url = True
+    _ep_name = "zone"
+    _is_domain_url = True
 
     def __init__(self, config, app):
         super().__init__(config, app)
@@ -196,7 +196,7 @@ class FmZones(Endpoint):
     """
 
     ep_name = "zone"
-    _domain_url = True
+    _is_domain_url = True
 
     def __init__(self, api, app, record=FmZone, device_id: int = None):
         super().__init__(api, app, record=FmZone)

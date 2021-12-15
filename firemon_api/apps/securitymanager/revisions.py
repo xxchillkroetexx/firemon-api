@@ -41,13 +41,13 @@ class Revision(Record):
         True
     """
 
-    ep_name = "rev"
+    _ep_name = "rev"
 
     def __init__(self, config, app):
         super().__init__(config, app)
 
-        self.domain_id = config["domainId"]
-        self.device_id = config["deviceId"]
+        self._domain_id = config["domainId"]
+        self._device_id = config["deviceId"]
         self.files = self._files_load()
 
     def save(self):
@@ -67,9 +67,9 @@ class Revision(Record):
         >>>
         """
         req = Request(
-            base=self.app_url,
+            base=self._app_url,
             key=f"domain/{self.domainId}/device/{self.deviceId}/rev/{self.id}",
-            session=self.session,
+            session=self._session,
         )
         return True if req.delete() else False
 
@@ -91,9 +91,9 @@ class Revision(Record):
         else:
             key = "export/config"
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         return req.get_content()
 
@@ -111,9 +111,9 @@ class Revision(Record):
         """
         key = f"nd/all"
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         if sections:
             filters = {"types": ",".join(sections)}
@@ -124,19 +124,19 @@ class Revision(Record):
         """Get the file descriptors attached to Revision"""
         key = "nd/file"
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
-        return [RevFile(i, self.app, self.id) for i in req.get()]
+        return [RevFile(i, self._app, self.id) for i in req.get()]
 
     def nd_problem(self):
         """Get problems with revision"""
         key = "nd/problem"
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         return req.get()
 
@@ -223,7 +223,7 @@ class RevFile(Record):
 
     def _url_create(self):
         """ General self.url create """
-        url = f"{self.ep_url}/{self.rev_id}/nd/file/{self._config['id']}"
+        url = f"{self._ep_url}/{self.rev_id}/nd/file/{self._config['id']}"
         return url
 
     def save(self):
@@ -242,8 +242,8 @@ class RevFile(Record):
             bytes: the bytes that make up the file
         """
         req = Request(
-            base=self.url,
-            session=self.session,
+            base=self._url,
+            session=self._session,
         )
         return req.get_content()
 
@@ -257,7 +257,7 @@ class RevFile(Record):
 class NormalizedData(Record):
     """A NORMALIZED Revision. All the things."""
 
-    ep_name = "rev"
+    _ep_name = "rev"
 
     def __init__(self, config, app):
         super().__init__(config, app)
@@ -273,7 +273,7 @@ class NormalizedData(Record):
 
     def _url_create(self):
         """ General self.url create """
-        url = f"{self.ep_url}/{self._config['revisionId']}"
+        url = f"{self._ep_url}/{self._config['revisionId']}"
         return url
 
     def __str__(self):

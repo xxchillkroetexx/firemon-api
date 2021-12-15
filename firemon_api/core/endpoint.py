@@ -26,7 +26,7 @@ class Endpoint(object):
 
     url = None
     ep_name = None
-    _domain_url = False
+    _is_domain_url = False
 
     def __init__(self, api, app, record=None):
         if record:
@@ -40,7 +40,7 @@ class Endpoint(object):
         self.app_url = app.app_url
         self.domain_url = app.domain_url
         self.url = None
-        if self.__class__._domain_url and self.__class__.ep_name:
+        if self.__class__._is_domain_url and self.__class__.ep_name:
             self.url = f"{self.domain_url}/{self.__class__.ep_name}"
         elif self.__class__.ep_name:
             self.url = f"{self.app_url}/{self.__class__.ep_name}"

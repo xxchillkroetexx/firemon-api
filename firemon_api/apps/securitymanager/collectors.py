@@ -30,7 +30,7 @@ class Collector(Record):
         app (obj): App()
     """
 
-    ep_name = "collector"
+    _ep_name = "collector"
 
     def __init__(self, config, app):
         super().__init__(config, app)
@@ -39,9 +39,9 @@ class Collector(Record):
         """Get status of Collector"""
         key = f"status/{self.id}"
         req = Request(
-            base=self.ep_url,
+            base=self._ep_url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         return req.get()
 
@@ -49,11 +49,11 @@ class Collector(Record):
         """Get all devices assigned to collector"""
         key = "device"
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
-        return [Device(config, self.app) for config in req.get()]
+        return [Device(config, self._app) for config in req.get()]
 
 
 class Collectors(Endpoint):
@@ -153,9 +153,9 @@ class CollectorGroup(Record):
         """
         key = f"member/{cid}"
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         return req.put()
 
@@ -172,9 +172,9 @@ class CollectorGroup(Record):
         """
         key = f"member/{id}"
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         return req.put()
 
@@ -182,9 +182,9 @@ class CollectorGroup(Record):
         """Get assigned devices"""
         key = f"assigned"
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         return req.get()
 

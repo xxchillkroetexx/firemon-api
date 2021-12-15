@@ -31,7 +31,7 @@ class License(Endpoint):
 
     url = None
     ep_name = "license"
-    _domain_url = True
+    _is_domain_url = True
 
     def __init__(self, api, app):
         super().__init__(api, app)

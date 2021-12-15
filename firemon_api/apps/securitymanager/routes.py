@@ -31,15 +31,15 @@ class Route(Record):
         >>>
     """
 
-    ep_name = "routeobject"
-    _domain_url = True
+    _ep_name = "routeobject"
+    _is_domain_url = True
 
     def __init__(self, config, app):
         super().__init__(config, app)
 
     def _url_create(self):
-        """ General self.url create. What is normally 'deviceId'. <sigh> """
-        url = f"{self.ep_url}/{self.deviceid}"
+        """ General self._url create. What is normally 'deviceId'. <sigh> """
+        url = f"{self._ep_url}/{self.deviceid}"
         return url
 
     def save(self):
@@ -65,7 +65,7 @@ class Routes(Endpoint):
     """
 
     ep_name = "routeobject/paged-search"
-    _domain_url = True
+    _is_domain_url = True
 
     def __init__(self, api, app, record=Route, device_id: int = None):
         super().__init__(api, app, record=Route)
