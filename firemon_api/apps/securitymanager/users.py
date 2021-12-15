@@ -35,8 +35,8 @@ class User(Record):
         ...   user.save()
     """
 
-    ep_name = "user"
-    _domain_url = True
+    _ep_name = "user"
+    _is_domain_url = True
 
     def set_password(self, password: str) -> bool:
         key = "password"
@@ -47,10 +47,10 @@ class User(Record):
             "Suppress-Auth-Header": "true",
         }
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
             headers=headers,
-            session=self.session,
+            session=self._session,
         )
         return req.put(data=data)
 
@@ -74,7 +74,7 @@ class Users(Endpoint):
     """
 
     ep_name = "user"
-    _domain_url = True
+    _is_domain_url = True
 
     def __init__(self, api, app, record=User):
         super().__init__(api, app, record=User)
@@ -181,8 +181,8 @@ class UserGroup(Record):
 
     """
 
-    ep_name = "usergroup"
-    _domain_url = True
+    _ep_name = "usergroup"
+    _is_domain_url = True
 
     def __init__(self, config, app):
         super().__init__(config, app)
@@ -196,30 +196,30 @@ class UserGroup(Record):
 
         key = "permissiondefinition"
         resp = Request(
-            base=self.app.domain_url,
+            base=self._app.domain_url,
             key=key,
-            session=self.session,
+            session=self._session,
         ).get()
 
         perms = []
         for rg in resp:
             # perms.extend(rg['permissions'])
             for p in rg["permissions"]:
-                perms.append(Permission(p, self.app))
+                perms.append(Permission(p, self._app))
 
         return perms
 
     def permission_show(self):
         key = "permissions"
         resp = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         ).get()
 
         perms = []
         for p in resp:
-            perms.append(Permission(p, self.app))
+            perms.append(Permission(p, self._app))
 
         return perms
 
@@ -231,9 +231,9 @@ class UserGroup(Record):
         """
         key = f"permission/{id}"
         resp = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         ).post()
 
         return resp
@@ -246,9 +246,9 @@ class UserGroup(Record):
         """
         key = f"permission/{id}"
         resp = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         ).delete()
 
         return resp
@@ -267,7 +267,7 @@ class UserGroups(Endpoint):
     """
 
     ep_name = "usergroup"
-    _domain_url = True
+    _is_domain_url = True
 
     def __init__(self, api, app, record=UserGroup):
         super().__init__(api, app, record=UserGroup)
@@ -288,7 +288,7 @@ class UserGroups(Endpoint):
 class Permission(Record):
     """A Permission."""
 
-    ep_name = "permissions"
+    _ep_name = "permissions"
 
     def __init__(self, config, app):
         super().__init__(config, app)

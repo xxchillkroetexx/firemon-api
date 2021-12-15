@@ -29,8 +29,8 @@ class CentralSyslog(Record):
         app (obj): App()
     """
 
-    ep_name = "central-syslog"
-    _domain_url = True
+    _ep_name = "central-syslog"
+    _is_domain_url = True
     centralSyslogConfig = CentralSyslogConfig
 
     def __init__(self, config, app):
@@ -50,9 +50,9 @@ class CentralSyslog(Record):
         """
         key = f"devices/{id}"
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         return req.post()
 
@@ -67,9 +67,9 @@ class CentralSyslog(Record):
         """
         key = f"devices/{id}"
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         return req.delete()
 
@@ -84,15 +84,15 @@ class CentralSyslog(Record):
         """
         key = f"config/{id}"
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         return req.put()
 
     def devices(self):
         # todo: return all devices assigned to this CS
-        pass
+        raise NotImplemented("todo")
 
 
 class CentralSyslogs(Endpoint):
@@ -107,7 +107,7 @@ class CentralSyslogs(Endpoint):
     """
 
     ep_name = "central-syslog"
-    _domain_url = True
+    _is_domain_url = True
 
     def __init__(self, api, app, record=CentralSyslog):
         super().__init__(api, app, record=CentralSyslog)

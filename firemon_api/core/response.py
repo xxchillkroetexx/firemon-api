@@ -7,6 +7,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import copy
 import logging
 
 from firemon_api.core.query import Request
@@ -53,38 +54,45 @@ class Record(object):
         ...}
     """
 
-    url = None
-    ep_name = None
-    _domain_url = False
+    _url = None
+    _ep_name = None
+    _is_domain_url = False
 
     def __init__(self, config, app):
         self._config = config
         self._init_cache = []
-        self.default_ret = Record
-        self.app = app
-        self.session = app.session
-        self.base_url = app.base_url
-        self.app_url = app.app_url
-        self.domain_url = app.domain_url
-        self.ep_url = None
-        if self.__class__._domain_url and self.__class__.ep_name:
-            self.ep_url = f"{self.domain_url}/{self.__class__.ep_name}"
-        elif self.__class__.ep_name:
-            self.ep_url = f"{self.app_url}/{self.__class__.ep_name}"
+        self._default_ret = Record
+        self._app = app
+        if getattr(app, "session", None):
+            self._session = app.session
+            self._base_url = app.base_url
+            self._app_url = app.app_url
+            self._domain_url = app.domain_url
+        else:
+            self._session = app._session
+            self._base_url = app._base_url
+            self._app_url = app._app_url
+            self._domain_url = app._domain_url
+
+        self._ep_url = None
+        if self.__class__._is_domain_url and self.__class__._ep_name:
+            self._ep_url = f"{self._domain_url}/{self.__class__._ep_name}"
+        elif self.__class__._ep_name:
+            self._ep_url = f"{self._app_url}/{self.__class__._ep_name}"
 
         if config:
             self._parse_config(config)
 
         # In almost every case this is the format of the `Record` url
         # if not, re-work in child class
-        if self.ep_url:
-            self.url = self._url_create()
+        if self._ep_url:
+            self._url = self._url_create()
 
         self._no_no_keys = []
 
     def _url_create(self):
-        """ General self.url create """
-        url = f"{self.ep_url}/{self._config['id']}"
+        """ General self._url create """
+        url = f"{self._ep_url}/{self._config['id']}"
         return url
 
     def __iter__(self):
@@ -142,7 +150,7 @@ class Record(object):
             if isinstance(list_item, dict):
                 # Only attempt creating `Record` if there is an id.
                 if "id" in list_item.keys():
-                    return self.default_ret(list_item, self.app)
+                    return self._default_ret(list_item, self._app)
             return list_item
 
         for k, v in config.items():
@@ -153,9 +161,9 @@ class Record(object):
                     setattr(self, k, v)
                     continue
                 if lookup:
-                    v = lookup(v, self.app)
+                    v = lookup(v, self._app)
                 else:
-                    v = self.default_ret(v, self.app)
+                    v = self._default_ret(v, self._app)
                 self._add_cache((k, v))
             elif isinstance(v, list):
                 v = [list_parser(i) for i in v]
@@ -243,7 +251,7 @@ class Record(object):
 
     def dump(self):
         """Dump of unparsed config"""
-        return self._config.copy()
+        return copy.deepcopy(self._config)
 
     def attr_set(self, k, v):
         """Set an attribute and add it to the cache
@@ -307,9 +315,9 @@ class Record(object):
             if diff:
                 serialized = self.serialize()
                 req = Request(
-                    base=self.url or self.endpoint.ep_url,
-                    key=self.id if not self.url else None,
-                    session=self.session,
+                    base=self._url or self._app.ep_url,
+                    key=self.id if not self._url else None,
+                    session=self._session,
                 )
                 req.put(serialized)
                 return True
@@ -352,8 +360,8 @@ class Record(object):
         >>>
         """
         req = Request(
-            base=self.url or self.endpoint.ep_url,
-            key=self.id if not self.url else None,
-            session=self.session,
+            base=self._url or self._app.ep_url,
+            key=self.id if not self._url else None,
+            session=self._session,
         )
         return True if req.delete() else False

@@ -21,8 +21,8 @@ log = logging.getLogger(__name__)
 class AccessPathEvent(Record):
     """AccessPathEvent"""
 
-    ep_name = "apa"
-    _domain_url = True
+    _ep_name = "apa"
+    _is_domain_url = True
 
     def __init__(self, config, app, url):
         self._url = url
@@ -44,8 +44,8 @@ class AccessPathEvent(Record):
 class AccessPath(Record):
     """AccessPath"""
 
-    ep_name = "apa"
-    _domain_url = True
+    _ep_name = "apa"
+    _is_domain_url = True
 
     def __init__(self, config, app, device_id=None):
         self._device_id = device_id
@@ -55,8 +55,8 @@ class AccessPath(Record):
         self._parse_apa()
 
     def _url_create(self):
-        """ General self.url create """
-        url = f"{self.ep_url}/device/{self._device_id}/{self.__class__.ep_name}"
+        """ General self._url create """
+        url = f"{self._ep_url}/device/{self._device_id}/{self.__class__._ep_name}"
         return url
 
     def _parse_apa(self):
@@ -70,7 +70,7 @@ class AccessPath(Record):
 
     def _parse_event(self, event, path):
 
-        path["events"].append(AccessPathEvent(event, self, self.url))
+        path["events"].append(AccessPathEvent(event, self, self._url))
         _ = copy.deepcopy(path)
 
         if event.get("nextEvents"):

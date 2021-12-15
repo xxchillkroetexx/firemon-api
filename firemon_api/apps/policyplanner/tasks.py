@@ -22,11 +22,11 @@ log = logging.getLogger(__name__)
 
 class Task(Record):
 
-    ep_name = None
-    _domain_url = False
+    _ep_name = None
+    _is_domain_url = False
 
     def __init__(self, config, app, name):
-        self.name = name
+        self._name = name
         super().__init__(config, app)
 
     def save(self):
@@ -83,7 +83,7 @@ class Tasks(Endpoint):
     """
 
     ep_name = "task"
-    _domain_url = False
+    _is_domain_url = False
 
     def __init__(self, api, app, record=Task):
         super().__init__(api, app, record=Task)

@@ -34,8 +34,8 @@ class DeviceCluster(Record):
         [<Device(F5-V13-1)>, <Device(NS-5XP)>, <Device(cp-r8030-fw-d1-2)>]
     """
 
-    _domain_url = True
-    ep_name = "cluster"
+    _ep_name = "cluster"
+    _is_domain_url = True
 
     def __init__(self, config, app):
         super().__init__(config, app)
@@ -44,11 +44,11 @@ class DeviceCluster(Record):
         """Get all devices assigned to cluster"""
         key = "device"
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
-        return [Device(config, self.app) for config in req.get()]
+        return [Device(config, self._app) for config in req.get()]
 
 
 class DeviceClusters(Endpoint):
@@ -67,7 +67,7 @@ class DeviceClusters(Endpoint):
     """
 
     ep_name = "cluster"
-    _domain_url = True
+    _is_domain_url = True
 
     def __init__(self, api, app, record=DeviceCluster):
         super().__init__(api, app, record=DeviceCluster)

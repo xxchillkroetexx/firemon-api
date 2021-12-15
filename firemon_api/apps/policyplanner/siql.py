@@ -32,10 +32,10 @@ class SiqlPP(object):
 
     url = None
     ep_name = "siql"
-    _domain_url = False
+    _is_domain_url = False
 
     def __init__(self, api, app):
-        self.return_obj = SiqlData
+        self._return_obj = SiqlData
         # self.return_obj = JsonField
         self.api = api
         self.session = api.session
@@ -46,7 +46,7 @@ class SiqlPP(object):
         self.url = f"{self.app_url}/{self.__class__.ep_name}"
 
     def _response_loader(self, values):
-        return self.return_obj(values, self.app)
+        return self._return_obj(values, self.app)
         # return self.return_obj()
 
     def _raw(self, query, key):

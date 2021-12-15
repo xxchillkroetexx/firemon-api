@@ -32,7 +32,7 @@ class PolicyCompute(Endpoint):
     """
 
     ep_name = "policycompute"
-    _domain_url = True
+    _is_domain_url = True
 
     def __init__(self, api, app, record=Record):
         super().__init__(api, app, record=Record)

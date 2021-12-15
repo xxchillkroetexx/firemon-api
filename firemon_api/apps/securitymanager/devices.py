@@ -64,8 +64,8 @@ class Device(Record):
         178
     """
 
-    _domain_url = True
-    ep_name = "device"
+    _ep_name = "device"
+    _is_domain_url = True
     extendedSettingsJson = JsonField
     devicePack = DevicePack
 
@@ -84,15 +84,15 @@ class Device(Record):
 
         # Add attributes to Record() so we can get more info
         self.collectionconfigs = CollectionConfigs(
-            self.app.api,
-            self.app,
+            self._app.api,
+            self._app,
             device_id=config["id"],
             devicepack_id=config["devicePack"]["id"],
         )
-        self.maps = Maps(self.app.api, self.app, device_id=config["id"])
-        self.revisions = Revisions(self.app.api, self.app, device_id=config["id"])
-        self.routes = Routes(self.app.api, self.app, device_id=config["id"])
-        self.zones = Zones(self.app.api, self.app, device_id=config["id"])
+        self.maps = Maps(self._app.api, self._app, device_id=config["id"])
+        self.revisions = Revisions(self._app.api, self._app, device_id=config["id"])
+        self.routes = Routes(self._app.api, self._app, device_id=config["id"])
+        self.zones = Zones(self._app.api, self._app, device_id=config["id"])
 
     def save(self, retrieve: bool = False) -> bool:
         """Saves changes to an existing object.
@@ -129,9 +129,9 @@ class Device(Record):
                 log.debug(serialized)
                 params = {"manualRetrieval": retrieve}
                 req = Request(
-                    base=self.url,
+                    base=self._url,
                     filters=params,
-                    session=self.session,
+                    session=self._session,
                 )
                 req.put(serialized)
                 return True
@@ -198,9 +198,9 @@ class Device(Record):
         }
 
         req = Request(
-            base=self.url,
+            base=self._url,
             filters=filters,
-            session=self.session,
+            session=self._session,
         )
         return req.delete()
 
@@ -267,9 +267,9 @@ class Device(Record):
             },
         }
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         return req.put(json=json)
 
@@ -351,13 +351,13 @@ class Device(Record):
         key = "apa"
 
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
             headers={
                 "Content-Type": "application/json;",
                 "accept": "application/json;",  # in 9.4 earlier I guess default is XML???
             },
-            session=self.session,
+            session=self._session,
         )
         return AccessPath(req.put(json=json), self, self.id)
 
@@ -388,9 +388,9 @@ class Device(Record):
         else:
             key = "export/config"
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         return req.get_content()
 
@@ -431,7 +431,7 @@ class Device(Record):
         """
         if not change_user:
             # Not needed as server will go on its merry way with nothing
-            change_user = f"{self.app.api.username}:[firemon_api]"
+            change_user = f"{self._app.api.username}:[firemon_api]"
         if not correlation_id:
             # Not needed as server will generate one for us. But... whatever.
             correlation_id = str(uuid.uuid1())
@@ -444,10 +444,10 @@ class Device(Record):
         key = "rev"
 
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
             filters=filters,
-            session=self.session,
+            session=self._session,
         )
         return req.post(files=f_list)
 
@@ -482,10 +482,10 @@ class Device(Record):
         key = "import"
 
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
             filters=filters,
-            session=self.session,
+            session=self._session,
         )
         return req.post(files=files)
 
@@ -499,10 +499,10 @@ class Device(Record):
         filters = {"debug": debug}
 
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
             filters=filters,
-            session=self.session,
+            session=self._session,
         )
         return req.post()
 
@@ -519,9 +519,9 @@ class Device(Record):
         """
         key = f"ruleusagestat/{type}"
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         return req.get()
 
@@ -529,9 +529,9 @@ class Device(Record):
         """Retrieve problems with latest normalization"""
         key = f"device/{self.id}/nd/problem"
         req = Request(
-            base=self.app_url,
+            base=self._app_url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         return req.get()
 
@@ -539,21 +539,21 @@ class Device(Record):
         """Gets the latest revision as a fully parsed object """
         key = "rev/latest/nd/all"
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
-        return NormalizedData(req.get(), self.app)
+        return NormalizedData(req.get(), self._app)
 
     def rev_latest_get(self):
         """Gets the latest revision object """
         key = "rev/latest"
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
-        return Revision(req.get(), self.app)
+        return Revision(req.get(), self._app)
 
     def ssh_key_remove(self):
         """Remove ssh key from all Collectors for Device.
@@ -563,9 +563,9 @@ class Device(Record):
         """
         key = "sshhostkey"
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         return req.put()
 
@@ -573,9 +573,9 @@ class Device(Record):
         """Retrieve device capabilities"""
         key = f"capabilities"
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         return req.get()
 
@@ -583,9 +583,9 @@ class Device(Record):
         """Retrieve device status"""
         key = f"status"
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         return req.get()
 
@@ -593,9 +593,9 @@ class Device(Record):
         """Retrieve device health testSuites"""
         key = f"health"
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
-            session=self.session,
+            session=self._session,
         ).get()
         return req.get("testSuites", [])
 
@@ -607,9 +607,9 @@ class Device(Record):
         """
         key = f"device/license/{self.id}/product/{product_key}"
         req = Request(
-            base=self.domain_url,
+            base=self._domain_url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         try:
             return req.post()
@@ -628,9 +628,9 @@ class Device(Record):
         """
         key = f"device/license/{self.id}/product/{product_key}"
         req = Request(
-            base=self.domain_url,
+            base=self._domain_url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         return req.delete()
 
@@ -647,7 +647,7 @@ class Devices(Endpoint):
     """
 
     ep_name = "device"
-    _domain_url = True
+    _is_domain_url = True
 
     def __init__(self, api, app, record=Device):
         super().__init__(api, app, record=Device)

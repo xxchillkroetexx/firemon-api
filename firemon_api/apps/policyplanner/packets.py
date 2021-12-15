@@ -25,22 +25,22 @@ log = logging.getLogger(__name__)
 class PacketTask(Record):
     """Represents the Packet Task for the Packet/Ticket record"""
 
-    ep_name = "packet-task"
-    _domain_url = True
+    _ep_name = "packet-task"
+    _is_domain_url = True
 
     def __init__(self, config, app, packet_id):
         super().__init__(config, app)
         self._packet_id = packet_id
-        self.ep_url = (
-            f"{self.domain_url}/workflow/{self._config['workflowTask']['workflowVersion']['id']}/"
+        self._ep_url = (
+            f"{self._domain_url}/workflow/{self._config['workflowTask']['workflowVersion']['id']}/"
             f"task/{self._config['workflowTask']['id']}/packet/{self._packet_id}/{self.__class__.ep_name}"
         )
 
-        self.pp_rec_url = (
-            f"{self.app_url}/policyplan/domain/{self._config['workflowTask']['workflowVersion']['id']}/"
+        self._pp_rec_url = (
+            f"{self._app_url}/policyplan/domain/{self._config['workflowTask']['workflowVersion']['id']}/"
             f"workflow/{self._config['workflowTask']['workflowVersion']['id']}"
         )
-        self.url = self._url_create()
+        self._url = self._url_create()
 
     def requirement(self, config: dict):
         """Add a requirement
@@ -51,35 +51,35 @@ class PacketTask(Record):
 
         key = f"task/{self._config['workflowTask']['id']}/packet/{self._packet_id}/requirement"
         req = Request(
-            base=self.pp_rec_url,
+            base=self._pp_rec_url,
             key=key,
-            session=self.session,
+            session=self._session,
         )
         return req.post(json=config)
 
     def assign(self, id: str):
         """Assign a packet task"""
         key = "assign"
-        headers = self.session.headers
+        headers = self._session.headers
         headers.update({"Content-Type": "text/plain"})
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
             headers=headers,
-            session=self.session,
+            session=self._session,
         )
         return req.put(data=str(id))
 
     def unassign(self):
         """Unassign a packet task"""
         key = "unassign"
-        headers = self.session.headers
+        headers = self._session.headers
         headers.update({"Content-Type": "text/plain"})
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
             headers=headers,
-            session=self.session,
+            session=self._session,
         )
         return req.put()
 
@@ -88,10 +88,10 @@ class PacketTask(Record):
         key = "complete"
         filters = {"button": "submit"}
         req = Request(
-            base=self.url,
+            base=self._url,
             key=key,
             filters=filters,
-            session=self.session,
+            session=self._session,
         )
         return req.put()
 
@@ -109,7 +109,7 @@ class PacketTasks(Endpoint):
     """
 
     ep_name = "packet-tasks"
-    _domain_url = True
+    _is_domain_url = True
 
     def __init__(self, api, app, packet_id, record=PacketTask):
         super().__init__(api, app, record=PacketTask)
@@ -199,17 +199,17 @@ class PacketTasks(Endpoint):
 class Packet(Record):
     """Represents the Packet/Ticket record"""
 
-    ep_name = "packet"
-    _domain_url = True
+    _ep_name = "packet"
+    _is_domain_url = True
 
     def __init__(self, config, app):
         super().__init__(config, app)
 
-        if self.__class__._domain_url and self.__class__.ep_name:
-            self.ep_url = f"{self.domain_url}/workflow/{self._config['workflowVersion']['id']}/{self.__class__.ep_name}"
-        self.url = self._url_create()
+        if self.__class__._is_domain_url and self.__class__._ep_name:
+            self._ep_url = f"{self._domain_url}/workflow/{self._config['workflowVersion']['id']}/{self.__class__._ep_name}"
+        self._url = self._url_create()
 
-        self.pt = PacketTasks(self.app.api, self, self.id)
+        self.pt = PacketTasks(self._app.api, self, self.id)
 
     def save(self):
         """Someday... maybe"""
@@ -235,13 +235,13 @@ class Packets(Endpoint):
     """
 
     ep_name = "packet"
-    _domain_url = True
+    _is_domain_url = True
 
     def __init__(self, api, app, wf_id, record=Packet):
         super().__init__(api, app, record=Packet)
         self._wf_id = wf_id
 
-        if self.__class__._domain_url and self.__class__.ep_name:
+        if self.__class__._is_domain_url and self.__class__.ep_name:
             self.url = (
                 f"{self.domain_url}/workflow/{self._wf_id}/{self.__class__.ep_name}"
             )

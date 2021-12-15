@@ -23,13 +23,13 @@ log = logging.getLogger(__name__)
 class Workflow(Record):
     """Workflow Record"""
 
-    ep_name = "workflow"
-    _domain_url = True
+    _ep_name = "workflow"
+    _is_domain_url = True
 
     def __init__(self, config, app):
         super().__init__(config, app)
 
-        self.tickets = Packets(self.app.api, self.app, config["id"])
+        self.tickets = Packets(self._app.api, self._app, config["id"])
 
         self._no_no_keys = [
             "createdBy",
@@ -47,9 +47,9 @@ class Workflow(Record):
                 serialized["id"] = self._config["id"]
                 log.debug(serialized)
                 req = Request(
-                    base=self.url,
+                    base=self._url,
                     key="config",
-                    session=self.session,
+                    session=self._session,
                 )
                 req.put(serialized)
                 return True
@@ -67,33 +67,33 @@ class Workflow(Record):
 
     def disable(self) -> bool:
         Request(
-            base=self.url,
+            base=self._url,
             key="disable",
-            session=self.session,
+            session=self._session,
         ).put()
         return True
 
     def enable(self) -> bool:
         Request(
-            base=self.url,
+            base=self._url,
             key="enable",
-            session=self.session,
+            session=self._session,
         ).put()
         return True
 
     def start_properties(self):
         resp = Request(
-            base=self.url,
+            base=self._url,
             key="start-properties",
-            session=self.session,
+            session=self._session,
         ).get()
         return resp
 
     def tasks(self):
         resp = Request(
-            base=self.url,
+            base=self._url,
             key="tasks",
-            session=self.session,
+            session=self._session,
         ).get()
         return resp
 
@@ -110,7 +110,7 @@ class Workflows(Endpoint):
     """
 
     ep_name = "workflow"
-    _domain_url = True
+    _is_domain_url = True
 
     def __init__(self, api, app, record=Workflow):
         super().__init__(api, app, record=Workflow)
