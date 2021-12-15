@@ -195,6 +195,7 @@ class SecurityManager(App):
         self.dp = DevicePacks(self.api, self)  # Todo: create the other /plugin
         self.es = ElasticSearch(self.api, self)
         self.license = License(self.api, self)
+        self.maps = Maps(self.api, self)
         self.revisions = Revisions(self.api, self)
         self.users = Users(self.api, self)
         self.usergroups = UserGroups(self.api, self)
