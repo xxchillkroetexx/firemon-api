@@ -20,6 +20,7 @@ from firemon_api.core.query import Request, url_param_builder, RequestError
 from .access_path import AccessPath
 from .devicepacks import DevicePack
 from .collectionconfigs import CollectionConfigs
+from .maps import Maps
 from .revisions import Revision, Revisions, NormalizedData
 from .routes import Routes
 from .zones import Zones
@@ -88,6 +89,7 @@ class Device(Record):
             device_id=config["id"],
             devicepack_id=config["devicePack"]["id"],
         )
+        self.maps = Maps(self.app.api, self.app, device_id=config["id"])
         self.revisions = Revisions(self.app.api, self.app, device_id=config["id"])
         self.routes = Routes(self.app.api, self.app, device_id=config["id"])
         self.zones = Zones(self.app.api, self.app, device_id=config["id"])
