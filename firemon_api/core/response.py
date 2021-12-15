@@ -63,10 +63,17 @@ class Record(object):
         self._init_cache = []
         self._default_ret = Record
         self._app = app
-        self._session = app.session
-        self._base_url = app.base_url
-        self._app_url = app.app_url
-        self._domain_url = app.domain_url
+        if getattr(app, "session", None):
+            self._session = app.session
+            self._base_url = app.base_url
+            self._app_url = app.app_url
+            self._domain_url = app.domain_url
+        else:
+            self._session = app._session
+            self._base_url = app._base_url
+            self._app_url = app._app_url
+            self._domain_url = app._domain_url
+
         self._ep_url = None
         if self.__class__._is_domain_url and self.__class__._ep_name:
             self._ep_url = f"{self._domain_url}/{self.__class__._ep_name}"
