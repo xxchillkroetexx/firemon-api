@@ -118,7 +118,7 @@ class Revision(Record):
         if sections:
             filters = {"types": ",".join(sections)}
             req.filters = filters
-        return NormalizedData(req.get(), self.app)
+        return NormalizedData(req.get(), self._app)
 
     def _files_load(self):
         """Get the file descriptors attached to Revision"""
