@@ -634,6 +634,88 @@ class Device(Record):
         )
         return req.delete()
 
+    def ruledoc_update(self, config: dict):
+        """Update Rule Documentation - meta data
+
+        Args:
+            config (dict): all the properties that make up all the rule doc
+                updates. This can be gnarly looking
+
+        Example:
+            Properties seem to be:
+                * "stringval" : just a string
+                * "stringarray" : list of strings
+                * "dateval": "2021-12-29T00:00:00-0600" (example)
+            `deviceId` does not appear to be required.
+            Other dates do not appear to be required (may be prefereable to skip)
+            If you do not apply an expiration it will be empty even if originally set.
+            "expirationDate": "2022-01-01T06:00:00+0000"
+
+            {
+            "ruleId": "a0eb7fb2-5496-4d65-b7e5-2735710436a4",
+            "deviceId": 45,
+            "createDate": "1970-01-01T00:00:00.000Z",
+            "lastUpdated": "2021-12-15T23:00:01.071Z",
+            "lastRevisionDate": "2021-12-15T22:59:49.193Z",
+            "expirationDate": "2022-01-01T06:00:00+0000",
+            "props": [
+                {
+                "ruleId": "a0eb7fb2-5496-4d65-b7e5-2735710436a4",
+                "ruleCustomPropertyDefinition": {
+                    "id": 1,
+                    "customPropertyDefinition": {
+                    "id": 1,
+                    "name": "Business Justification",
+                    "key": "business_justification",
+                    "type": "STRING_ARRAY",
+                    "filterable": true,
+                    "inheritFromMgmtStation": false
+                    },
+                    "name": "Business Justification",
+                    "key": "business_justification",
+                    "type": "STRING_ARRAY"
+                },
+                "customProperty": {
+                    "id": 1,
+                    "name": "Business Justification",
+                    "key": "business_justification",
+                    "type": "STRING_ARRAY",
+                    "filterable": true,
+                    "inheritFromMgmtStation": false
+                },
+                "stringarray": [
+                    "For the LuLz"
+                ]
+                },
+            ],
+            }
+        """
+
+        key = "ruledoc"
+        req = Request(
+            base=self._url,
+            key=key,
+            session=self._session,
+        )
+        return req.put(json=config)
+
+    def ruledoc_get(self, rule_id: str):
+        """Get RuleDoc for given rule id
+
+        Args:
+            rule_id (str): guid string data
+
+        Return:
+            dict
+        """
+        key = f"rule/{rule_id}/ruledoc"
+        req = Request(
+            base=self._url,
+            key=key,
+            session=self._session,
+        )
+        return req.get()
+
 
 class Devices(Endpoint):
     """Represents the Devices
