@@ -74,9 +74,14 @@ class Request(object):
     Args:
         base (str) Base URL
         session (`Session`): requests
+
+    Kwargs:
         filters (dict, optional): contains key/value pairs that
             correlate to the filters a given endpoint accepts.
         key (str, optional): append to base to make up full url
+        headers (dict, optional): specific headers to over ride session headers
+        cookies ():
+        trailing_slash (bool): Ensure a trailing slash for `self.url`
     """
 
     def __init__(
@@ -88,8 +93,9 @@ class Request(object):
         url=None,
         headers=None,
         cookies=None,
+        trailing_slash=False,
     ):
-        self.base = self.normalize_url(base)
+        self.base = self.normalize_url(base, trailing_slash=trailing_slash)
         self.session = session
         self.filters = filters
         self.verify = session.verify
@@ -98,9 +104,11 @@ class Request(object):
         self.headers = headers
         self.cookies = cookies
 
-    def normalize_url(self, url):
+    def normalize_url(self, url, trailing_slash=False):
         if url[-1] == "/":
             return url.strip("/")
+        if trailing_slash:
+            return f"{url}/"
         return url
 
     def normalize_key(self, key):

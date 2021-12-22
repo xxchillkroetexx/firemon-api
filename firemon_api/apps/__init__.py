@@ -295,7 +295,11 @@ class ControlPanel(App):
         name (str): name of the application
 
     Valid attributes are:
-        * xx: EndPoint()
+        * ca: EndPoint()
+        * cleanup: EndPoint()
+        * config: EndPoint()
+        * db: EndPoint()
+        * diagpkg: EndPoint()
     """
 
     def __init__(self, api):
@@ -307,7 +311,11 @@ class ControlPanel(App):
             self.app_url = f"{api.base_url}:55555/api"
 
         # Endpoints
+        self.ca = CertAuth(self.api, self)
+        self.cleanup = Cleanup(self.api, self)
         self.config = Config(self.api, self)
+        self.db = Database(self.api, self)
+        self.diagpkg = DiagPkg(self.api, self)
 
     def set_api(self):
         """Maybe later"""
@@ -327,8 +335,75 @@ class ControlPanel(App):
         except:
             raise NotImplementedError("No access to api-doc endpoint")
 
+    def email_confirm(self, username=None, email=None, code=None, k=None):
+        """
+        Kwargs:
+            k (str)
+            username (str)
+        """
+
+        key = "emailconfirm"
+        headers = {"Content-Type: application/x-www-form-urlencoded"}
+
+        filters = {"k": k, "username ": username, "email": email, "code": code}
+
+        r = Request(
+            base=self.app_url,
+            headers=headers,
+            key=key,
+            filters=filters,
+            session=self.session,
+        ).post()
+        return r
+
+    def email_confirm_resend(self, username):
+        key = "resendemailconfirm"
+        filters = {"username ": username}
+        r = Request(
+            base=self.app_url,
+            key=key,
+            filters=filters,
+            session=self.session,
+        ).post()
+        return r
+
+    def get_session(self):
+        key = "session"
+        r = Request(
+            base=self.app_url,
+            key=key,
+            session=self.session,
+        ).get()
+        return r
+
+    def health(self, checks: str = "default", cache: str = "default"):
+        """verbose state and health info
+
+        Kwargs:
+            checks (str): default, detailed, full
+            cache (str): default, ignore, only
+        """
+        filters = {"cache": f"{cache}"}
+        key = f"health/{checks}"
+        r = Request(
+            base=self.app_url,
+            key=key,
+            filters=filters,
+            session=self.session,
+        ).get()
+        return r
+
     def info(self):
         key = "info"
+        r = Request(
+            base=self.app_url,
+            key=key,
+            session=self.session,
+        ).get()
+        return r
+
+    def perf(self):
+        key = "perf"
         r = Request(
             base=self.app_url,
             key=key,
@@ -345,11 +420,19 @@ class ControlPanel(App):
         ).get()
         return r
 
-    def perf(self):
-        key = "perf"
+    def user_update(self, config):
+        """update user info
+
+        Args:
+            config (dict)
+        """
+
+        key = "user"
+
         r = Request(
             base=self.app_url,
             key=key,
             session=self.session,
-        ).get()
+        ).put(json=config)
+
         return r
