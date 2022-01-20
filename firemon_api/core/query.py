@@ -19,7 +19,14 @@ import logging
 from urllib.parse import urlencode
 
 # third-party
-# import requests
+from tenacity import (
+    before_sleep_log,
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
+from requests.exceptions import ConnectionError
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +40,7 @@ def url_param_builder(param_dict):
 
 
 def calc_pages(pageSize, total):
-    """ Calculate number of pages required for full results set. """
+    """Calculate number of pages required for full results set."""
     return int(total / pageSize) + (pageSize % total > 0)
 
 
@@ -116,6 +123,14 @@ class Request(object):
             return key.lstrip("/")
         return key
 
+    # Retry by sleeping .33 and then double sleep until 5 attempts (.33, .66, 1.32, etc)
+    @retry(
+        retry=retry_if_exception_type(ConnectionError),
+        wait=wait_exponential(multiplier=0.33, min=0, max=5),
+        stop=stop_after_attempt(5),
+        before_sleep=before_sleep_log(log, logging.DEBUG),
+        reraise=True,
+    )
     def _make_call(
         self,
         verb="get",
