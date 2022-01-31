@@ -130,7 +130,7 @@ class FiremonAPI(object):
         to calls goes fine. But if it is not correct it is easy
         to lock out a user.
         """
-        log.debug("Authenticating Firemon connection: %s", self.host)
+        log.info(f"Authenticating Firemon connection: {self.host}")
         self.session.auth = (username, password)
         self.username = username
         key = "securitymanager/api/authentication/login"
@@ -157,7 +157,7 @@ class FiremonAPI(object):
 
     def auth_cpl(self, username: str, password: str, cpl_proxy=False):
         """Control Panel that is normally accessed via 55555"""
-        log.debug("Authenticating Firemon Control Panel: %s", self.host)
+        log.info(f"Authenticating Firemon Control Panel: {self.host}")
         self._cpl_proxy = cpl_proxy
         self._cpl_cookies = requests.cookies.RequestsCookieJar()
         key = "api/login"

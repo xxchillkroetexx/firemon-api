@@ -138,7 +138,7 @@ class CollectorGroup(Record):
         app (obj): App()
     """
 
-    ep_name = "collector/group"
+    _ep_name = "collector/group"
 
     def __init__(self, config, app):
         super().__init__(config, app)

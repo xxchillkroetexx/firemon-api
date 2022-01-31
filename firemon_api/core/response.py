@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 
 
 def get_return(lookup, return_fields=None):
-    """Returns simple representations for items passed to lookup. """
+    """Returns simple representations for items passed to lookup."""
     for i in return_fields or ["name", "id", "value", "nested_return"]:
         if isinstance(lookup, dict) and lookup.get(i):
             return lookup[i]
@@ -91,7 +91,7 @@ class Record(object):
         self._no_no_keys = []
 
     def _url_create(self):
-        """ General self._url create """
+        """General self._url create"""
         url = f"{self._ep_url}/{self._config['id']}"
         return url
 
@@ -222,7 +222,7 @@ class Record(object):
         ret = {}
         for i in self._clean_no_no(dict(self)):
             current_val = getattr(self, i) if not init else init_vals.get(i)
-            log.debug(current_val)
+            # log.debug(current_val)
 
             if isinstance(current_val, Record):
                 current_val = getattr(current_val, "serialize")(nested=True)

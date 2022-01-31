@@ -215,14 +215,14 @@ class Revisions(Endpoint):
 class RevFile(Record):
     """A Revision File"""
 
-    ep_name = "rev"
+    _ep_name = "rev"
 
     def __init__(self, config, app, rev_id):
         self.rev_id = rev_id
         super().__init__(config, app)
 
     def _url_create(self):
-        """ General self.url create """
+        """General self.url create"""
         url = f"{self._ep_url}/{self.rev_id}/nd/file/{self._config['id']}"
         return url
 
@@ -272,7 +272,7 @@ class NormalizedData(Record):
         raise NotImplementedError("Writes are not supported for this Record.")
 
     def _url_create(self):
-        """ General self.url create """
+        """General self.url create"""
         url = f"{self._ep_url}/{self._config['revisionId']}"
         return url
 

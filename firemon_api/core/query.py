@@ -128,7 +128,7 @@ class Request(object):
         retry=retry_if_exception_type(ConnectionError),
         wait=wait_exponential(multiplier=0.33, min=0, max=5),
         stop=stop_after_attempt(5),
-        before_sleep=before_sleep_log(log, logging.DEBUG),
+        before_sleep=before_sleep_log(log, logging.INFO),
         reraise=True,
     )
     def _make_call(
@@ -158,18 +158,18 @@ class Request(object):
                 params.update(add_params)
 
         if params:
-            log.debug(
+            log.info(
                 f"{verb.upper()}: {url_override or f'{self.url}?{urlencode(params)}'}"
             )
         else:
-            log.debug(f"{verb.upper()}: {url_override or f'{self.url}'}")
+            log.info(f"{verb.upper()}: {url_override or f'{self.url}'}")
 
         if json:
-            log.debug(f"Json: {json}")
+            log.info(f"Json: {json}")
         if data:
-            log.debug(f"Data: {data}")
+            log.info(f"Data: {data}")
         if files:
-            log.debug("Files present")
+            log.info("Files present")
             for file in files:
                 log.debug(f"File : {file}")
 
@@ -184,8 +184,8 @@ class Request(object):
             cookies=self.cookies,
         )
 
-        log.debug(req.request.headers)  # sent headers
-        log.debug(req.headers)  # returned headers
+        log.debug(f"Sent HEADERS {req.request.headers}")  # sent headers
+        log.debug(f"Ret. HEADERS {req.headers}")  # returned headers
         if verb == "delete":
             if req.ok:
                 return True
@@ -327,7 +327,7 @@ class Request(object):
         my break our API calls. Appears to happen
         when requesting data blobs but not always.
         """
-        log.debug(f"GET: {self.url}")
+        log.info(f"GET: {self.url}")
 
         req = getattr(self.session, "get")(self.url, verify=self.verify)
         if req.ok:
@@ -337,7 +337,7 @@ class Request(object):
 
     def post_cpl_auth(self, data=None):
         """Authorize to the Control Panel and get Cookie Jar"""
-        log.debug(f"POST: {self.url}")
+        log.info(f"POST: {self.url}")
 
         req = getattr(self.session, "post")(self.url, data=data, verify=self.verify)
         if req.ok:

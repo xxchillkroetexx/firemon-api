@@ -126,7 +126,7 @@ class Device(Record):
                     serialized["children"] = self._config["children"]
                 # Put all this redundant nonsense back in. Why api, why?
                 serialized["devicePack"] = self._config["devicePack"]
-                log.debug(serialized)
+                # log.debug(serialized)
                 params = {"manualRetrieval": retrieve}
                 req = Request(
                     base=self._url,
@@ -536,7 +536,7 @@ class Device(Record):
         return req.get()
 
     def nd_latest_get(self):
-        """Gets the latest revision as a fully parsed object """
+        """Gets the latest revision as a fully parsed object"""
         key = "rev/latest/nd/all"
         req = Request(
             base=self._url,
@@ -546,7 +546,7 @@ class Device(Record):
         return NormalizedData(req.get(), self._app)
 
     def rev_latest_get(self):
-        """Gets the latest revision object """
+        """Gets the latest revision object"""
         key = "rev/latest"
         req = Request(
             base=self._url,
