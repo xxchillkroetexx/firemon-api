@@ -23,6 +23,7 @@ from tenacity import (
     before_sleep_log,
     retry,
     retry_if_exception_type,
+    retry_if_not_exception_type,
     stop_after_attempt,
     wait_exponential,
 )
@@ -88,7 +89,7 @@ class Request(object):
         key (str, optional): append to base to make up full url
         headers (dict, optional): specific headers to over ride session headers
         cookies ():
-        trailing_slash (bool): Ensure a trailing slash for `self.url`
+        trailing_slash (bool): Ensure a trailing slash for `self.url`retry_count (int): number of times to retry request call for any error except `RequestError`. Helps with flakey connections.
     """
 
     def __init__(
@@ -123,10 +124,11 @@ class Request(object):
             return key.lstrip("/")
         return key
 
-    # Retry by sleeping .33 and then double sleep until 5 attempts (.33, .66, 1.32, etc)
+    # Retry using tenacity
     @retry(
-        retry=retry_if_exception_type(ConnectionError),
-        wait=wait_exponential(multiplier=0.33, min=0, max=5),
+        # retry=retry_if_exception_type(ConnectionError),
+        retry=retry_if_not_exception_type(RequestError),
+        wait=wait_exponential(multiplier=1, min=4, max=10),
         stop=stop_after_attempt(5),
         before_sleep=before_sleep_log(log, logging.INFO),
         reraise=True,
