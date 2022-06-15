@@ -47,7 +47,7 @@ class DevicePack(Record):
         self.artifacts = [ArtifactFile(f, self._app, self._url) for f in self.artifacts]
 
     def _url_create(self):
-        """ General self.url create """
+        """General self.url create"""
         url = f"{self._ep_url}/{self.groupId}/{self.artifactId}"
         return url
 
@@ -240,7 +240,7 @@ class DevicePacks(Endpoint):
             return None
 
     def filter(self, **kwargs):
-        """Retrieve a filterd list of DevicePacks
+        """Retrieve a filtered list of DevicePacks
 
         Args:
             **kwargs: key value pairs in a device pack dictionary

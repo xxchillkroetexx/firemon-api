@@ -17,6 +17,7 @@ from .devicepacks import DevicePacks, DevicePack
 from .devices import Devices, Device
 from .elasticsearch import ElasticSearch
 from .license import License
+from .logging import Logging, Logger
 from .maps import Map, Maps
 from .revisions import Revisions, Revision, NormalizedData
 from .routes import Route, Routes
@@ -45,6 +46,8 @@ __all__ = [
     "FmZone",
     "FmZones",
     "License",
+    "Logger",
+    "Logging",
     "Maps",
     "Map",
     "Revisions",
