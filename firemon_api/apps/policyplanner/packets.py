@@ -33,11 +33,11 @@ class PacketTask(Record):
         self._packet_id = packet_id
         self._ep_url = (
             f"{self._domain_url}/workflow/{self._config['workflowTask']['workflowVersion']['id']}/"
-            f"task/{self._config['workflowTask']['id']}/packet/{self._packet_id}/{self.__class__.ep_name}"
+            f"task/{self._config['workflowTask']['id']}/packet/{self._packet_id}/{self.__class__._ep_name}"
         )
 
         self._pp_rec_url = (
-            f"{self._app_url}/policyplan/domain/{self._config['workflowTask']['workflowVersion']['id']}/"
+            f"{self._app_url}/policyplan/domain/{self._app._app.api.domain_id}/"
             f"workflow/{self._config['workflowTask']['workflowVersion']['id']}"
         )
         self._url = self._url_create()
@@ -112,7 +112,29 @@ class PacketTasks(Endpoint):
     _is_domain_url = True
 
     def __init__(self, api, app, packet_id, record=PacketTask):
-        super().__init__(api, app, record=PacketTask)
+        self.return_obj = record
+        self.api = api
+        self.session = api.session
+        self.app = app
+        self.base_url = api.base_url
+        self.app_url = app._app_url
+        self.domain_url = app._domain_url
+        self.url = None
+        if self.__class__._is_domain_url and self.__class__.ep_name:
+            self.url = f"{self.domain_url}/{self.__class__.ep_name}"
+        elif self.__class__.ep_name:
+            self.url = f"{self.app_url}/{self.__class__.ep_name}"
+
+        # These will be used update `key` values for `query.Request`
+        # (i.e. they will be appended to 'self.url' to get full path)
+        # All child classes can then update to append endpoint actions
+        # or add new actions, hopefully for read-ability
+        self._ep = {
+            "all": None,
+            "filter": None,
+            "create": None,
+            "count": None,
+        }
         self._packet_id = packet_id
 
     def _response_loader(self, values, packet_id):
