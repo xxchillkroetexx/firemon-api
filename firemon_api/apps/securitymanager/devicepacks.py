@@ -253,9 +253,10 @@ class DevicePacks(Endpoint):
         >>> fm.sm.dp.filter(ssh=True)
         """
 
-        dp_all = self.all()
         if not kwargs:
             raise ValueError("filter must have kwargs")
+
+        dp_all = self.all()
 
         return [dp for dp in dp_all if kwargs.items() <= dict(dp).items()]
 

@@ -136,7 +136,6 @@ class Logging(Endpoint):
 
         if not kwargs:
             raise ValueError("filter must have kwargs")
-        # logger_all = self.all()
 
         loggers = []
         name = kwargs.get("logger", None)

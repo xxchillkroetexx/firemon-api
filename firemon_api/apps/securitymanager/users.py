@@ -98,6 +98,33 @@ class Users(Endpoint):
 
         return [self._response_loader(i) for i in req.get()]
 
+    def create(self, user_config: dict, system_user: bool = False):
+        """Creates an object on an endpoint.
+
+        Args:
+            user_config (dict): a dictionary of all the needed options
+
+        Kwargs:
+            system_user (bool): default (False) create user as a system user
+
+        Return:
+            (obj): Record
+        """
+
+        base_url = None
+        if system_user:
+            base_url = f"{self.app_url}/{self.__class__.ep_name}"
+
+        req = Request(
+            base=base_url if base_url else self.url,
+            session=self.api.session,
+        ).post(json=user_config)
+
+        if isinstance(req, list):
+            return [self._response_loader(i) for i in req]
+
+        return self._response_loader(req)
+
     def get(self, *args, **kwargs):
         """Get single User
 
