@@ -1,23 +1,6 @@
 # Firemon-API
 
-This project is for wrapper for the Firemon API.
-
-Learn more on the [Confluence page.](https://confluence.securepassage.com/display/DEVNETSEC/FMAPI%3A+Python+Firemon+API+module)
-
-
-# Quick Install
-
-Use Lab PyPi. From command line execute `pip`.
-
-```
-$ pip install --extra-index-url https://pypi.lab.firemon.com --trusted-host pypi.lab.firemon.com firemon-api
-```
-
-Use repo directly. From the command line execute `pip` pointing at the repository.
-
-```
-$ pip install git+https://stash.securepassage.com/scm/nsu/firemon-api#egg=firemon-api
-```
+This project is for wrapper for the Firemon APIs (Security Manager, etc).
 
 # Current Design
 
