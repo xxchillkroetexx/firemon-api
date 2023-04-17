@@ -1,6 +1,8 @@
-# Firemon-API
+# FireMon-API
 
 This project is for wrapper for the Firemon APIs (Security Manager, etc).
+
+The User Guide available on [Read the Docs](https://firemon-api.readthedocs.io)
 
 # Current Design
 
@@ -51,28 +53,3 @@ Create the device.
 >>> dev
 <Device(Conan)>
 ```
-
-# Swagger API
-
-I have attempted to dynamically create functions for all the functions referenced in the swagger.json for each application.
-
-To see the swagger.json for each application. Note: It's probably a good idea to enable some logging to see which urls are attempting to be accessed as the swagger operational IDs are not always intuitive. 
-
-```
->>> import firemon_api as fmapi
->>> fmapi.disable_warnings()
->>> fmapi.add_stderr_logger()
->>> fm = fmapi.api('saffron', verify=False).auth('firemon', 'firemon')
->>> fm.sm.get_swagger()
->>> fm.sm.exec.getVersion()
-{'fmosVersion': '10.0.0', 'version': '10.0.0-SNAPSHOT', <snip>
->>> fm.gpc.get_swagger()
->>> fm.gpc.exec.getEvents()
-[{'id': 30, 'name': 'Access Profile Created', 'gpcEventRelationshipTypes': ['ACCESSPROFILE']}, {'id': 32, 'name': 'Access Profile Deleted', 'gpcEventRelationshipTypes': []}, {'id': 31, 'name': 'Access Profile Updated', 'gpcEventRelationshipTypes': ['ACCESSPROFILE']}, 
-{'id': 20, 'name': 'Access Rule Approved',
-<snip>
-```
-
-# To Do (lots)
-
-Since every call is basically being added by hand there is lots to consider. Mostly finding time to add parts that others might find useful beyond what I have already done for myself.

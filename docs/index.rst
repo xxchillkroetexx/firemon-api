@@ -8,7 +8,11 @@ FireMon-API: Python wrapper
 
 The ``firemon-api`` is an attempt to make a Pythonic wrapper to the FireMon SIP APIs (Security Manager, etc...).
 
-The intent is to hopefully speed up development of projects.
+The intent is to hopefully speed up development of projects. There is no intent to do a 1-to-1 reference of all
+the potential API calls. If that is desired you may try to use the dynamically built functions created using
+the ``get_api()``. There is also no intention to follow any version of the FireMon products and so there may
+be instances where a function worked in one version but no longer in another though this generally is not a 
+problem.
 
 -------------------
 
@@ -35,7 +39,9 @@ User Guide
 .. toctree::
    :maxdepth: 2
 
+   user/install
    user/quickstart
+   user/advanced
 
 
 Security Manager
@@ -44,5 +50,6 @@ Security Manager
 .. toctree::
    :maxdepth: 2
 
+   securitymanager/devicepacks
    securitymanager/devices
-
+   securitymanager/siql
