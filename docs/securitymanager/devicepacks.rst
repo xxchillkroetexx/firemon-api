@@ -14,7 +14,7 @@ Return a list of all the Device Pack Records currently installed.
 ::
 
     >>> fm.sm.dp.all() 
-    [<DevicePack(artifactId='ahnlab_trusguard')>, <DevicePack(artifactId='aws')>, <DevicePack(artifactId='aws_vpc')>, <DevicePack(artifactId='azure')>, <DevicePack(artifactId='azure_vnet')>, <DevicePack(artifactId='bluecoat')>, <DevicePack(artifactId='checkpoint_cma')>,...]
+    [<DevicePack(ahnlab_trusguard)>, <DevicePack(aws'>, <DevicePack(aws_vpc)>, <DevicePack(azure)>, <DevicePack(azure_vnet)>, <DevicePack(bluecoat)>, <DevicePack(checkpoint_cma)>,...]
 
 **Filter**
 
@@ -24,7 +24,7 @@ Return a list of all the DevicePack Records based on a filter request.
 
     >>> dp_lst = fm.sm.dp.filter(groupId='com.fm.sm.dp.vmware')
     >>> dp_lst
-    [<DevicePack(artifactId='vmware_distributed_firewall')>, <DevicePack(artifactId='vmware_edge')>, <DevicePack(artifactId='vmware_nsx')>]
+    [<DevicePack(vmware_distributed_firewall)>, <DevicePack(vmware_edge)>, <DevicePack(vmware_nsx)>]
 
 **Get**
 
@@ -32,7 +32,7 @@ Return a list of all the DevicePack Records based on a filter request.
 
     >>> dp = fm.sm.dp.get('juniper_srx')
     >>> dp
-    <DevicePack(artifactId='juniper_srx')>
+    <DevicePack(juniper_srx)>
 
 
 Configuration Templates
@@ -93,7 +93,10 @@ attempts to provide a similar layout as a Python dictionary.
 Upload a New Device Pack
 ------------------------
 
-.. todo::
+Upload a new device pack from local filesystem
 
-    To document
+::
+
+    >>> file = "/var/tmp/juniper_srx-9.10.25.jar"
+    >>> fm.sm.dp.upload((file, open(file, "rb")))
 
