@@ -98,6 +98,26 @@ to assist in getting on the needed data which can be modified and reloaded.
     'description': 'Packet denier',
     <snip>...
 
+Another method to update some fields is via the ``save()`` function. It attempts to 
+serialize and compare changes.
+
+::
+
+    >>> dev.descrption
+    Traceback (most recent call last):
+    File "<stdin>", line 1, in <module>
+    AttributeError: 'Device' object has no attribute 'descrption'
+    >>> dev.attr_set('description', 'A very special ASA')
+    >>> dev.save()
+    True
+    >>> dev = fm.sm.devices.get("ASA-device")
+    >>> pprint.pprint(dev.dump())
+    {'children': [],
+    'collectorGroupId': 'c2882aff-2bf3-4f21-b40c-07581d8e021c',
+    'collectorGroupName': 'goldfin-9-8-4-aio.lab.firemon.com-Group',
+    'description': 'A very special ASA',
+    <snip>...
+
 Delete Device and Child Devices
 -------------------------------
 
@@ -179,6 +199,57 @@ normalized data.
     >>> nd.interfaces
     [<Record(GigabitEthernet0/0)>, <Record(SecDMZ)>, <Record(GigabitEthernet0/2)>, <Record(GigabitEthernet0/3)>, <Record(GigabitEthernet0/4)>, <Record(GigabitEthernet0/5)>, <Record(GigabitEthernet0/6)>, <Record(GigabitEthernet0/7)>, <Record(GigabitEthernet0/8)>, <Record(Trust)>, <Record(identity)>]
 
+Or bypass and just get latest normalized data for the device.
+
+::
+
+    >>> nd = dev.nd_latest_get()
+
+
+Get Device Status
+-----------------
+
+Get the device status and any potential error for retrieval problems
+
+::
+
+    >>> pprint.pprint(dev.status())
+    {'changeLastUpdated': '2023-04-17T21:18:27.000Z',
+    'changeStatus': 'ACTIVE',
+    'changeStatusDescription': '',
+    'collectorId': 1,
+    'deviceId': 78,
+    'logLastUpdated': '2023-04-17T21:13:10.000Z',
+    'logStatus': 'DOWN',
+    'logStatusDescription': '[63FJ92] Received device pack error response, End Of '
+                            'File (EOF). Exception style platform.\n'
+                            '<pexpect.pty_spawn.spawn object at 0x7fb9ef896d90>\n'
+                            'command: /usr/bin/ssh\n'
+                            "args: ['/usr/bin/ssh', '-p', '22', "
+                            "'asauser@10.2.2.2']\n"
+    <snip>...
+
+Device ``health()`` function returns data used to calcuate the devices health which may 
+include some of the previously noted information.
+
+::
+
+    >>> >>> pprint.pprint(dev.health())
+    [{'score': 0,
+    'testGroups': [{'score': 0,
+                    'tests': [{'score': 0, 'type': 'DEVICE_LICENSED'}],
+                    'type': 'DEVICE_LICENSED'},
+                    {'score': 0,
+                    'tests': [{'resultDetails': 'A data collector group has been '
+                                                'assigned to this device '
+                                                '(goldfin-9-8-4-aio.lab.firemon.com-Group)',
+                                'score': 0,
+                                'type': 'COLLECTOR_GROUP_ASSIGNED'}],
+                    'type': 'COLLECTOR_GROUP_ASSIGNED'}],
+    'type': 'GENERAL'},
+    {'score': 2,
+    <snip>...
+
 Create Support Export with Normalized Data
 ------------------------------------------
 
@@ -196,3 +267,42 @@ raw file data and all normalized data.
     ...     f.write(f_zip)
     ...
     41033
+
+Run Access Path Analysis (APA)
+------------------------------
+
+You can run APA and get results for you query. Validate expected 
+results match up.
+
+::
+
+    >>> apa = dev.apa(
+    ...     interface="Trust",
+    ...     source_ip="10.4.203.218",
+    ...     dest_ip="10.4.200.111",
+    ...     protocol=6,
+    ...     dest_port=23,
+    ... )
+
+    >>> if not len(apa.paths) == 1:
+    ...     print("[-] Zero or multiple APA paths")
+
+    >>> assert apa.policyAccess == "FULL_ACCESS"
+    >>> assert apa.routeAccess == "FULL_ACCESS"
+
+    >>> print(
+    ...    "Expect Exit Packet: 10.4.201.217 -> 10.4.200.111 proto: 6 dport: 23..."
+    ... )
+
+    >>> packet_result = apa.paths[0]["packet_result"]
+
+    >>> expected = {
+    ...     "sources": ["10.4.201.217"],
+    ...     "destinations": ["10.4.200.111"],
+    ...     "services": ["tcp/23"],
+    ... }
+
+    >>> if packet_result == expected:
+    ...     print("[+] APA results matched")
+    ... else:
+    ...     print("[-] packet result mismatch")
