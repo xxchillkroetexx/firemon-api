@@ -52,4 +52,5 @@ Security Manager
 
    securitymanager/devicepacks
    securitymanager/devices
+   securitymanager/users
    securitymanager/siql
