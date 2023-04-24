@@ -215,9 +215,13 @@ class Device(Record):
         icmp_type: int = None,
         icmp_code: int = None,
         user: str = None,
+        users: list[str] = None,
         application: str = None,
-        accept: bool = True,
-        recommend: bool = True,
+        applications: list[str] = None,
+        url_matchers: list[str] = None,
+        profiles: list[str] = None,
+        accept: bool = None,
+        recommend: bool = None,
     ):
         """Get apa guessed starting interface
 
@@ -231,10 +235,14 @@ class Device(Record):
             dest_port (int): destination port. required if the protocol has ports
             icmp_type (int): apparently not required
             icmp_code (int): apparently not required
-            user (str): ???
-            application (str): ???
-            accept (bool): ???
-            recommend (bool): ???
+            user (str): User L7 (ver. 9.10+)
+            users (list[str]): Users L7 (ver. 9.12+)
+            application (str): Application L7 (ver. 9.10+)
+            applications (list[str]): Applications L7 (ver. 9.12+)
+            url_matchers (list[str]): URL Matcher L7 (ver. 9.12+)
+            profiles (list[str]): Profiles L7 (ver. 9.12+)
+            accept (bool): Rule Rec
+            recommend (bool): Rule Rec
 
         Return:
             list (???): a list of possible interfaces
@@ -256,16 +264,33 @@ class Device(Record):
                 "sourceIp": source_ip,
                 "destinationIp": dest_ip,
                 "protocol": protocol,
-                "sourcePort": source_port,
-                "port": dest_port,
-                "icmpType": icmp_type,
-                "icmpCode": icmp_code,
-                "user": user,
-                "application": application,
-                "accept": accept,
-                "recommend": recommend,
             },
         }
+        if source_port:
+            json["testIpPacket"]["sourcePort"] = source_port
+        if dest_port:
+            json["testIpPacket"]["port"] = dest_port
+        if icmp_type:
+            json["testIpPacket"]["icmpType"] = icmp_type
+        if icmp_code:
+            json["testIpPacket"]["icmpCode"] = icmp_code
+        if user:
+            json["testIpPacket"]["user"] = user
+        if users:
+            json["testIpPacket"]["users"] = users
+        if application:
+            json["testIpPacket"]["application"] = application
+        if applications:
+            json["testIpPacket"]["applications"] = applications
+        if url_matchers:
+            json["testIpPacket"]["urlMatchers"] = url_matchers
+        if profiles:
+            json["testIpPacket"]["profiles"] = profiles
+        if accept:
+            json["testIpPacket"]["accept"] = accept
+        if recommend:
+            json["testIpPacket"]["recommend"] = recommend
+
         req = Request(
             base=self._url,
             key=key,
@@ -285,14 +310,18 @@ class Device(Record):
         icmp_type: int = None,
         icmp_code: int = None,
         user: str = None,
+        users: list[str] = None,
         application: str = None,
-        accept: bool = True,
-        recommend: bool = True,
+        applications: list[str] = None,
+        url_matchers: list[str] = None,
+        profiles: list[str] = None,
+        accept: bool = None,
+        recommend: bool = None,
     ):
         """Perform an Access Path Analysis query
 
         Args:
-            inboundInterface (str): interface name ex: 'ethernet1/2'
+            interface (str): Inbound interface name ex: 'ethernet1/2'
             source_ip (str): ipv4/6 address ex: '192.168.202.95'
             dest_ip (str): ipv4/6 address ex: '192.168.203.66'
             protocol (int): for all practical purposes it is only 1 (icmp), 6 (tcp), 17 (udp), 58 (icmpv6)
@@ -302,48 +331,71 @@ class Device(Record):
             dest_port (int): destination port. required if the protocol has ports
             icmp_type (int): apparently not required
             icmp_code (int): apparently not required
-            user (str): ???
-            application (str): ???
-            accept (bool): ???
-            recommend (bool): ???
+            user (str): User L7 (ver. 9.10+)
+            users (list[str]): Users L7 (ver. 9.12+)
+            application (str): Application L7 (ver. 9.10+)
+            applications (list[str]): Applications L7 (ver. 9.12+)
+            url_matchers (list[str]): URL Matcher L7 (ver. 9.12+)
+            profiles (list[str]): Profiles L7 (ver. 9.12+)
+            accept (bool): Rule Rec
+            recommend (bool): Rule Rec
 
         Return:
             AccessPath: as always AccessPath().dump() gets you the dictionary. But the AccessPath object
                 gets some parsed data. `events` as a list, `packet_result` as a dictionary.
         """
-
+        kwargs = {
+            "source_ip": source_ip,
+            "dest_ip": dest_ip,
+            "protocol": protocol,
+        }
         json = {
             "testIpPacket": {
                 "sourceIp": source_ip,
                 "destinationIp": dest_ip,
                 "protocol": protocol,
-                "sourcePort": source_port,
-                "port": dest_port,
-                "icmpType": icmp_type,
-                "icmpCode": icmp_code,
-                "user": user,
-                "application": application,
-                "accept": accept,
-                "recommend": recommend,
             },
         }
+        if source_port:
+            json["testIpPacket"]["sourcePort"] = source_port
+            kwargs["source_port"] = source_port
+        if dest_port:
+            json["testIpPacket"]["port"] = dest_port
+            kwargs["dest_port"] = dest_port
+        if icmp_type:
+            json["testIpPacket"]["icmpType"] = icmp_type
+            kwargs["icmp_type"] = icmp_type
+        if icmp_code:
+            json["testIpPacket"]["icmpCode"] = icmp_code
+            kwargs["icmp_code"] = icmp_code
+        if user:
+            json["testIpPacket"]["user"] = user
+            kwargs["user"] = user
+        if users:
+            json["testIpPacket"]["users"] = users
+            kwargs["users"] = users
+        if application:
+            json["testIpPacket"]["application"] = application
+            kwargs["application"] = application
+        if applications:
+            json["testIpPacket"]["applications"] = applications
+            kwargs["applications"] = applications
+        if url_matchers:
+            json["testIpPacket"]["urlMatchers"] = url_matchers
+            kwargs["url_matchers"] = url_matchers
+        if profiles:
+            json["testIpPacket"]["profiles"] = profiles
+            kwargs["profiles"] = profiles
+        if accept:
+            json["testIpPacket"]["accept"] = accept
+            kwargs["accept"] = accept
+        if recommend:
+            json["testIpPacket"]["recommend"] = recommend
+            kwargs["recommend"] = recommend
 
         if interface:
             json["inboundInterface"] = interface
         else:
-            kwargs = {
-                "source_ip": source_ip,
-                "dest_ip": dest_ip,
-                "protocol": protocol,
-                "source_port": source_port,
-                "dest_port": dest_port,
-                "icmp_type": icmp_type,
-                "icmp_code": icmp_code,
-                "user": user,
-                "application": application,
-                "accept": accept,
-                "recommend": recommend,
-            }
             si = self.apa_starting_interface(**kwargs)
             if si:
                 json["inboundInterface"] = si[0].get("intfName", None)
@@ -355,11 +407,11 @@ class Device(Record):
             key=key,
             headers={
                 "Content-Type": "application/json;",
-                "accept": "application/json;",  # in 9.4 earlier I guess default is XML???
+                "accept": "application/json;",  # xml to get graphml
             },
             session=self._session,
         )
-        return AccessPath(req.put(json=json), self, self.id)
+        return AccessPath(req.put(json=json), self, self.id, apa_request=json)
 
     def rev_export(self, meta: bool = True):
         """Export latest configuration files as a zip file

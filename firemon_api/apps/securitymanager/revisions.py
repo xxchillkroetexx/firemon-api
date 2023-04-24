@@ -140,6 +140,20 @@ class Revision(Record):
         )
         return req.get()
 
+    def get_behavior_graphml(self):
+        """Get the behavior model represented in a graphml format"""
+        key = "nd/behavior/graphml"
+        req = Request(
+            base=self._url,
+            key=key,
+            headers={
+                "Content-Type": "application/json;",
+                "accept": "application/xml;",
+            },
+            session=self._session,
+        )
+        return req.get()
+
 
 class Revisions(Endpoint):
     """Revisions Endpoint.
