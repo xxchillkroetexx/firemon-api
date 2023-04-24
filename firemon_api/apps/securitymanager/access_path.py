@@ -9,6 +9,7 @@ limitations under the License.
 """
 # Standard packages
 import logging
+import copy
 
 # Local packages
 from firemon_api.core.response import Record
@@ -80,7 +81,8 @@ class AccessPath(Record):
                 for i, evnt in enumerate(event["nextEvents"][::-1]):
                     # This seems like a bug in APA needing to process in
                     # reverse to mimic policy order match.
-                    branch_path = path.copy()
+                    # branch_path = path.copy()  # can this be done with shallow copy?
+                    branch_path = copy.deepcopy(path)
                     if i > 0:
                         branch_path["branch_parent"] = event["id"]
                         branch_path["branch"] = evnt["id"]
