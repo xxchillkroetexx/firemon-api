@@ -11,12 +11,15 @@ limitations under the License.
 # Standard packages
 import datetime
 import logging
+from typing import Optional, Never
 
 # Local packages
-from firemon_api.apps.securitymanager.siql import Siql
+# from firemon_api.apps.securitymanager.siql import Siql
+from firemon_api.apps import PolicyPlanner
+from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
-from firemon_api.core.response import Record, JsonField
-from firemon_api.core.query import Request
+from firemon_api.core.response import Record
+from firemon_api.core.query import Request, RequestResponser
 from .siql import SiqlPP
 
 log = logging.getLogger(__name__)
@@ -28,7 +31,7 @@ class PacketTask(Record):
     _ep_name = "packet-task"
     _is_domain_url = True
 
-    def __init__(self, config, app, packet_id):
+    def __init__(self, config: dict, app: PolicyPlanner, packet_id: int):
         super().__init__(config, app)
         self._packet_id = packet_id
         self._ep_url = (
@@ -42,7 +45,7 @@ class PacketTask(Record):
         )
         self._url = self._url_create()
 
-    def requirement(self, config: dict):
+    def requirement(self, config: dict) -> RequestResponser:
         """Add a requirement
 
         Args:
@@ -57,7 +60,7 @@ class PacketTask(Record):
         )
         return req.post(json=config)
 
-    def assign(self, id: str):
+    def assign(self, id: str) -> RequestResponser:
         """Assign a packet task"""
         key = "assign"
         headers = self._session.headers
@@ -70,7 +73,7 @@ class PacketTask(Record):
         )
         return req.put(data=str(id))
 
-    def unassign(self):
+    def unassign(self) -> RequestResponser:
         """Unassign a packet task"""
         key = "unassign"
         headers = self._session.headers
@@ -83,7 +86,7 @@ class PacketTask(Record):
         )
         return req.put()
 
-    def complete(self):
+    def complete(self) -> RequestResponser:
         """Complete a packet task"""
         key = "complete"
         filters = {"button": "submit"}
@@ -111,7 +114,9 @@ class PacketTasks(Endpoint):
     ep_name = "packet-tasks"
     _is_domain_url = True
 
-    def __init__(self, api, app, packet_id, record=PacketTask):
+    def __init__(
+        self, api: FiremonAPI, app: PolicyPlanner, packet_id: int, record=PacketTask
+    ):
         self.return_obj = record
         self.api = api
         self.session = api.session
@@ -140,7 +145,7 @@ class PacketTasks(Endpoint):
     def _response_loader(self, values, packet_id):
         return self.return_obj(values, self.app, packet_id)
 
-    def all(self):
+    def all(self) -> list[PacketTask]:
         p_tasks = []
         for wfpt in sorted(
             self.app._config["workflowPacketTasks"], key=lambda p: p["id"]
@@ -148,7 +153,7 @@ class PacketTasks(Endpoint):
             p_tasks.append(self._response_loader(wfpt, self._packet_id))
         return p_tasks
 
-    def get(self, *args, **kwargs):
+    def get(self, *args, **kwargs) -> Optional[PacketTask]:
         """Query and retrieve individual PacketTask
 
         Args:
@@ -188,7 +193,7 @@ class PacketTasks(Endpoint):
                     return filter_lookup[0]
             return None
 
-    def filter(self, **kwargs):
+    def filter(self, **kwargs) -> list[PacketTask]:
         """Retrieve a filterd list of PacketTasks
 
         Args:
@@ -208,7 +213,7 @@ class PacketTasks(Endpoint):
 
         return [pt for pt in pt_all if kwargs.items() <= dict(pt).items()]
 
-    def last_modified(self):
+    def last_modified(self) -> PacketTask:
         """Get task by last modified date"""
         return sorted(
             self.all(),
@@ -224,7 +229,7 @@ class Packet(Record):
     _ep_name = "packet"
     _is_domain_url = True
 
-    def __init__(self, config, app):
+    def __init__(self, config: dict, app: PolicyPlanner):
         super().__init__(config, app)
 
         if self.__class__._is_domain_url and self.__class__._ep_name:
@@ -233,15 +238,15 @@ class Packet(Record):
 
         self.pt = PacketTasks(self._app.api, self, self.id)
 
-    def save(self):
+    def save(self, _: Never) -> None:
         """Someday... maybe"""
         raise NotImplementedError("Writes are not supported for this Record.")
 
-    def update(self):
+    def update(self, _: Never) -> None:
         """Someday... maybe"""
         raise NotImplementedError("Writes are not supported for this Record.")
 
-    def delete(self):
+    def delete(self, _: Never) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
 
@@ -259,8 +264,8 @@ class Packets(Endpoint):
     ep_name = "packet"
     _is_domain_url = True
 
-    def __init__(self, api, app, wf_id, record=Packet):
-        super().__init__(api, app, record=Packet)
+    def __init__(self, api: FiremonAPI, app: PolicyPlanner, wf_id: int, record=Packet):
+        super().__init__(api, app, record=record)
         self._wf_id = wf_id
 
         if self.__class__._is_domain_url and self.__class__.ep_name:
@@ -268,13 +273,13 @@ class Packets(Endpoint):
                 f"{self.domain_url}/workflow/{self._wf_id}/{self.__class__.ep_name}"
             )
 
-    def all(self):
+    def all(self) -> list[Packet]:
         siql_ep = SiqlPP(self.api, self.app)
         siql = f"ticket{{workflow={self._wf_id}}}"
         tickets = siql_ep.ticket(siql)
         return [self.get(ticket.id) for ticket in tickets]
 
-    def get(self, *args, **kwargs):
+    def get(self, *args, **kwargs) -> Optional[Packet]:
         try:
             id = str(args[0])
         except IndexError:
@@ -306,7 +311,7 @@ class Packets(Endpoint):
 
         return self._response_loader(req.get())
 
-    def filter(self, *args, **kwargs):
+    def filter(self, *args, **kwargs) -> list[Packet]:
         """Attempt to use the filter options. Really only a single query
 
         Kwargs:
@@ -324,7 +329,7 @@ class Packets(Endpoint):
         tickets = siql_ep.ticket(siql)
         return [self.get(ticket.id) for ticket in tickets]
 
-    def create(self, config: dict = None):
+    def create(self, config: dict = None) -> Packet:
         """Create a workflow packet/ticket instance
 
         Kwargs:

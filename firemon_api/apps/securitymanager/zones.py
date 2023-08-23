@@ -8,14 +8,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 # Standard packages
-import json
 import logging
+from typing import Never, Optional
 
 # Local packages
+from firemon_api.apps import SecurityManager
+from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
-from firemon_api.core.response import Record, JsonField
-from firemon_api.core.query import Request, url_param_builder, RequestError
-from firemon_api.core.utils import _build_dict
+from firemon_api.core.response import Record
+from firemon_api.core.query import Request, RequestResponse
 
 log = logging.getLogger(__name__)
 
@@ -34,18 +35,18 @@ class Zone(Record):
     _ep_name = "zoneobject"
     _is_domain_url = True
 
-    def __init__(self, config, app):
+    def __init__(self, config: dict, app: SecurityManager):
         super().__init__(config, app)
 
     def _url_create(self):
-        """ General self._url create. What is normally 'deviceId'. <sigh> """
+        """General self._url create. What is normally 'deviceId'. <sigh>"""
         url = f"{self._ep_url}/{self.deviceid}"
         return url
 
-    def save(self):
+    def save(self, _: Never) -> None:
         raise NotImplementedError("Writes are not supported.")
 
-    def update(self):
+    def update(self, _: Never) -> None:
         raise NotImplementedError("Writes are not supported.")
 
 
@@ -67,16 +68,22 @@ class Zones(Endpoint):
     ep_name = "zoneobject/paged-search"
     _is_domain_url = True
 
-    def __init__(self, api, app, record=Zone, device_id: int = None):
-        super().__init__(api, app, record=Zone)
+    def __init__(
+        self,
+        api: FiremonAPI,
+        app: SecurityManager,
+        record=Zone,
+        device_id: Optional[int] = None,
+    ):
+        super().__init__(api, app, record=record)
         self._device_id = device_id
 
     def _make_filters(self, values):
-        """Yet another filter that is doing its own thing. """
+        """Yet another filter that is doing its own thing."""
         filters = {"q": values[next(iter(values))]}
         return filters
 
-    def all(self):
+    def all(self) -> list[Zone]:
         """Get all `Record`"""
         if self._device_id:
             all_key = f"device/{self._device_id}/{self.__class__.ep_name}"
@@ -92,7 +99,7 @@ class Zones(Endpoint):
         revs = [self._response_loader(i) for i in req.get()]
         return sorted(revs, key=lambda x: x.deviceid, reverse=True)
 
-    def get(self, *args, **kwargs):
+    def get(self, *args, **kwargs) -> Optional[Zone]:
         """Query and retrieve individual Zones. Spelling matters.
 
         Args:
@@ -141,7 +148,7 @@ class Zones(Endpoint):
                     return filter_lookup[0]
             return None
 
-    def filter(self, **kwargs):
+    def filter(self, **kwargs) -> list[Zone]:
         """Retrieve a filtered list of Zones
 
         Args:
@@ -169,14 +176,12 @@ class FmZone(Record):
         config (dict): dictionary of things values from json
         app (obj): App()
 
-    Examples:
-        >>>
     """
 
     _ep_name = "zone"
     _is_domain_url = True
 
-    def __init__(self, config, app):
+    def __init__(self, config: dict, app: SecurityManager):
         super().__init__(config, app)
 
 
@@ -191,13 +196,11 @@ class FmZones(Endpoint):
         record (obj): default `Record` object
         device_id (int): Device id
 
-    Examples:
-        >>>
     """
 
     ep_name = "zone"
     _is_domain_url = True
 
-    def __init__(self, api, app, record=FmZone, device_id: int = None):
-        super().__init__(api, app, record=FmZone)
+    def __init__(self, api, app, record=FmZone, device_id: Optional[int] = None):
+        super().__init__(api, app, record=record)
         self._device_id = device_id

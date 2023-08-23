@@ -8,16 +8,41 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 # Standard packages
-import json
 import logging
-from urllib.parse import urlencode, quote
+from typing import Never, Optional
 
 # Local packages
+from firemon_api.apps import SecurityManager
+from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
-from firemon_api.core.query import Request, url_param_builder
+from firemon_api.core.query import Request, RequestResponse, RequestError
 
 log = logging.getLogger(__name__)
+
+
+class Permission(Record):
+    """A Permission."""
+
+    _ep_name = "permissions"
+
+    def __init__(self, config: dict, app: SecurityManager):
+        super().__init__(config, app)
+
+    def save(self, _: Never) -> None:
+        raise NotImplementedError("Writes are not supported for this Record.")
+
+    def update(self, _: Never) -> None:
+        raise NotImplementedError("Writes are not supported for this Record.")
+
+    def delete(self, _: Never) -> None:
+        raise NotImplementedError("Writes are not supported for this Record.")
+
+    def __repr__(self):
+        return f"Permission<(id='{self.id}')>"
+
+    def __str__(self):
+        return f"{self.id}"
 
 
 class User(Record):
@@ -38,7 +63,7 @@ class User(Record):
     _ep_name = "user"
     _is_domain_url = True
 
-    def set_password(self, password: str) -> bool:
+    def set_password(self, password: str) -> RequestResponse:
         key = "password"
         data = {"password": password}
         headers = {
@@ -86,7 +111,7 @@ class Users(Endpoint):
         filters.update({"includeSystem": True, "includeDisabled": True})
         return filters
 
-    def all(self):
+    def all(self) -> list[User]:
         """Get all `Record`"""
         filters = {"includeSystem": True, "includeDisabled": True}
 
@@ -98,7 +123,7 @@ class Users(Endpoint):
 
         return [self._response_loader(i) for i in req.get()]
 
-    def create(self, user_config: dict, system_user: bool = False):
+    def create(self, user_config: dict, system_user: bool = False) -> User:
         """Creates an object on an endpoint.
 
         Args:
@@ -125,7 +150,7 @@ class Users(Endpoint):
 
         return self._response_loader(req)
 
-    def get(self, *args, **kwargs):
+    def get(self, *args, **kwargs) -> Optional[User]:
         """Get single User
 
         Args:
@@ -177,7 +202,7 @@ class Users(Endpoint):
                     return filter_lookup[0]
             return None
 
-    def template(self):
+    def template(self) -> dict:
         """Create a template of a simple user
 
         Return:
@@ -211,10 +236,10 @@ class UserGroup(Record):
     _ep_name = "usergroup"
     _is_domain_url = True
 
-    def __init__(self, config, app):
+    def __init__(self, config: dict, app: SecurityManager):
         super().__init__(config, app)
 
-    def permission_list(self):
+    def permission_list(self) -> list[Permission]:
         """List all available permissions in Firemon.
 
         Return:
@@ -236,7 +261,7 @@ class UserGroup(Record):
 
         return perms
 
-    def permission_show(self):
+    def permission_show(self) -> list[Permission]:
         key = "permissions"
         resp = Request(
             base=self._url,
@@ -250,7 +275,7 @@ class UserGroup(Record):
 
         return perms
 
-    def permission_set(self, id):
+    def permission_set(self, id: int) -> RequestResponse:
         """Set a permision for UserGroup.
 
         Args:
@@ -265,7 +290,7 @@ class UserGroup(Record):
 
         return resp
 
-    def permission_unset(self, id):
+    def permission_unset(self, id: int) -> RequestResponse:
         """Unset a permision for UserGroup.
 
         Args:
@@ -296,10 +321,10 @@ class UserGroups(Endpoint):
     ep_name = "usergroup"
     _is_domain_url = True
 
-    def __init__(self, api, app, record=UserGroup):
-        super().__init__(api, app, record=UserGroup)
+    def __init__(self, api: FiremonAPI, app: SecurityManager, record=UserGroup):
+        super().__init__(api, app, record=record)
 
-    def all(self):
+    def all(self) -> list[UserGroup]:
         """Get all `Record`"""
         filters = {"includeMapping": True}
 
@@ -310,27 +335,3 @@ class UserGroups(Endpoint):
         )
 
         return [self._response_loader(i) for i in req.get()]
-
-
-class Permission(Record):
-    """A Permission."""
-
-    _ep_name = "permissions"
-
-    def __init__(self, config, app):
-        super().__init__(config, app)
-
-    def save(self):
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def update(self):
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def delete(self):
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def __repr__(self):
-        return f"Permission<(id='{self.id}')>"
-
-    def __str__(self):
-        return f"{self.id}"

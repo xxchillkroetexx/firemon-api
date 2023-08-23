@@ -11,9 +11,12 @@ limitations under the License.
 import logging
 import copy
 
+from typing import Optional, Never
+
 # Local packages
+from firemon_api.apps import SecurityManager
 from firemon_api.core.response import Record
-from firemon_api.core.query import Request
+from firemon_api.core.query import Request, RequestResponse
 
 log = logging.getLogger(__name__)
 
@@ -31,13 +34,13 @@ class AccessPathEvent(Record):
     def _url_create(self):
         return self._url
 
-    def save(self):
+    def save(self, _: Never) -> None:
         raise NotImplementedError("Writes are not supported.")
 
-    def update(self):
+    def update(self, _: Never) -> None:
         raise NotImplementedError("Writes are not supported.")
 
-    def delete(self):
+    def delete(self, _: Never) -> None:
         raise NotImplementedError("Writes are not supported.")
 
 
@@ -47,7 +50,13 @@ class AccessPath(Record):
     _ep_name = "apa"
     _is_domain_url = True
 
-    def __init__(self, config, app, device_id=None, apa_request={}):
+    def __init__(
+        self,
+        config: dict,
+        app: SecurityManager,
+        device_id: Optional[int] = None,
+        apa_request={},
+    ):
         self._device_id = device_id
         self._apa_request = apa_request
         super().__init__(config, app)
@@ -57,12 +66,12 @@ class AccessPath(Record):
         self.paths = []
         self._parse_apa()
 
-    def _url_create(self):
+    def _url_create(self) -> str:
         """General self._url create"""
         url = f"{self._ep_url}"
         return url
 
-    def _parse_apa(self):
+    def _parse_apa(self) -> None:
         se = self._config["startingEvent"].copy()
         path = {
             "branch": se["id"],
@@ -73,7 +82,7 @@ class AccessPath(Record):
         }
         self._parse_event(se, path)
 
-    def _parse_event(self, event, path):
+    def _parse_event(self, event: dict, path: dict) -> None:
         path["events"].append(AccessPathEvent(event, self, self._url))
 
         if event.get("nextEvents"):
@@ -94,16 +103,16 @@ class AccessPath(Record):
             path["packet_result"] = event.get("ipPacketResult", {})
             self.paths.append(path)
 
-    def save(self):
+    def save(self, arg: Never) -> None:
         raise NotImplementedError("Writes are not supported.")
 
-    def update(self):
+    def update(self, arg: Never) -> None:
         raise NotImplementedError("Writes are not supported.")
 
-    def delete(self):
+    def delete(self, arg: Never) -> None:
         raise NotImplementedError("Writes are not supported.")
 
-    def get_graphml(self):
+    def get_graphml(self) -> RequestResponse:
         req = Request(
             base=self._url,
             headers={

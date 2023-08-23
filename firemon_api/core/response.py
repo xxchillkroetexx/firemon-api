@@ -10,22 +10,13 @@ limitations under the License.
 import copy
 import logging
 
+from typing import Optional, Union, Any
+
+from firemon_api.apps import App
 from firemon_api.core.query import Request
 from firemon_api.core.utils import Hashabledict
 
 log = logging.getLogger(__name__)
-
-
-def get_return(lookup, return_fields=None):
-    """Returns simple representations for items passed to lookup."""
-    for i in return_fields or ["name", "id", "value", "nested_return"]:
-        if isinstance(lookup, dict) and lookup.get(i):
-            return lookup[i]
-
-    if isinstance(lookup, Record):
-        return str(lookup)
-    else:
-        return lookup
 
 
 class JsonField(object):
@@ -58,7 +49,7 @@ class Record(object):
     _ep_name = None
     _is_domain_url = False
 
-    def __init__(self, config, app):
+    def __init__(self, config: dict, app: App):
         self._config = config
         self._init_cache = []
         self._default_ret = Record
@@ -90,7 +81,7 @@ class Record(object):
 
         self._no_no_keys = []
 
-    def _url_create(self):
+    def _url_create(self) -> str:
         """General self._url create"""
         url = f"{self._ep_url}/{self._config['id']}"
         return url
@@ -141,11 +132,11 @@ class Record(object):
             return self.__key__() == other.__key__()
         return NotImplemented
 
-    def _add_cache(self, item):
+    def _add_cache(self, item: tuple[str, Any]) -> None:
         key, value = item
         self._init_cache.append((key, get_return(value)))
 
-    def _parse_config(self, config):
+    def _parse_config(self, config: Union[list, dict]) -> None:
         def list_parser(list_item):
             if isinstance(list_item, dict):
                 # Only attempt creating `Record` if there is an id.
@@ -173,7 +164,7 @@ class Record(object):
                 self._add_cache((k, v))
             setattr(self, k, v)
 
-    def _compare(self):
+    def _compare(self) -> bool:
         """Compares current attributes to values at instantiation.
         In order to be idempotent we run this method in `save()`.
 
@@ -186,7 +177,7 @@ class Record(object):
             return True
         return False
 
-    def _clean_no_no(self, d):
+    def _clean_no_no(self, d: dict) -> dict:
         # remove no_no_keys from a dict. A list of keys for a Record
         # that might break if trying to `save` or `update`
         for k in self._no_no_keys:
@@ -196,7 +187,7 @@ class Record(object):
                 continue
         return d
 
-    def serialize(self, nested=False, init=False):
+    def serialize(self, nested=False, init=False) -> dict:
         """Serializes an object
         Pulls all the attributes in an object and creates a dict that
         can be turned into the json that Firemon is expecting.
@@ -235,7 +226,7 @@ class Record(object):
             ret[i] = current_val
         return ret
 
-    def _diff(self):
+    def _diff(self) -> set:
         def fmt_dict(k, v):
             if isinstance(v, dict):
                 return k, Hashabledict(v)
@@ -249,11 +240,11 @@ class Record(object):
         )
         return set([i[0] for i in set(current.items()) ^ set(init.items())])
 
-    def dump(self):
+    def dump(self) -> dict:
         """Dump of unparsed config"""
         return copy.deepcopy(self._config)
 
-    def attr_set(self, k, v):
+    def attr_set(self, k: str, v: Union[str, list, dict]) -> None:
         """Set an attribute and add it to the cache
         Firemon will not provide all attributes so you will have
         to just know what you are doing.
@@ -272,7 +263,7 @@ class Record(object):
                 setattr(self, k, v)
                 self._add_cache((k, ""))
 
-    def attr_unset(self, k):
+    def attr_unset(self, k: str) -> None:
         """Unset an attribute and remove from the cache.
 
         This is to ensure that the `serialize` picks up
@@ -286,7 +277,7 @@ class Record(object):
             self._init_cache.remove((k, v))
             delattr(self, k)
 
-    def save(self):
+    def save(self) -> bool:
         """Saves changes to an existing object.
         Checks the state of `_diff` and sends the entire
         `serialize` to Request.put(). Note that serialization creates
@@ -324,7 +315,7 @@ class Record(object):
 
         return False
 
-    def update(self, data):
+    def update(self, data: dict) -> bool:
         """Update an object with a dictionary.
         Accepts a dict and uses it to update the record and call save().
         For nested and choice fields you'd pass an int the same as
@@ -350,7 +341,7 @@ class Record(object):
             self.attr_set(k, v)
         return self.save()
 
-    def delete(self):
+    def delete(self) -> bool:
         """Deletes an existing object.
         :returns: True if DELETE operation was successful.
         :example:
@@ -365,3 +356,15 @@ class Record(object):
             session=self._session,
         )
         return True if req.delete() else False
+
+
+def get_return(lookup: Any, return_fields=None) -> Any:
+    """Returns simple representations for items passed to lookup."""
+    for i in return_fields or ["name", "id", "value", "nested_return"]:
+        if isinstance(lookup, dict) and lookup.get(i):
+            return lookup[i]
+
+    if isinstance(lookup, Record):
+        return str(lookup)
+    else:
+        return lookup

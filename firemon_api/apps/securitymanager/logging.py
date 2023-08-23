@@ -9,11 +9,14 @@ limitations under the License.
 """
 # Standard packages
 import logging
+from typing import Optional
 
 # Local packages
+from firemon_api.apps import SecurityManager
+from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
-from firemon_api.core.response import Record
-from firemon_api.core.query import Request, url_param_builder
+from firemon_api.core.response import Record, JsonField
+from firemon_api.core.query import Request, RequestResponse, RequestError
 
 log = logging.getLogger(__name__)
 
@@ -28,7 +31,7 @@ class Logger(Record):
 
     _ep_name = "logging"
 
-    def __init__(self, config, app):
+    def __init__(self, config: dict, app: SecurityManager):
         super().__init__(config, app)
 
     def set_level(self, level: str):
@@ -40,7 +43,7 @@ class Logger(Record):
             session=self._session,
         ).post()
 
-    def reset(self):
+    def reset(self) -> RequestResponse:
         """Reset all logger its default values"""
 
         Request(
@@ -102,10 +105,10 @@ class Logging(Endpoint):
 
     ep_name = "logging"
 
-    def __init__(self, api, app, record=Logger):
-        super().__init__(api, app, record=Logger)
+    def __init__(self, api: FiremonAPI, app: SecurityManager, record=Logger):
+        super().__init__(api, app, record=record)
 
-    def all(self):
+    def all(self) -> list[Logger]:
         """Get all SecMgr loggers
 
         Examples:
@@ -120,7 +123,7 @@ class Logging(Endpoint):
 
         return [self._response_loader(i) for i in req.get()["loggingLevels"]]
 
-    def filter(self, **kwargs):
+    def filter(self, **kwargs) -> list[Logger]:
         """Retrieve a filtered list of Loggers
 
         Args:
@@ -154,11 +157,7 @@ class Logging(Endpoint):
 
         return loggers
 
-        # return [
-        #    logger for logger in logger_all if kwargs.items() <= dict(logger).items()
-        # ]
-
-    def get(self, *args, **kwargs):
+    def get(self, *args, **kwargs) -> Optional[Logger]:
         """Query and retrieve individual Logger. Spelling matters.
 
         Args:
@@ -199,7 +198,7 @@ class Logging(Endpoint):
                     return filter_lookup[0]
             return None
 
-    def reset(self):
+    def reset(self) -> RequestResponse:
         """Reset all loggers to their default values"""
 
         key = "reset"

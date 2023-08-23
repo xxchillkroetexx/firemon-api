@@ -9,14 +9,84 @@ limitations under the License.
 """
 # Standard packages
 import logging
+from typing import Never, Optional
 
 # Local packages
+from firemon_api.apps import SecurityManager
+from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
-from firemon_api.core.response import Record, JsonField
-from firemon_api.core.query import Request, url_param_builder, RequestError
-from firemon_api.core.utils import _build_dict
+from firemon_api.core.response import Record
+from firemon_api.core.query import Request, RequestResponse, RequestError
 
 log = logging.getLogger(__name__)
+
+
+class NormalizedData(Record):
+    """A NORMALIZED Revision. All the things."""
+
+    _ep_name = "rev"
+
+    def __init__(self, config, app):
+        super().__init__(config, app)
+
+    def save(self, _: Never) -> None:
+        raise NotImplementedError("Writes are not supported for this Record.")
+
+    def update(self, _: Never) -> None:
+        raise NotImplementedError("Writes are not supported for this Record.")
+
+    def delete(self, _: Never) -> None:
+        raise NotImplementedError("Writes are not supported for this Record.")
+
+    def _url_create(self):
+        """General self.url create"""
+        url = f"{self._ep_url}/{self._config['revisionId']}"
+        return url
+
+    def __str__(self):
+        return str(self.revisionId)
+
+
+class RevFile(Record):
+    """A Revision File"""
+
+    _ep_name = "rev"
+
+    def __init__(self, config: dict, app: SecurityManager, rev_id: int):
+        self.rev_id = rev_id
+        super().__init__(config, app)
+
+    def _url_create(self):
+        """General self.url create"""
+        url = f"{self._ep_url}/{self.rev_id}/nd/file/{self._config['id']}"
+        return url
+
+    def save(self, _: Never) -> None:
+        raise NotImplementedError("Writes are not supported for this Record.")
+
+    def update(self, _: Never) -> None:
+        raise NotImplementedError("Writes are not supported for this Record.")
+
+    def delete(self, _: Never) -> None:
+        raise NotImplementedError("Writes are not supported for this Record.")
+
+    def get(self) -> RequestResponse:
+        """Get the raw file
+
+        Return:
+            bytes: the bytes that make up the file
+        """
+        req = Request(
+            base=self._url,
+            session=self._session,
+        )
+        return req.get_content()
+
+    def __repr__(self):
+        return f"RevFile<(name='{self.name}')>"
+
+    def __str__(self):
+        return f"{self.name}"
 
 
 class Revision(Record):
@@ -43,20 +113,20 @@ class Revision(Record):
 
     _ep_name = "rev"
 
-    def __init__(self, config, app):
+    def __init__(self, config: dict, app: SecurityManager):
         super().__init__(config, app)
 
         self._domain_id = config["domainId"]
         self._device_id = config["deviceId"]
         self.files = self._files_load()
 
-    def save(self):
+    def save(self, _: Never) -> None:
         raise NotImplementedError("Writes are not supported.")
 
-    def update(self):
+    def update(self, _: Never) -> None:
         raise NotImplementedError("Writes are not supported.")
 
-    def delete(self):
+    def delete(self) -> RequestResponse:
         """Deletes an existing object.
         :returns: True if DELETE operation was successful.
         :example:
@@ -73,7 +143,7 @@ class Revision(Record):
         )
         return True if req.delete() else False
 
-    def export(self, meta: bool = True):
+    def export(self, meta: bool = True) -> RequestResponse:
         """Export a zip file contain the config data.
 
         Support files include all NORMALIZED data and other meta data.
@@ -97,7 +167,7 @@ class Revision(Record):
         )
         return req.get_content()
 
-    def nd_get(self, sections: list = []):
+    def nd_get(self, sections: list = []) -> NormalizedData:
         """Get normalized data as a fully parsed object
 
         Retrieve all the revision data in a single payload.
@@ -120,7 +190,7 @@ class Revision(Record):
             req.filters = filters
         return NormalizedData(req.get(), self._app)
 
-    def _files_load(self):
+    def _files_load(self) -> list[RevFile]:
         """Get the file descriptors attached to Revision"""
         key = "nd/file"
         req = Request(
@@ -130,7 +200,7 @@ class Revision(Record):
         )
         return [RevFile(i, self._app, self.id) for i in req.get()]
 
-    def nd_problem(self):
+    def nd_problem(self) -> RequestResponse:
         """Get problems with revision"""
         key = "nd/problem"
         req = Request(
@@ -140,7 +210,7 @@ class Revision(Record):
         )
         return req.get()
 
-    def get_behavior_graphml(self):
+    def get_behavior_graphml(self) -> RequestResponse:
         """Get the behavior model represented in a graphml format"""
         key = "nd/behavior/graphml"
         req = Request(
@@ -177,8 +247,14 @@ class Revisions(Endpoint):
 
     ep_name = "rev"
 
-    def __init__(self, api, app, record=Revision, device_id: int = None):
-        super().__init__(api, app, record=Revision)
+    def __init__(
+        self,
+        api: FiremonAPI,
+        app: SecurityManager,
+        record=Revision,
+        device_id: Optional[int] = None,
+    ):
+        super().__init__(api, app, record=record)
         self._device_id = device_id
 
     def all(self):
@@ -197,7 +273,7 @@ class Revisions(Endpoint):
         revs = [self._response_loader(i) for i in req.get()]
         return sorted(revs, key=lambda x: x.id, reverse=True)
 
-    def filter(self, *args, **kwargs):
+    def filter(self, *args, **kwargs) -> list[Revision]:
         """Retrieve a filterd list of Revisions.
 
         I have no idea how our /filter endpoint works. Some SIQL but
@@ -224,71 +300,3 @@ class Revisions(Endpoint):
     @property
     def device_id(self):
         return self._device_id
-
-
-class RevFile(Record):
-    """A Revision File"""
-
-    _ep_name = "rev"
-
-    def __init__(self, config, app, rev_id):
-        self.rev_id = rev_id
-        super().__init__(config, app)
-
-    def _url_create(self):
-        """General self.url create"""
-        url = f"{self._ep_url}/{self.rev_id}/nd/file/{self._config['id']}"
-        return url
-
-    def save(self):
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def update(self):
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def delete(self):
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def get(self):
-        """Get the raw file
-
-        Return:
-            bytes: the bytes that make up the file
-        """
-        req = Request(
-            base=self._url,
-            session=self._session,
-        )
-        return req.get_content()
-
-    def __repr__(self):
-        return f"RevFile<(name='{self.name}')>"
-
-    def __str__(self):
-        return f"{self.name}"
-
-
-class NormalizedData(Record):
-    """A NORMALIZED Revision. All the things."""
-
-    _ep_name = "rev"
-
-    def __init__(self, config, app):
-        super().__init__(config, app)
-
-    def save(self):
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def update(self):
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def delete(self):
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def _url_create(self):
-        """General self.url create"""
-        url = f"{self._ep_url}/{self._config['revisionId']}"
-        return url
-
-    def __str__(self):
-        return str(self.revisionId)

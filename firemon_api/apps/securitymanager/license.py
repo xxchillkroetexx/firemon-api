@@ -9,11 +9,14 @@ limitations under the License.
 """
 # Standard packages
 import logging
+from typing import Never
 
 # Local packages
+from firemon_api.apps import SecurityManager
+from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record, JsonField
-from firemon_api.core.query import Request, url_param_builder
+from firemon_api.core.query import Request, RequestResponse
 
 log = logging.getLogger(__name__)
 
@@ -33,10 +36,10 @@ class License(Endpoint):
     ep_name = "license"
     _is_domain_url = True
 
-    def __init__(self, api, app):
+    def __init__(self, api: FiremonAPI, app: SecurityManager):
         super().__init__(api, app)
 
-    def all(self):
+    def all(self) -> RequestResponse:
         req = Request(
             base=self.url,
             session=self.api.session,
@@ -44,16 +47,16 @@ class License(Endpoint):
 
         return req.get()
 
-    def get(self):
+    def get(self) -> RequestResponse:
         return self.all()
 
-    def filter(self):
+    def filter(self, _: Never) -> None:
         raise NotImplementedError("Filter is not supported for this Endpoint.")
 
-    def count(self):
+    def count(self, _: Never) -> None:
         raise NotImplementedError("Count is not supported for this Endpoint.")
 
-    def load(self, lic: bytes):
+    def load(self, lic: bytes) -> RequestResponse:
         """Load license file
         Args:
             lic (bytes): bytes that make a license file

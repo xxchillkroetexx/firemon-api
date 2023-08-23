@@ -8,9 +8,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 # Standard modules
+from typing import Any, Optional, Union
 from urllib.parse import urlencode, quote
 
 # Local packages
+from firemon_api.apps import App, ControlPanel
+from firemon_api.core.api import FiremonAPI
 from firemon_api.core.query import Request, url_param_builder
 from firemon_api.core.response import Record, JsonField
 
@@ -28,7 +31,12 @@ class Endpoint(object):
     ep_name = None
     _is_domain_url = False
 
-    def __init__(self, api, app, record=None):
+    def __init__(
+        self,
+        api: FiremonAPI,
+        app: App,
+        record: Optional[Union[Record, JsonField]] = None,
+    ):
         if record:
             self.return_obj = record
         else:
@@ -56,10 +64,10 @@ class Endpoint(object):
             "count": None,
         }
 
-    def _response_loader(self, values):
+    def _response_loader(self, values: dict):
         return self.return_obj(values, self.app)
 
-    def _make_filters(self, values):
+    def _make_filters(self, values: dict):
         # Our filters do not appear to be standardized across
         # end points. Try and work around them at child classes
         l = []
@@ -68,7 +76,7 @@ class Endpoint(object):
         filters = {"filter": l}
         return filters
 
-    def all(self):
+    def all(self) -> list[Record]:
         """Get all `Record`"""
         req = Request(
             base=self.url,
@@ -78,7 +86,7 @@ class Endpoint(object):
 
         return [self._response_loader(i) for i in req.get()]
 
-    def get(self, *args, **kwargs):
+    def get(self, *args, **kwargs) -> Record:
         """Get single Record
 
         Args:
@@ -125,7 +133,7 @@ class Endpoint(object):
 
         return self._response_loader(req.get())
 
-    def filter(self, *args, **kwargs):
+    def filter(self, *args, **kwargs) -> list[Record]:
         """Attempt to use the filter options. This is the generic
         Endpoint filter.
         """
@@ -149,7 +157,7 @@ class Endpoint(object):
         ret = [self._response_loader(i) for i in req.get()]
         return ret
 
-    def create(self, *args, **kwargs):
+    def create(self, *args, **kwargs) -> Record:
         """Creates an object on an endpoint.
 
         Args:
@@ -173,7 +181,7 @@ class Endpoint(object):
 
         return self._response_loader(req)
 
-    def count(self):
+    def count(self) -> int:
         """Returns the count of objects available.
         If there is a 'count' at an endpoint that is used.
         Remember that this is domain dependant and if an Endpoint
@@ -206,7 +214,7 @@ class EndpointCpl(object):
     url = None
     ep_name = None
 
-    def __init__(self, api, app, record=None):
+    def __init__(self, api: FiremonAPI, app: App, record=None):
         if record:
             self.return_obj = record
         else:
@@ -220,5 +228,5 @@ class EndpointCpl(object):
         if self.__class__.ep_name:
             self.url = f"{self.app_url}/{self.__class__.ep_name}"
 
-    def _response_loader(self, values):
+    def _response_loader(self, values: dict) -> Record:
         return self.return_obj(values, self.app)

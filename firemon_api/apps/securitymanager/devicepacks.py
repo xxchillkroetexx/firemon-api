@@ -8,14 +8,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 # Standard packages
-import json
 import logging
+from typing import Never, Optional
 
 # Local packages
+from firemon_api.apps import SecurityManager
+from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
-from firemon_api.core.response import Record, JsonField
-from firemon_api.core.query import Request, url_param_builder, RequestError
-from firemon_api.core.utils import _build_dict, _find_dicts_with_key
+from firemon_api.core.response import Record
+from firemon_api.core.query import Request, RequestResponse, RequestError
+from firemon_api.core.utils import _find_dicts_with_key
 from .collectionconfigs import CollectionConfig
 
 log = logging.getLogger(__name__)
@@ -40,25 +42,25 @@ class DevicePack(Record):
     collectionConfig = CollectionConfig
     # collectionConfig = JsonField
 
-    def __init__(self, config, app):
+    def __init__(self, config: dict, app: SecurityManager):
         super().__init__(config, app)
 
         self.name = config["artifactId"]
         self.artifacts = [ArtifactFile(f, self._app, self._url) for f in self.artifacts]
 
-    def _url_create(self):
+    def _url_create(self) -> str:
         """General self.url create"""
         url = f"{self._ep_url}/{self.groupId}/{self.artifactId}"
         return url
 
-    def update(self):
+    def update(self, _: Never) -> None:
         """Nothing to update"""
         raise NotImplementedError("Writes are not supported for this endpoint.")
 
-    def save(self):
+    def save(self, _: Never) -> None:
         raise NotImplementedError("Writes are not supported for this endpoint.")
 
-    def layout(self):
+    def layout(self) -> RequestResponse:
         key = "layout"
         filters = {"layoutName": "layout.json"}
         req = Request(
@@ -69,7 +71,7 @@ class DevicePack(Record):
         )
         return req.post()
 
-    def get(self, name="dc.zip"):
+    def get(self, name="dc.zip") -> RequestResponse:
         """Get the blob (artifact) from Device Pack
 
         Kwargs:
@@ -85,7 +87,7 @@ class DevicePack(Record):
         )
         return req.get_content()
 
-    def template(self):
+    def template(self) -> dict:
         """Get default template format for a device.
 
         :..note that a number of fields can take bad information,
@@ -174,10 +176,10 @@ class DevicePacks(Endpoint):
 
     ep_name = "plugin"
 
-    def __init__(self, api, app, record=DevicePack):
-        super().__init__(api, app, record=DevicePack)
+    def __init__(self, api: FiremonAPI, app: SecurityManager, record=DevicePack):
+        super().__init__(api, app, record=record)
 
-    def all(self):
+    def all(self) -> list[DevicePack]:
         """Get all device packs
 
         Examples:
@@ -196,7 +198,7 @@ class DevicePacks(Endpoint):
 
         return [self._response_loader(i) for i in req.get()]
 
-    def get(self, *args, **kwargs):
+    def get(self, *args, **kwargs) -> Optional[DevicePack]:
         """Query and retrieve individual DevicePack. Spelling matters.
 
         Args:

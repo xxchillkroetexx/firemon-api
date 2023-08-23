@@ -10,35 +10,37 @@ limitations under the License.
 
 # Standard packages
 import logging
+from typing import Never, Optional
 
 # Local packages
+from firemon_api.apps import PolicyPlanner
+from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
-from firemon_api.core.response import Record, JsonField
-from firemon_api.core.query import Request
+from firemon_api.core.response import Record
+from firemon_api.core.query import Request, RequestResponser
 from firemon_api.core.utils import _find_dicts_with_key
 
 log = logging.getLogger(__name__)
 
 
 class Task(Record):
-
     _ep_name = None
     _is_domain_url = False
 
-    def __init__(self, config, app, name):
+    def __init__(self, config: dict, app: PolicyPlanner, name: str):
         self._name = name
         super().__init__(config, app)
 
-    def save(self):
+    def save(self, _: Never) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
-    def update(self):
+    def update(self, _: Never) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
-    def delete(self):
+    def delete(self, _: Never) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
-    def template(self):
+    def template(self) -> dict:
         """Get default template format for a task.
 
         Return:
@@ -85,14 +87,14 @@ class Tasks(Endpoint):
     ep_name = "task"
     _is_domain_url = False
 
-    def __init__(self, api, app, record=Task):
-        super().__init__(api, app, record=Task)
+    def __init__(self, api: FiremonAPI, app: PolicyPlanner, record=Task):
+        super().__init__(api, app, record=record)
 
     # Override the default to include "name" for our modified Record
     def _response_loader(self, values, name):
         return self.return_obj(values, self.app, name)
 
-    def all(self):
+    def all(self) -> list[Task]:
         tasks = []
         key = "service"
         filters = {"includeCannotCreate": True}
@@ -110,7 +112,7 @@ class Tasks(Endpoint):
 
         return tasks
 
-    def get(self, *args, **kwargs):
+    def get(self, *args, **kwargs) -> Optional[Task]:
         try:
             name = str(args[0])
         except IndexError:
@@ -142,7 +144,7 @@ class Tasks(Endpoint):
 
         return self._response_loader(req.get(), name)
 
-    def filter(self, *args, **kwargs):
+    def filter(self, *args, **kwargs) -> list[Task]:
         """Attempt to use the filter options. Really only a single query
 
         Kwargs:
@@ -172,7 +174,7 @@ class Tasks(Endpoint):
 
         return tasks
 
-    def get_services(self, query=None, include_cannot_create=False):
+    def get_services(self, query: Optional[str] = None, include_cannot_create=False):
         """Retrieve a list of task services
 
         Kwargs:
@@ -195,7 +197,7 @@ class Tasks(Endpoint):
 
         return resp
 
-    def layout(self, task: str):
+    def layout(self, task: str) -> RequestResponser:
         """Retrieve a task layout.
 
         Args:

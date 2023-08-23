@@ -8,14 +8,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 # Standard packages
-import json
 import logging
+from typing import Never, Optional
 
 # Local packages
-from firemon_api.core.query import Request, url_param_builder
+from firemon_api.core.api import FiremonAPI
+from firemon_api.core.query import Request, RequestResponse
 from firemon_api.core.response import Record
 
-from .globalpolicycontroller import *
 from .policyoptimizer import *
 from .policyplanner import *
 from .securitymanager import *
@@ -32,7 +32,7 @@ class DynamicApi(object):
         Good luck and godspeed.
     """
 
-    def __init__(self, dynamic_api: dict, api, app, record=None):
+    def __init__(self, dynamic_api: dict, api: FiremonAPI, app, record=None):
         """
         Args:
             dynamic_api (dict): all the json from `get_api`
@@ -54,7 +54,7 @@ class DynamicApi(object):
                 _method = self._make_method(path, verb)
                 setattr(self, oid, _method)
 
-    def _make_method(self, path, verb):
+    def _make_method(self, path: str, verb: str) -> function:
         if verb == "get":
 
             def _method(filters=None, add_params=None, **kwargs):
@@ -125,14 +125,14 @@ class App(object):
 
     name = None
 
-    def __init__(self, api):
+    def __init__(self, api: FiremonAPI):
         self.api = api
         self.session = api.session
         self.base_url = api.base_url
         self.app_url = f"{api.base_url}/{self.__class__.name}/api"
         self.domain_url = f"{self.app_url}/domain/{str(self.api.domain_id)}"
 
-    def set_api(self):
+    def set_api(self) -> RequestResponse:
         """Attempt to auto create all api calls by reading
         the dynamic api endpoint make a best guess. User must
         be authorized to read api documentation to use this.
@@ -142,7 +142,7 @@ class App(object):
         _dynamic_api = self.get_api()
         setattr(self, "exec", DynamicApi(_dynamic_api, self.api, self))
 
-    def get_api(self):
+    def get_api(self) -> RequestResponse:
         """Return API specs from the dynamic documentation"""
 
         key = "openapi.json"
@@ -226,26 +226,6 @@ class Orchestration(App):
         # self.xx = EndPoint(self)
 
 
-class GlobalPolicyController(App):
-    """Represents Global Policy Controller in Firemon
-
-    Args:
-        api (obj): FiremonAPI()
-        name (str): name of the application
-
-    Valid attributes are:
-        * xx: EndPoint()
-    """
-
-    name = "globalpolicycontroller"
-
-    def __init__(self, api):
-        super().__init__(api)
-
-        # Endpoints
-        self.policycompute = PolicyCompute(self.api, self)
-
-
 class PolicyOptimizer(App):
     """Represents Policy Optimizer in Firemon
 
@@ -318,11 +298,11 @@ class ControlPanel(App):
         self.db = Database(self.api, self)
         self.diagpkg = DiagPkg(self.api, self)
 
-    def set_api(self):
+    def set_api(self, _: Never) -> None:
         """Maybe later"""
         raise NotImplementedError("Maybe some other time")
 
-    def get_api(self):
+    def get_api(self) -> RequestResponse:
         """Return API specs if the 5555 port is up."""
 
         key = "api-doc"
@@ -336,7 +316,13 @@ class ControlPanel(App):
         except:
             raise NotImplementedError("No access to api-doc endpoint")
 
-    def email_confirm(self, username=None, email=None, code=None, k=None):
+    def email_confirm(
+        self,
+        username: Optional[str] = None,
+        email: Optional[str] = None,
+        code=None,
+        k: Optional[str] = None,
+    ) -> RequestResponse:
         """
         Kwargs:
             k (str)
@@ -357,7 +343,7 @@ class ControlPanel(App):
         ).post()
         return r
 
-    def email_confirm_resend(self, username):
+    def email_confirm_resend(self, username: str) -> RequestResponse:
         key = "resendemailconfirm"
         filters = {"username ": username}
         r = Request(
@@ -368,7 +354,7 @@ class ControlPanel(App):
         ).post()
         return r
 
-    def get_session(self):
+    def get_session(self) -> RequestResponse:
         key = "session"
         r = Request(
             base=self.app_url,
@@ -377,7 +363,9 @@ class ControlPanel(App):
         ).get()
         return r
 
-    def health(self, checks: str = "default", cache: str = "default"):
+    def health(
+        self, checks: str = "default", cache: str = "default"
+    ) -> RequestResponse:
         """verbose state and health info
 
         Kwargs:
@@ -394,7 +382,7 @@ class ControlPanel(App):
         ).get()
         return r
 
-    def info(self):
+    def info(self) -> RequestResponse:
         key = "info"
         r = Request(
             base=self.app_url,
@@ -403,7 +391,7 @@ class ControlPanel(App):
         ).get()
         return r
 
-    def perf(self):
+    def perf(self) -> RequestResponse:
         key = "perf"
         r = Request(
             base=self.app_url,
@@ -412,7 +400,7 @@ class ControlPanel(App):
         ).get()
         return r
 
-    def state(self):
+    def state(self) -> RequestResponse:
         key = "state"
         r = Request(
             base=self.app_url,
@@ -421,7 +409,7 @@ class ControlPanel(App):
         ).get()
         return r
 
-    def user_update(self, config):
+    def user_update(self, config: dict) -> RequestResponse:
         """update user info
 
         Args:

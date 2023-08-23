@@ -8,18 +8,44 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 # Standard packages
-import json
+# import json
 import logging
-import uuid
+
+# import uuid
+from typing import TypedDict, Required
 
 # Local packages
+from firemon_api.apps import SecurityManager
+from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
-from firemon_api.core.query import Request, url_param_builder
+from firemon_api.core.query import Request, RequestResponse
 
 from .devices import Device
 
 log = logging.getLogger(__name__)
+
+
+class UsageObjects(TypedDict):
+    id: str  # guid
+    parentId: str  # guid
+    hitCount: int
+
+
+class RuleUsages(TypedDict, total=False):
+    deviceId: Required[int]
+    ruleId: Required[str]  # guid
+    sources: list[UsageObjects]
+    destinations: list[UsageObjects]
+    services: list[UsageObjects]
+    apps: list[UsageObjects]
+    users: list[UsageObjects]
+
+
+class Usage(TypedDict):
+    endDate: str  # format "YYYY-MM-DDTHH:mm:ss+0000"
+    ruleUsages: list[RuleUsages]
+    async_aggregation: bool  # ???
 
 
 class Collector(Record):
@@ -32,10 +58,10 @@ class Collector(Record):
 
     _ep_name = "collector"
 
-    def __init__(self, config, app):
+    def __init__(self, config: dict, app: SecurityManager):
         super().__init__(config, app)
 
-    def status(self):
+    def status(self) -> RequestResponse:
         """Get status of Collector"""
         key = f"status/{self.id}"
         req = Request(
@@ -45,7 +71,7 @@ class Collector(Record):
         )
         return req.get()
 
-    def devices(self):
+    def devices(self) -> list[Device]:
         """Get all devices assigned to collector"""
         key = "device"
         req = Request(
@@ -69,8 +95,8 @@ class Collectors(Endpoint):
 
     ep_name = "collector"
 
-    def __init__(self, api, app, record=Collector):
-        super().__init__(api, app, record=Collector)
+    def __init__(self, api: FiremonAPI, app: SecurityManager, record=Collector):
+        super().__init__(api, app, record=record)
 
     def _make_filters(self, values):
         # Only a 'search' for a single value. Take all key-values
@@ -78,44 +104,16 @@ class Collectors(Endpoint):
         filters = {"search": values[next(iter(values))]}
         return filters
 
-    def save_usage(self, config, async_aggregation: bool = True):
+    def save_usage(
+        self, config: Usage, async_aggregation: bool = True
+    ) -> RequestResponse:
         """Save usage
 
         Args:
-            config (dict): dictionary of usage data.
-                {
-                    "endDate": "YYYY-MM-DDTHH:mm:ss+0000",
-                    "ruleUsages": [
-                        {
-                            "deviceId": <id>,
-                            "ruleId": <rule guid>,
-                            "hitCount": int,
-                            "sources": [
-                                {
-                                    "id": <guid for?>,
-                                    "parentId": <guid for?>,
-                                    "hitCount": int
-                                }
-                            ],
-                            "destinations": [
-                                <same as sources>
-                            ],
-                            "services": [
-                                <same as sources>
-                            ],
-                            "apps": [
-                                <same as sources>
-                            ],
-                            "users": [
-                                <same as sources>
-                            ]
-                        }
-                    ]
-                }
-            async_aggregation (bool): ?
+            config (Usage): dictionary of usage data.
 
         Return:
-            ? (?): ?
+            Union[bool, dict, str]
 
         """
         filters = {"asyncAggregation": async_aggregation}
@@ -140,10 +138,10 @@ class CollectorGroup(Record):
 
     _ep_name = "collector/group"
 
-    def __init__(self, config, app):
+    def __init__(self, config: dict, app: SecurityManager):
         super().__init__(config, app)
 
-    def member_set(self, cid):
+    def member_set(self, cid: int) -> RequestResponse:
         """Assign a Collector to Group.
 
         note: no changes if device is already assigned.
@@ -163,7 +161,7 @@ class CollectorGroup(Record):
     # Need to get this working to make set useful
     #    pass
 
-    def device_set(self, id):
+    def device_set(self, id: int) -> RequestResponse:
         """Assign a Device
         note: no changes if device is already assigned. How to unassign?
 
@@ -178,7 +176,7 @@ class CollectorGroup(Record):
         )
         return req.put()
 
-    def assigned(self):
+    def assigned(self) -> RequestResponse:
         """Get assigned devices"""
         key = f"assigned"
         req = Request(
@@ -202,8 +200,8 @@ class CollectorGroups(Endpoint):
 
     ep_name = "collector/group"
 
-    def __init__(self, api, app, record=CollectorGroup):
-        super().__init__(api, app, record=CollectorGroup)
+    def __init__(self, api: FiremonAPI, app: SecurityManager, record=CollectorGroup):
+        super().__init__(api, app, record=record)
 
     def _make_filters(self, values):
         # Only a 'search' for a single value. Take all key-values
