@@ -11,7 +11,7 @@ limitations under the License.
 # Standard packages
 import datetime
 import logging
-from typing import Optional
+from typing import Optional, TypedDict
 
 # Local packages
 from firemon_api.core.app import App
@@ -22,6 +22,26 @@ from firemon_api.core.query import Request, RequestResponse
 from .siql import SiqlPP
 
 log = logging.getLogger(__name__)
+
+
+class PacketTaskRequirementVars(TypedDict, total=False):
+    deviceGroupId: int
+    expiration: str  # format "YYYY-MM-DDTHH:mm:ss+0000"
+    review: str  # format "YYYY-MM-DDTHH:mm:ss+0000"
+
+
+class PacketTaskRequirement(TypedDict, total=False):
+    app: list[str]
+    destinations: list[str]
+    services: list[str]
+    sources: list[str]
+    users: list[str]
+    requirementType: str  # "RULE" / "??"
+    childKey: str  # "add_access" / "??"
+    variables: PacketTaskRequirementVars
+    action: str  # "ACCEPT" / "DROP"
+    urlMatchers: str
+    profiles: str
 
 
 class PacketTask(Record):
@@ -44,11 +64,11 @@ class PacketTask(Record):
         )
         self._url = self._url_create()
 
-    def requirement(self, config: dict) -> RequestResponse:
+    def requirement(self, config: PacketTaskRequirement) -> RequestResponse:
         """Add a requirement
 
         Args:
-            config (dict): Good luck
+            config (PacketTaskRequirement): dict of requirements
         """
 
         key = f"task/{self._config['workflowTask']['id']}/packet/{self._packet_id}/requirement"
