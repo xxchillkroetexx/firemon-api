@@ -11,8 +11,7 @@ limitations under the License.
 import logging
 
 # Local packages
-# from firemon_api.core.endpoint import Endpoint
-from firemon_api.apps import PolicyPlanner
+from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.query import Request
 from firemon_api.apps.securitymanager.siql import SiqlData
@@ -33,9 +32,8 @@ class SiqlPP(object):
     ep_name = "siql"
     _is_domain_url = False
 
-    def __init__(self, api: FiremonAPI, app: PolicyPlanner):
+    def __init__(self, api: FiremonAPI, app: App):
         self._return_obj = SiqlData
-        # self.return_obj = JsonField
         self.api = api
         self.session = api.session
         self.app = app

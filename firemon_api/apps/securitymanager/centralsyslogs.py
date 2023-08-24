@@ -11,7 +11,7 @@ limitations under the License.
 import logging
 
 # Local packages
-from firemon_api.apps import SecurityManager
+from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
@@ -33,7 +33,7 @@ class CentralSyslog(Record):
     _is_domain_url = True
     centralSyslogConfig = CentralSyslogConfig
 
-    def __init__(self, config: dict, app: SecurityManager):
+    def __init__(self, config: dict, app: App):
         super().__init__(config, app)
 
         # not needed for `serialize` update using ep function
@@ -109,7 +109,7 @@ class CentralSyslogs(Endpoint):
     ep_name = "central-syslog"
     _is_domain_url = True
 
-    def __init__(self, api: FiremonAPI, app: SecurityManager, record=CentralSyslog):
+    def __init__(self, api: FiremonAPI, app: App, record=CentralSyslog):
         super().__init__(api, app, record=record)
 
     def _make_filters(self, values):

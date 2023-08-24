@@ -10,11 +10,12 @@ limitations under the License.
 import copy
 import logging
 
-from typing import Optional, Union, Any
+from typing import Union, Any
 
-from firemon_api.apps import App
+from firemon_api.core.app import App
 from firemon_api.core.query import Request
 from firemon_api.core.utils import Hashabledict
+
 
 log = logging.getLogger(__name__)
 

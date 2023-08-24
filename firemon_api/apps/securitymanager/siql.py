@@ -9,10 +9,9 @@ limitations under the License.
 """
 # Standard packages
 import logging
-from typing import Never
 
 # Local packages
-from firemon_api.apps import SecurityManager
+from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.response import Record
 from firemon_api.core.query import Request, RequestResponse
@@ -23,16 +22,16 @@ log = logging.getLogger(__name__)
 class SiqlData(Record):
     """A Siql Record."""
 
-    def __init__(self, config, app):
+    def __init__(self, config: dict, app: App):
         super().__init__(config, app)
 
-    def save(self, _: Never) -> None:
+    def save(self) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
-    def update(self, _: Never) -> None:
+    def update(self) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
-    def delete(self, _: Never) -> None:
+    def delete(self) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
 
@@ -49,9 +48,8 @@ class Siql(object):
     ep_name = "siql"
     _is_domain_url = False
 
-    def __init__(self, api: FiremonAPI, app: SecurityManager):
+    def __init__(self, api: FiremonAPI, app: App):
         self.return_obj = SiqlData
-        # self.return_obj = JsonField
         self.api = api
         self.session = api.session
         self.app = app

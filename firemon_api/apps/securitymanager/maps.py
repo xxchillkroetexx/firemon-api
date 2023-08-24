@@ -9,10 +9,10 @@ limitations under the License.
 """
 # Standard packages
 import logging
-from typing import Optional, Never
+from typing import Optional
 
 # Local packages
-from firemon_api.apps import SecurityManager
+from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
@@ -38,7 +38,7 @@ class Map(Record):
     def __init__(
         self,
         config: dict,
-        app: SecurityManager,
+        app: App,
         device_id: Optional[int] = None,
         group_id: int = 1,
     ):
@@ -46,13 +46,13 @@ class Map(Record):
         self._device_id = device_id
         self._group_id = group_id
 
-    def save(self, _: Never) -> None:
+    def save(self) -> None:
         raise NotImplementedError("Writes are not supported.")
 
-    def update(self, _: Never) -> None:
+    def update(self) -> None:
         raise NotImplementedError("Writes are not supported.")
 
-    def delete(self, _: Never) -> None:
+    def delete(self) -> None:
         raise NotImplementedError("Writes are not supported.")
 
 
@@ -78,7 +78,7 @@ class Maps(Endpoint):
     def __init__(
         self,
         api: FiremonAPI,
-        app: SecurityManager,
+        app: App,
         record=Map,
         device_id: Optional[int] = None,
         group_id: int = 1,
@@ -101,10 +101,10 @@ class Maps(Endpoint):
             values, self.app, device_id=self._device_id, group_id=self._group_id
         )
 
-    def all(self, _: Never) -> None:
+    def all(self) -> None:
         raise NotImplementedError("Unavailable")
 
-    def filter(self, _: Never) -> None:
+    def filter(self) -> None:
         raise NotImplementedError("Unavailable")
 
     def get(self) -> Map:

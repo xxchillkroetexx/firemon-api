@@ -12,10 +12,10 @@ limitations under the License.
 import logging
 
 # import uuid
-from typing import TypedDict, Required
+from typing import TypedDict
 
 # Local packages
-from firemon_api.apps import SecurityManager
+from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
@@ -33,8 +33,8 @@ class UsageObjects(TypedDict):
 
 
 class RuleUsages(TypedDict, total=False):
-    deviceId: Required[int]
-    ruleId: Required[str]  # guid
+    deviceId: int
+    ruleId: str  # guid
     sources: list[UsageObjects]
     destinations: list[UsageObjects]
     services: list[UsageObjects]
@@ -58,7 +58,7 @@ class Collector(Record):
 
     _ep_name = "collector"
 
-    def __init__(self, config: dict, app: SecurityManager):
+    def __init__(self, config: dict, app: App):
         super().__init__(config, app)
 
     def status(self) -> RequestResponse:
@@ -95,7 +95,7 @@ class Collectors(Endpoint):
 
     ep_name = "collector"
 
-    def __init__(self, api: FiremonAPI, app: SecurityManager, record=Collector):
+    def __init__(self, api: FiremonAPI, app: App, record=Collector):
         super().__init__(api, app, record=record)
 
     def _make_filters(self, values):
@@ -138,7 +138,7 @@ class CollectorGroup(Record):
 
     _ep_name = "collector/group"
 
-    def __init__(self, config: dict, app: SecurityManager):
+    def __init__(self, config: dict, app: App):
         super().__init__(config, app)
 
     def member_set(self, cid: int) -> RequestResponse:
@@ -200,7 +200,7 @@ class CollectorGroups(Endpoint):
 
     ep_name = "collector/group"
 
-    def __init__(self, api: FiremonAPI, app: SecurityManager, record=CollectorGroup):
+    def __init__(self, api: FiremonAPI, app: App, record=CollectorGroup):
         super().__init__(api, app, record=record)
 
     def _make_filters(self, values):

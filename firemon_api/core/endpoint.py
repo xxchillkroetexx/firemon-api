@@ -8,13 +8,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 # Standard modules
-from typing import Any, Optional, Union
-from urllib.parse import urlencode, quote
+from typing import Optional, Union
 
 # Local packages
-from firemon_api.apps import App, ControlPanel
 from firemon_api.core.api import FiremonAPI
-from firemon_api.core.query import Request, url_param_builder
+from firemon_api.core.app import App
+from firemon_api.core.query import Request
 from firemon_api.core.response import Record, JsonField
 
 
@@ -214,7 +213,7 @@ class EndpointCpl(object):
     url = None
     ep_name = None
 
-    def __init__(self, api: FiremonAPI, app: App, record=None):
+    def __init__(self, api, app, record=None):
         if record:
             self.return_obj = record
         else:

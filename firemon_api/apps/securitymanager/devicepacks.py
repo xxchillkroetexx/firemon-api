@@ -9,10 +9,10 @@ limitations under the License.
 """
 # Standard packages
 import logging
-from typing import Never, Optional
+from typing import Optional
 
 # Local packages
-from firemon_api.apps import SecurityManager
+from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
@@ -42,7 +42,7 @@ class DevicePack(Record):
     collectionConfig = CollectionConfig
     # collectionConfig = JsonField
 
-    def __init__(self, config: dict, app: SecurityManager):
+    def __init__(self, config: dict, app: App):
         super().__init__(config, app)
 
         self.name = config["artifactId"]
@@ -53,11 +53,11 @@ class DevicePack(Record):
         url = f"{self._ep_url}/{self.groupId}/{self.artifactId}"
         return url
 
-    def update(self, _: Never) -> None:
+    def update(self) -> None:
         """Nothing to update"""
         raise NotImplementedError("Writes are not supported for this endpoint.")
 
-    def save(self, _: Never) -> None:
+    def save(self) -> None:
         raise NotImplementedError("Writes are not supported for this endpoint.")
 
     def layout(self) -> RequestResponse:
@@ -176,7 +176,7 @@ class DevicePacks(Endpoint):
 
     ep_name = "plugin"
 
-    def __init__(self, api: FiremonAPI, app: SecurityManager, record=DevicePack):
+    def __init__(self, api: FiremonAPI, app: App, record=DevicePack):
         super().__init__(api, app, record=record)
 
     def all(self) -> list[DevicePack]:
@@ -291,33 +291,24 @@ class DevicePacks(Endpoint):
         )
         return req.post(files=files)
 
-        # url = '{url}/?overwrite=true'.format(url=self.url)
-        # self.session.headers.pop('Content-type', None)  # If "content-type" exists get rid.
-        # log.debug('POST {}'.format(url))
-        # resp = self.session.post(url, files={'devicepack.jar': file})
-        # if resp.status_code == 200:
-        #    return True
-        # else:
-        #    raise RequestError(resp)
-
 
 class ArtifactFile(Record):
     """An Artifact File"""
 
-    def __init__(self, config, app, ep_url):
+    def __init__(self, config: dict, app: App, ep_url: str):
         super().__init__(config, app)
         self._url = f"{ep_url}/{config['name']}"
 
-    def save(self):
+    def save(self) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
-    def update(self):
+    def update(self) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
-    def delete(self):
+    def delete(self) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
-    def get(self):
+    def get(self) -> RequestResponse:
         """Get the raw file
 
         Return:

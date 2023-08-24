@@ -9,10 +9,10 @@ limitations under the License.
 """
 # Standard packages
 import logging
-from typing import Never, Optional
+from typing import Optional
 
 # Local packages
-from firemon_api.apps import SecurityManager
+from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
@@ -35,7 +35,7 @@ class Route(Record):
     _ep_name = "routeobject"
     _is_domain_url = True
 
-    def __init__(self, config: dict, app: SecurityManager):
+    def __init__(self, config: dict, app: App):
         super().__init__(config, app)
 
     def _url_create(self):
@@ -43,10 +43,10 @@ class Route(Record):
         url = f"{self._ep_url}/{self.deviceid}"
         return url
 
-    def save(self, _: Never) -> None:
+    def save(self) -> None:
         raise NotImplementedError("Writes are not supported.")
 
-    def update(self, _: Never) -> None:
+    def update(self) -> None:
         raise NotImplementedError("Writes are not supported.")
 
 
@@ -71,7 +71,7 @@ class Routes(Endpoint):
     def __init__(
         self,
         api: FiremonAPI,
-        app: SecurityManager,
+        app: App,
         record=Route,
         device_id: Optional[int] = None,
     ):

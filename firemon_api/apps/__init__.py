@@ -9,155 +9,19 @@ limitations under the License.
 """
 # Standard packages
 import logging
-from typing import Never, Optional
+from typing import Optional
 
 # Local packages
-from firemon_api.core.api import FiremonAPI
+from firemon_api.core.app import App
 from firemon_api.core.query import Request, RequestResponse
-from firemon_api.core.response import Record
+
+log = logging.getLogger(__name__)
+
 
 from .policyoptimizer import *
 from .policyplanner import *
 from .securitymanager import *
 from .controlpanel import *
-
-log = logging.getLogger(__name__)
-
-
-class DynamicApi(object):
-    """Attempt to dynamically create all the APIs
-
-    Warning:
-        Most of the names are not intuitive to what they do.
-        Good luck and godspeed.
-    """
-
-    def __init__(self, dynamic_api: dict, api: FiremonAPI, app, record=None):
-        """
-        Args:
-            dynamic_api (dict): all the json from `get_api`
-        """
-        if record:
-            self.return_obj = record
-        else:
-            self.return_obj = Record
-        self.api = api
-        self.session = api.session
-        self.app = app
-        self.base_url = api.base_url
-        self.app_url = app.app_url
-        self.domain_url = app.domain_url
-        self.url = None
-        for path in dynamic_api["paths"].keys():
-            for verb in dynamic_api["paths"][path].keys():
-                oid = dynamic_api["paths"][path][verb]["operationId"]
-                _method = self._make_method(path, verb)
-                setattr(self, oid, _method)
-
-    def _make_method(self, path: str, verb: str) -> function:
-        if verb == "get":
-
-            def _method(filters=None, add_params=None, **kwargs):
-                p = path.lstrip("/")
-                key = p.format(**kwargs)
-                filters = filters
-                req = Request(
-                    base=self.app_url,
-                    key=key,
-                    filters=filters,
-                    session=self.session,
-                )
-                return req.get(add_params=add_params)
-
-            return _method
-
-        elif verb == "put":
-
-            def _method(filters=None, data=None, **kwargs):
-                p = path.lstrip("/")
-                key = p.format(**kwargs)
-                filters = filters
-                req = Request(
-                    base=self.app_url,
-                    key=key,
-                    filters=filters,
-                    session=self.session,
-                )
-                return req.put(data=data)
-
-            return _method
-
-        elif verb == "post":
-
-            def _method(filters=None, data=None, files=None, **kwargs):
-                p = path.lstrip("/")
-                key = p.format(**kwargs)
-                filters = filters
-                req = Request(
-                    base=self.app_url,
-                    key=key,
-                    filters=filters,
-                    session=self.session,
-                )
-                return req.post()
-
-            return _method
-
-        elif verb == "delete":
-
-            def _method(filters=None, **kwargs):
-                p = path.lstrip("/")
-                key = p.format(**kwargs)
-                filters = filters
-                req = Request(
-                    base=self.app_url,
-                    key=key,
-                    filters=filters,
-                    session=self.session,
-                )
-                return req.delete()
-
-            return _method
-
-
-class App(object):
-    """Base class for Firemon Apps"""
-
-    name = None
-
-    def __init__(self, api: FiremonAPI):
-        self.api = api
-        self.session = api.session
-        self.base_url = api.base_url
-        self.app_url = f"{api.base_url}/{self.__class__.name}/api"
-        self.domain_url = f"{self.app_url}/domain/{str(self.api.domain_id)}"
-
-    def set_api(self) -> RequestResponse:
-        """Attempt to auto create all api calls by reading
-        the dynamic api endpoint make a best guess. User must
-        be authorized to read api documentation to use this.
-
-        All auto created methods get setattr on `exec` for `App`.
-        """
-        _dynamic_api = self.get_api()
-        setattr(self, "exec", DynamicApi(_dynamic_api, self.api, self))
-
-    def get_api(self) -> RequestResponse:
-        """Return API specs from the dynamic documentation"""
-
-        key = "openapi.json"
-        req = Request(
-            base=self.app_url,
-            key=key,
-            session=self.session,
-        )
-        return req.get()
-
-    def __repr__(self):
-        return f"<App({self.name})>"
-
-    def __str__(self):
-        return f"{self.name}"
 
 
 class SecurityManager(App):
@@ -298,7 +162,7 @@ class ControlPanel(App):
         self.db = Database(self.api, self)
         self.diagpkg = DiagPkg(self.api, self)
 
-    def set_api(self, _: Never) -> None:
+    def set_api(self) -> None:
         """Maybe later"""
         raise NotImplementedError("Maybe some other time")
 

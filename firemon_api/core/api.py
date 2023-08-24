@@ -13,7 +13,7 @@ import socket
 import warnings
 
 from urllib.parse import urlparse
-from typing import Optional, Self
+from typing import Optional
 
 # Third-Party packages
 import requests  # performing web requests
@@ -22,17 +22,8 @@ import requests  # performing web requests
 import firemon_api
 from firemon_api.core.query import (
     Request,
-    url_param_builder,
     RequestError,
     RequestResponse,
-)
-from firemon_api.apps import (
-    GlobalPolicyController,
-    Orchestration,
-    PolicyOptimizer,
-    PolicyPlanner,
-    SecurityManager,
-    ControlPanel,
 )
 
 log = logging.getLogger(__name__)
@@ -128,7 +119,7 @@ class FiremonAPI(object):
         self.domain_id = domain_id
         self._version = "unknown"
 
-    def auth(self, username: str, password: str) -> Self:
+    def auth(self, username: str, password: str):
         """User must auth to get access to most api. Basic auth
         can be set at __init__ and if the u:p is correct access
         to calls goes fine. But if it is not correct it is easy
@@ -139,7 +130,7 @@ class FiremonAPI(object):
         self.username = username
         key = "securitymanager/api/authentication/login"
         payload = {"username": username, "password": password}
-        resp = Request(
+        Request(
             base=self.base_url,
             key=key,
             session=self.session,
@@ -152,13 +143,20 @@ class FiremonAPI(object):
         self._version = self._versions()["fmosVersion"]
         self._verify_domain(self.domain_id)
 
+        from firemon_api.apps import (
+            Orchestration,
+            PolicyOptimizer,
+            PolicyPlanner,
+            SecurityManager,
+        )
+
         self.sm = SecurityManager(self)
         self.orc = Orchestration(self)
         self.po = PolicyOptimizer(self)
         self.pp = PolicyPlanner(self)
         return self
 
-    def auth_cpl(self, username: str, password: str, cpl_proxy=False) -> Self:
+    def auth_cpl(self, username: str, password: str, cpl_proxy=False):
         """Control Panel that is normally accessed via 55555"""
         log.info(f"Authenticating Firemon Control Panel: {self.host}")
         self._cpl_proxy = cpl_proxy
@@ -176,6 +174,9 @@ class FiremonAPI(object):
         ).post_cpl_auth(data=payload)
         self._cpl_cookies = r.cookies
         log.debug(r.json())
+
+        from firemon_api.apps import ControlPanel
+
         self.cpl = ControlPanel(self)
         return self
 

@@ -11,10 +11,10 @@ limitations under the License.
 import logging
 import copy
 
-from typing import Optional, Never
+from typing import Optional
 
 # Local packages
-from firemon_api.apps import SecurityManager
+from firemon_api.core.app import App
 from firemon_api.core.response import Record
 from firemon_api.core.query import Request, RequestResponse
 
@@ -27,20 +27,20 @@ class AccessPathEvent(Record):
     _ep_name = "apa"
     _is_domain_url = True
 
-    def __init__(self, config, app, url):
+    def __init__(self, config: dict, app: App, url: str):
         self._url = url
         super().__init__(config, app)
 
     def _url_create(self):
         return self._url
 
-    def save(self, _: Never) -> None:
+    def save(self) -> None:
         raise NotImplementedError("Writes are not supported.")
 
-    def update(self, _: Never) -> None:
+    def update(self) -> None:
         raise NotImplementedError("Writes are not supported.")
 
-    def delete(self, _: Never) -> None:
+    def delete(self) -> None:
         raise NotImplementedError("Writes are not supported.")
 
 
@@ -53,9 +53,9 @@ class AccessPath(Record):
     def __init__(
         self,
         config: dict,
-        app: SecurityManager,
+        app: App,
         device_id: Optional[int] = None,
-        apa_request={},
+        apa_request: dict = {},
     ):
         self._device_id = device_id
         self._apa_request = apa_request
@@ -103,13 +103,13 @@ class AccessPath(Record):
             path["packet_result"] = event.get("ipPacketResult", {})
             self.paths.append(path)
 
-    def save(self, arg: Never) -> None:
+    def save(selfr) -> None:
         raise NotImplementedError("Writes are not supported.")
 
-    def update(self, arg: Never) -> None:
+    def update(self) -> None:
         raise NotImplementedError("Writes are not supported.")
 
-    def delete(self, arg: Never) -> None:
+    def delete(self) -> None:
         raise NotImplementedError("Writes are not supported.")
 
     def get_graphml(self) -> RequestResponse:

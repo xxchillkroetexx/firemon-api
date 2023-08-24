@@ -9,10 +9,10 @@ limitations under the License.
 """
 # Standard packages
 import logging
-from typing import Never, Optional
+from typing import Optional
 
 # Local packages
-from firemon_api.apps import SecurityManager
+from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
@@ -26,16 +26,16 @@ class NormalizedData(Record):
 
     _ep_name = "rev"
 
-    def __init__(self, config, app):
+    def __init__(self, config: dict, app: App):
         super().__init__(config, app)
 
-    def save(self, _: Never) -> None:
+    def save(self) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
-    def update(self, _: Never) -> None:
+    def update(self) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
-    def delete(self, _: Never) -> None:
+    def delete(self) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
     def _url_create(self):
@@ -52,7 +52,7 @@ class RevFile(Record):
 
     _ep_name = "rev"
 
-    def __init__(self, config: dict, app: SecurityManager, rev_id: int):
+    def __init__(self, config: dict, app: App, rev_id: int):
         self.rev_id = rev_id
         super().__init__(config, app)
 
@@ -61,13 +61,13 @@ class RevFile(Record):
         url = f"{self._ep_url}/{self.rev_id}/nd/file/{self._config['id']}"
         return url
 
-    def save(self, _: Never) -> None:
+    def save(self) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
-    def update(self, _: Never) -> None:
+    def update(self) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
-    def delete(self, _: Never) -> None:
+    def delete(self) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
     def get(self) -> RequestResponse:
@@ -113,17 +113,17 @@ class Revision(Record):
 
     _ep_name = "rev"
 
-    def __init__(self, config: dict, app: SecurityManager):
+    def __init__(self, config: dict, app: App):
         super().__init__(config, app)
 
         self._domain_id = config["domainId"]
         self._device_id = config["deviceId"]
         self.files = self._files_load()
 
-    def save(self, _: Never) -> None:
+    def save(self) -> None:
         raise NotImplementedError("Writes are not supported.")
 
-    def update(self, _: Never) -> None:
+    def update(self) -> None:
         raise NotImplementedError("Writes are not supported.")
 
     def delete(self) -> RequestResponse:
@@ -250,7 +250,7 @@ class Revisions(Endpoint):
     def __init__(
         self,
         api: FiremonAPI,
-        app: SecurityManager,
+        app: App,
         record=Revision,
         device_id: Optional[int] = None,
     ):

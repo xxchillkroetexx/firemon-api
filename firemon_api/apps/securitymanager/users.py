@@ -9,10 +9,10 @@ limitations under the License.
 """
 # Standard packages
 import logging
-from typing import Never, Optional
+from typing import Optional
 
 # Local packages
-from firemon_api.apps import SecurityManager
+from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
@@ -26,16 +26,16 @@ class Permission(Record):
 
     _ep_name = "permissions"
 
-    def __init__(self, config: dict, app: SecurityManager):
+    def __init__(self, config: dict, app: App):
         super().__init__(config, app)
 
-    def save(self, _: Never) -> None:
+    def save(self) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
-    def update(self, _: Never) -> None:
+    def update(self) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
-    def delete(self, _: Never) -> None:
+    def delete(self) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
     def __repr__(self):
@@ -63,6 +63,9 @@ class User(Record):
     _ep_name = "user"
     _is_domain_url = True
 
+    def __init__(self, config: dict, app: App):
+        super().__init__(config, app)
+
     def set_password(self, password: str) -> RequestResponse:
         key = "password"
         data = {"password": password}
@@ -78,9 +81,6 @@ class User(Record):
             session=self._session,
         )
         return req.put(data=data)
-
-    def __init__(self, config, app):
-        super().__init__(config, app)
 
     def __str__(self):
         return str(self.username)
@@ -101,8 +101,8 @@ class Users(Endpoint):
     ep_name = "user"
     _is_domain_url = True
 
-    def __init__(self, api, app, record=User):
-        super().__init__(api, app, record=User)
+    def __init__(self, api: FiremonAPI, app: App, record=User):
+        super().__init__(api, app, record=record)
 
     def _make_filters(self, values):
         # Only a 'search' for a single value. Take all key-values
@@ -236,7 +236,7 @@ class UserGroup(Record):
     _ep_name = "usergroup"
     _is_domain_url = True
 
-    def __init__(self, config: dict, app: SecurityManager):
+    def __init__(self, config: dict, app: App):
         super().__init__(config, app)
 
     def permission_list(self) -> list[Permission]:
@@ -321,7 +321,7 @@ class UserGroups(Endpoint):
     ep_name = "usergroup"
     _is_domain_url = True
 
-    def __init__(self, api: FiremonAPI, app: SecurityManager, record=UserGroup):
+    def __init__(self, api: FiremonAPI, app: App, record=UserGroup):
         super().__init__(api, app, record=record)
 
     def all(self) -> list[UserGroup]:

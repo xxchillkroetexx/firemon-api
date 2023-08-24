@@ -14,7 +14,7 @@ from urllib.parse import quote
 import uuid
 
 # Local packages
-from firemon_api.apps import SecurityManager
+from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record, JsonField
@@ -80,11 +80,9 @@ class Device(Record):
     extendedSettingsJson = JsonField
     devicePack = DevicePack
 
-    def __init__(self, config: dict, app: SecurityManager):
+    def __init__(self, config: dict, app: App):
         super().__init__(config, app)
 
-        # self.url = '{ep}/{id}'.format(ep=self.ep_url,
-        #                                id=config['id'])
         self._no_no_keys = [
             "securityConcernIndex",
             "gpcComputeDate",
@@ -786,7 +784,7 @@ class Devices(Endpoint):
     ep_name = "device"
     _is_domain_url = True
 
-    def __init__(self, api: FiremonAPI, app: SecurityManager, record=Device):
+    def __init__(self, api: FiremonAPI, app: App, record=Device):
         super().__init__(api, app, record=record)
         self._ep.update({"filter": "filter"})
 

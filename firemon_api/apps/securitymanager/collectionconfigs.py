@@ -11,7 +11,7 @@ limitations under the License.
 import logging
 
 # Local packages
-from firemon_api.apps import SecurityManager
+from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
@@ -46,7 +46,7 @@ class CollectionConfig(Record):
 
     _ep_name = "collectionconfig"
 
-    def __init__(self, config: dict, app: SecurityManager):
+    def __init__(self, config: dict, app: App):
         super().__init__(
             config,
             app,
@@ -144,7 +144,7 @@ class CollectionConfigs(Endpoint):
     def __init__(
         self,
         api: FiremonAPI,
-        app: SecurityManager,
+        app: App,
         record=CollectionConfig,
         device_id: int = None,
         devicepack_id: int = None,

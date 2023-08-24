@@ -10,14 +10,13 @@ limitations under the License.
 
 # Standard packages
 import logging
-from typing import Never, Optional
 
 # Local packages
-from firemon_api.apps import PolicyPlanner
+from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
-from firemon_api.core.query import Request, RequestResponser, RequestError
+from firemon_api.core.query import Request, RequestResponse, RequestError
 from .packets import Packets, Packet
 
 log = logging.getLogger(__name__)
@@ -29,7 +28,7 @@ class Workflow(Record):
     _ep_name = "workflow"
     _is_domain_url = True
 
-    def __init__(self, config: dict, app: PolicyPlanner):
+    def __init__(self, config: dict, app: App):
         super().__init__(config, app)
 
         self.tickets = Packets(self._app.api, self._app, config["id"])
@@ -41,7 +40,7 @@ class Workflow(Record):
             "lastModifiedDate",
         ]
 
-    def save(self) -> RequestResponser:
+    def save(self) -> RequestResponse:
         if self.id:
             diff = self._diff()
             if diff:
@@ -59,16 +58,16 @@ class Workflow(Record):
 
         return False
 
-    def update(self, data: dict) -> RequestResponser:
+    def update(self, data: dict) -> RequestResponse:
         for k, v in data.items():
             self.attr_set(k, v)
 
         return self.save()
 
-    def delete(self, _: Never) -> None:
+    def delete(self) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
-    def disable(self) -> RequestResponser:
+    def disable(self) -> RequestResponse:
         Request(
             base=self._url,
             key="disable",
@@ -76,7 +75,7 @@ class Workflow(Record):
         ).put()
         return True
 
-    def enable(self) -> RequestResponser:
+    def enable(self) -> RequestResponse:
         Request(
             base=self._url,
             key="enable",
@@ -84,7 +83,7 @@ class Workflow(Record):
         ).put()
         return True
 
-    def start_properties(self) -> RequestResponser:
+    def start_properties(self) -> RequestResponse:
         resp = Request(
             base=self._url,
             key="start-properties",
@@ -92,7 +91,7 @@ class Workflow(Record):
         ).get()
         return resp
 
-    def tasks(self) -> RequestResponser:
+    def tasks(self) -> RequestResponse:
         resp = Request(
             base=self._url,
             key="tasks",
@@ -115,7 +114,7 @@ class Workflows(Endpoint):
     ep_name = "workflow"
     _is_domain_url = True
 
-    def __init__(self, api: FiremonAPI, app: PolicyPlanner, record=Workflow):
+    def __init__(self, api: FiremonAPI, app: App, record=Workflow):
         super().__init__(api, app, record=record)
 
     def create(self, name: str, config: dict = None) -> Workflow:

@@ -13,11 +13,12 @@ import concurrent.futures as cf
 
 from json.decoder import JSONDecodeError
 import logging
-from typing import Union
+from typing import Union, Optional
 from urllib.parse import urlencode
 
 
 # third-party
+from requests import Session
 from tenacity import (
     before_sleep_log,
     retry,
@@ -88,20 +89,20 @@ class Request(object):
             correlate to the filters a given endpoint accepts.
         key (str, optional): append to base to make up full url
         headers (dict, optional): specific headers to over ride session headers
-        cookies ():
+        cookies (dict, optional):
         trailing_slash (bool): Ensure a trailing slash for `self.url`retry_count (int): number of times to retry request call for any error except `RequestError`. Helps with flakey connections.
     """
 
     def __init__(
         self,
-        base,
-        session,
-        filters=None,
-        key=None,
-        url=None,
-        headers=None,
-        cookies=None,
-        trailing_slash=False,
+        base: str,
+        session: Session,
+        filters: Optional[dict] = None,
+        key: Optional[str] = None,
+        url: Optional[str] = None,
+        headers: Optional[dict] = None,
+        cookies: Optional[dict] = None,
+        trailing_slash: bool = False,
     ):
         self.base = self.normalize_url(base, trailing_slash=trailing_slash)
         self.session = session
@@ -135,12 +136,12 @@ class Request(object):
     )
     def _make_call(
         self,
-        verb="get",
-        url_override=None,
-        add_params=None,
-        json=None,
-        data=None,
-        files=None,
+        verb: str = "get",
+        url_override: Optional[str] = None,
+        add_params: Optional[dict] = None,
+        json: Optional[dict] = None,
+        data: Optional[dict] = None,
+        files: list = None,
     ) -> RequestResponse:
         if self.headers:
             headers = self.headers

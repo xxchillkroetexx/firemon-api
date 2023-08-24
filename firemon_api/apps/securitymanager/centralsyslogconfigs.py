@@ -11,11 +11,10 @@ limitations under the License.
 import logging
 
 # Local packages
-from firemon_api.apps import SecurityManager
+from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
-from firemon_api.core.query import Request, RequestResponse
 
 log = logging.getLogger(__name__)
 
@@ -31,7 +30,7 @@ class CentralSyslogConfig(Record):
     _ep_name = "centralsyslogconfig"
     _is_domain_url = True
 
-    def __init__(self, config: dict, app: SecurityManager):
+    def __init__(self, config: dict, app: App):
         super().__init__(config, app)
 
 
@@ -49,9 +48,7 @@ class CentralSyslogConfigs(Endpoint):
     ep_name = "centralsyslogconfig"
     _is_domain_url = True
 
-    def __init__(
-        self, api: FiremonAPI, app: SecurityManager, record=CentralSyslogConfig
-    ):
+    def __init__(self, api: FiremonAPI, app: App, record=CentralSyslogConfig):
         super().__init__(api, app, record=record)
 
     def filter(self, *args, **kwargs) -> list[CentralSyslogConfig]:

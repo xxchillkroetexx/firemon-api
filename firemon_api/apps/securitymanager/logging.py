@@ -12,7 +12,7 @@ import logging
 from typing import Optional
 
 # Local packages
-from firemon_api.apps import SecurityManager
+from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record, JsonField
@@ -31,7 +31,7 @@ class Logger(Record):
 
     _ep_name = "logging"
 
-    def __init__(self, config: dict, app: SecurityManager):
+    def __init__(self, config: dict, app: App):
         super().__init__(config, app)
 
     def set_level(self, level: str):
@@ -105,7 +105,7 @@ class Logging(Endpoint):
 
     ep_name = "logging"
 
-    def __init__(self, api: FiremonAPI, app: SecurityManager, record=Logger):
+    def __init__(self, api: FiremonAPI, app: App, record=Logger):
         super().__init__(api, app, record=record)
 
     def all(self) -> list[Logger]:
