@@ -40,8 +40,8 @@ class PacketTaskRequirement(TypedDict, total=False):
     childKey: str  # "add_access" / "??"
     variables: PacketTaskRequirementVars
     action: str  # "ACCEPT" / "DROP"
-    urlMatchers: str
-    profiles: str
+    urlMatchers: list[str]
+    profiles: list[str]
 
 
 class PacketTask(Record):
