@@ -10,7 +10,15 @@ The ``firemon-api`` is an attempt to make a Pythonic wrapper to the FireMon SIP 
 
 The intent is to hopefully speed up development of projects. There is no intent to do a 1-to-1 reference of all
 the potential API calls. If that is desired you may try to use the dynamically built functions created using
-the ``get_api()``. There is also no intention to follow any version of the FireMon products and so there may
+the ``get_api()``. Or read the ``/api-doc`` of your FireMon product and make use of the ``request()`` function for
+the individually created application objects.
+
+**Request Example**::
+
+   >>> fm.sm.request(key="device", use_domain=True).get()
+   [{'id': 27, 'domainId': 1, 'name': 'PA-VM 11.0.1', 'managementIp': <snip...>]
+
+There is also no intention to follow any version of the FireMon products and so there may
 be instances where a function worked in one version but no longer in another though this generally is not a 
 problem.
 

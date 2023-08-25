@@ -12,6 +12,14 @@ I have attempted to create a dynamic interface for all API calls if there is som
 
 ex: (`get_1`, `get_2`, `get_3`, ...)
 
+Or use the `/api-doc` from your FireMon server to extrapolate the need keys and methods to make and use the `request()`
+function for the specific FireMon application.
+
+```
+>>> fm.sm.request(key="device", use_domain=True).get()
+[{'id': 27, 'domainId': 1, 'name': 'PA-VM 11.0.1', 'managementIp': <snip...>]
+```
+
 # Usage
 
 Import module. Disable unverfied https certificate warnings. Switch https verification off.

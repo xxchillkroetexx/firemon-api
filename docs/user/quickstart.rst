@@ -23,8 +23,8 @@ and each has its own API. Each of these applications, once authed, are available
 api object as another attribute. Each app also has a simple entry to the api which the user
 may use to build requests for calls that may not be covered in other modules or for which
 a direct response is more desirable. The following shows examples of making requests that
-make use of "building" up of the `app_url` or the `domain_url` to make building API calls
-shorter. The `/api-doc` endpoint on your FireMon server should provide documentation for 
+make use of "building" up of the ``app_url`` or the ``domain_url`` to make building API calls
+shorter. The ``/api-doc`` endpoint on your FireMon server should provide documentation for 
 queries.
 
 ::
