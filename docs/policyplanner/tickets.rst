@@ -2,10 +2,6 @@ Tickets or Packets
 ==================
 
 Once a user has a workflow object they may access and create tickets/packets.
-If a user had their workflow setup to Autodesign their request and their
-environment is capable of making correct Rule Recommendations because FireMon
-has knowledge of routing then the following example flow will automate changes 
-to the users security devices that are licensed for automation.
 
 To access and view all the tickets from a workflow.
 
@@ -17,6 +13,14 @@ To access and view all the tickets from a workflow.
     >>> ticket = wf.tickets.get(1)
     >>> ticket
     <Packet(1)>
+
+Automation In Action
+--------------------
+
+If a user had their workflow setup to Autodesign their request and their
+environment is capable of making correct Rule Recommendations because FireMon
+has knowledge of routing then the following example flow will automate changes 
+to the users security devices that are licensed for automation.
 
 To create a new ticket the user needs to make a dictionary of values and submit the data.
 

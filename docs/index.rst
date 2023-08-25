@@ -32,6 +32,8 @@ problem.
    CSM-2
    vSRX-3
 
+   >>> fm.sm.request(key="device", use_domain=True).get()
+   [{'id': 27, 'domainId': 1, 'name': 'PA-VM 11.0.1', 'managementIp': <snip...>]
 
 User Guide
 ----------
@@ -54,3 +56,13 @@ Security Manager
    securitymanager/devices
    securitymanager/users
    securitymanager/siql
+
+
+Policy Planner
+--------------
+
+.. toctree::
+   :maxdepth: 2
+
+   policyplanner/workflows
+   policyplanner/tickets
