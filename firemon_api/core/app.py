@@ -140,7 +140,7 @@ class App(object):
         )
         return req.get()
 
-    def make_query(
+    def request(
         self,
         use_domain: Optional[bool] = False,
         filters: Optional[dict] = None,
