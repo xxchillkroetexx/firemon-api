@@ -9,7 +9,7 @@ limitations under the License.
 """
 
 import logging
-from typing import Callable
+from typing import Callable, Optional
 
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.query import Request, RequestResponse
@@ -139,6 +139,33 @@ class App(object):
             session=self.session,
         )
         return req.get()
+
+    def make_query(
+        self,
+        use_domain: Optional[bool] = False,
+        filters: Optional[dict] = None,
+        key: Optional[str] = None,
+        url: Optional[str] = None,
+        headers: Optional[dict] = None,
+        cookies: Optional[dict] = None,
+        trailing_slash: bool = False,
+    ) -> Request:
+        base = self.app_url
+        if use_domain:
+            base = self.domain_url
+
+        request = Request(
+            base=base,
+            session=self.session,
+            filters=filters,
+            key=key,
+            url=url,
+            headers=headers,
+            cookies=cookies,
+            trailing_slash=trailing_slash,
+        )
+
+        return request
 
     def __repr__(self):
         return f"<App({self.name})>"
