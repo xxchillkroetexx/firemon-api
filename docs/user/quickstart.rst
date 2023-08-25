@@ -18,6 +18,32 @@ along with a valid username and password.
     >>> fm
     <Firemon(host='saffron', version='9.12.0')>
 
+FireMon has a number of applications such as Security Manager (sm) and Policy Planner (pp)
+and each has its own API. Each of these applications, once authed, are available from the
+api object as another attribute. Each app also has a simple entry to the api which the user
+may use to build requests for calls that may not be covered in other modules or for which
+a direct response is more desirable. The following shows examples of making requests that
+make use of "building" up of the `app_url` or the `domain_url` to make building API calls
+shorter. The `/api-doc` endpoint on your FireMon server should provide documentation for 
+queries.
+
+::
+    
+    >>> fm.sm.app_url
+    'https://tuna-9-13-1-aio/securitymanager/api'
+    >>> fm.sm.domain_url
+    'https://tuna-9-13-1-aio/securitymanager/api/domain/1'
+
+    >>> fm.sm.request(key="collector").get()
+    [{'changeThreads': 5, 'commandProcessorMinThreads': 1, 'commandProcessorMaxThreads': 5, 'eventDispatcherThreads': 0, <snip...>]
+
+    >>> fm.sm.request(key="device", use_domain=True).get()
+    [{'id': 27, 'domainId': 1, 'name': 'PA-VM 11.0.1', 'managementIp': <snip...>]
+
+    >>> help(fm.sm.request)
+    Help on method request in module firemon_api.core.app:
+
+    request(use_domain: Optional[bool] = False, filters: Optional[dict] = None, key: Optional[str] = None, url: Optional[str] = None, headers: Optional[dict] = None, cookies: Optional[dict] = None, trailing_slash: bool = False) -> firemon_api.core.query.Request method of firemon_api.apps.SecurityManager instance
 
 Security Manager
 ----------------
