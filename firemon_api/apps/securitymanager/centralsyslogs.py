@@ -8,14 +8,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 # Standard packages
-import json
 import logging
 
 # Local packages
+from firemon_api.core.app import App
+from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
-from firemon_api.core.response import Record, JsonField
-from firemon_api.core.utils import _build_dict
-from firemon_api.core.query import Request, url_param_builder
+from firemon_api.core.response import Record
+from firemon_api.core.query import Request, RequestResponse
 from .centralsyslogconfigs import CentralSyslogConfig
 
 log = logging.getLogger(__name__)
@@ -33,13 +33,13 @@ class CentralSyslog(Record):
     _is_domain_url = True
     centralSyslogConfig = CentralSyslogConfig
 
-    def __init__(self, config, app):
+    def __init__(self, config: dict, app: App):
         super().__init__(config, app)
 
         # not needed for `serialize` update using ep function
         self._no_no_keys = ["centralSyslogConfig"]
 
-    def device_set(self, id: int):
+    def device_set(self, id: int) -> RequestResponse:
         """Set a device to this Central Syslog
 
         Args:
@@ -56,7 +56,7 @@ class CentralSyslog(Record):
         )
         return req.post()
 
-    def device_unset(self, id: int):
+    def device_unset(self, id: int) -> RequestResponse:
         """Unset a device to this Central Syslog
 
         Args:
@@ -73,7 +73,7 @@ class CentralSyslog(Record):
         )
         return req.delete()
 
-    def csc_set(self, id: int):
+    def csc_set(self, id: int) -> RequestResponse:
         """Set a Central Syslog Config to this CS
 
         Args:
@@ -109,8 +109,8 @@ class CentralSyslogs(Endpoint):
     ep_name = "central-syslog"
     _is_domain_url = True
 
-    def __init__(self, api, app, record=CentralSyslog):
-        super().__init__(api, app, record=CentralSyslog)
+    def __init__(self, api: FiremonAPI, app: App, record=CentralSyslog):
+        super().__init__(api, app, record=record)
 
     def _make_filters(self, values):
         # Only a 'search' for a single value. Take all key-values

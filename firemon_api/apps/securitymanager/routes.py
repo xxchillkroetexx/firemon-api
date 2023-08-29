@@ -8,14 +8,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 # Standard packages
-import json
 import logging
+from typing import Optional
 
 # Local packages
+from firemon_api.core.app import App
+from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
-from firemon_api.core.response import Record, JsonField
-from firemon_api.core.query import Request, url_param_builder, RequestError
-from firemon_api.core.utils import _build_dict
+from firemon_api.core.response import Record
+from firemon_api.core.query import Request
 
 log = logging.getLogger(__name__)
 
@@ -34,18 +35,18 @@ class Route(Record):
     _ep_name = "routeobject"
     _is_domain_url = True
 
-    def __init__(self, config, app):
+    def __init__(self, config: dict, app: App):
         super().__init__(config, app)
 
     def _url_create(self):
-        """ General self._url create. What is normally 'deviceId'. <sigh> """
+        """General self._url create. What is normally 'deviceId'. <sigh>"""
         url = f"{self._ep_url}/{self.deviceid}"
         return url
 
-    def save(self):
+    def save(self) -> None:
         raise NotImplementedError("Writes are not supported.")
 
-    def update(self):
+    def update(self) -> None:
         raise NotImplementedError("Writes are not supported.")
 
 
@@ -67,11 +68,17 @@ class Routes(Endpoint):
     ep_name = "routeobject/paged-search"
     _is_domain_url = True
 
-    def __init__(self, api, app, record=Route, device_id: int = None):
-        super().__init__(api, app, record=Route)
+    def __init__(
+        self,
+        api: FiremonAPI,
+        app: App,
+        record=Route,
+        device_id: Optional[int] = None,
+    ):
+        super().__init__(api, app, record=record)
         self._device_id = device_id
 
-    def all(self):
+    def all(self) -> list[Route]:
         """Get all `Record`"""
         if self._device_id:
             all_key = f"device/{self._device_id}/{self.__class__.ep_name}"
@@ -87,7 +94,7 @@ class Routes(Endpoint):
         revs = [self._response_loader(i) for i in req.get()]
         return sorted(revs, key=lambda x: x.deviceid, reverse=True)
 
-    def get(self, *args, **kwargs):
+    def get(self, *args, **kwargs) -> Route:
         """Query and retrieve individual Routes. Spelling matters.
 
         Args:
@@ -136,7 +143,7 @@ class Routes(Endpoint):
                     return filter_lookup[0]
             return None
 
-    def filter(self, **kwargs):
+    def filter(self, **kwargs) -> list[Route]:
         """Retrieve a filtered list of Routes
 
         Args:

@@ -9,12 +9,13 @@ limitations under the License.
 """
 # Standard packages
 import logging
-from urllib.parse import urlencode, quote
 
 # Local packages
+from firemon_api.core.app import App
+from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
-from firemon_api.core.response import Record, JsonField
-from firemon_api.core.query import Request, url_param_builder, RequestError
+from firemon_api.core.response import Record
+from firemon_api.core.query import Request
 
 from .devices import Device
 
@@ -37,10 +38,10 @@ class DeviceCluster(Record):
     _ep_name = "cluster"
     _is_domain_url = True
 
-    def __init__(self, config, app):
+    def __init__(self, config: dict, app: App):
         super().__init__(config, app)
 
-    def devices(self):
+    def devices(self) -> list[Device]:
         """Get all devices assigned to cluster"""
         key = "device"
         req = Request(
@@ -69,5 +70,5 @@ class DeviceClusters(Endpoint):
     ep_name = "cluster"
     _is_domain_url = True
 
-    def __init__(self, api, app, record=DeviceCluster):
-        super().__init__(api, app, record=DeviceCluster)
+    def __init__(self, api: FiremonAPI, app: App, record=DeviceCluster):
+        super().__init__(api, app, record=record)

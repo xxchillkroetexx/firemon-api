@@ -11,18 +11,17 @@ limitations under the License.
 # Standard packages
 import concurrent.futures as cf
 
-try:
-    from simplejson.errors import JSONDecodeError
-except ModuleNotFoundError:
-    from json.decoder import JSONDecodeError
+from json.decoder import JSONDecodeError
 import logging
+from typing import Union, Optional
 from urllib.parse import urlencode
 
+
 # third-party
+from requests import Session
 from tenacity import (
     before_sleep_log,
     retry,
-    retry_if_exception_type,
     retry_if_not_exception_type,
     stop_after_attempt,
     wait_exponential,
@@ -31,8 +30,10 @@ from requests.exceptions import ConnectionError
 
 log = logging.getLogger(__name__)
 
+RequestResponse = Union[bool, dict, str, bytes]
 
-def url_param_builder(param_dict):
+
+def url_param_builder(param_dict: dict) -> str:
     """Builds url parameters
     Creates URL paramters (e.g. '.../?xyz=r21&abc=123') from a dict
     passed in param_dict
@@ -40,7 +41,7 @@ def url_param_builder(param_dict):
     return f"?{urlencode(param_dict)}"
 
 
-def calc_pages(pageSize, total):
+def calc_pages(pageSize: int, total: int) -> int:
     """Calculate number of pages required for full results set."""
     return int(total / pageSize) + (pageSize % total > 0)
 
@@ -88,20 +89,20 @@ class Request(object):
             correlate to the filters a given endpoint accepts.
         key (str, optional): append to base to make up full url
         headers (dict, optional): specific headers to over ride session headers
-        cookies ():
+        cookies (dict, optional):
         trailing_slash (bool): Ensure a trailing slash for `self.url`retry_count (int): number of times to retry request call for any error except `RequestError`. Helps with flakey connections.
     """
 
     def __init__(
         self,
-        base,
-        session,
-        filters=None,
-        key=None,
-        url=None,
-        headers=None,
-        cookies=None,
-        trailing_slash=False,
+        base: str,
+        session: Session,
+        filters: Optional[dict] = None,
+        key: Optional[str] = None,
+        url: Optional[str] = None,
+        headers: Optional[dict] = None,
+        cookies: Optional[dict] = None,
+        trailing_slash: bool = False,
     ):
         self.base = self.normalize_url(base, trailing_slash=trailing_slash)
         self.session = session
@@ -112,14 +113,14 @@ class Request(object):
         self.headers = headers
         self.cookies = cookies
 
-    def normalize_url(self, url, trailing_slash=False):
+    def normalize_url(self, url: str, trailing_slash=False) -> str:
         if url[-1] == "/":
             return url.strip("/")
         if trailing_slash:
             return f"{url}/"
         return url
 
-    def normalize_key(self, key):
+    def normalize_key(self, key: str) -> str:
         if key[0] == "/":
             return key.lstrip("/")
         return key
@@ -135,13 +136,13 @@ class Request(object):
     )
     def _make_call(
         self,
-        verb="get",
-        url_override=None,
-        add_params=None,
-        json=None,
-        data=None,
-        files=None,
-    ):
+        verb: str = "get",
+        url_override: Optional[str] = None,
+        add_params: Optional[dict] = None,
+        json: Optional[dict] = None,
+        data: Optional[dict] = None,
+        files: list = None,
+    ) -> RequestResponse:
         if self.headers:
             headers = self.headers
         else:
@@ -205,7 +206,7 @@ class Request(object):
         else:
             raise RequestError(req)
 
-    def concurrent_get(self, ret, page_size, page_range):
+    def concurrent_get(self, ret: dict, page_size: int, page_range: list) -> None:
         futures_to_results = []
         with cf.ThreadPoolExecutor(max_workers=4) as pool:
             for page in page_range:
@@ -218,7 +219,7 @@ class Request(object):
                 result = future.result()
                 ret.extend(result["results"])
 
-    def get(self, add_params=None):
+    def get(self, add_params=None) -> RequestResponse:
         """Makes a GET request.
         Makes a GET request to FireMon API, and automatically recurses
         any paginated results.
@@ -254,7 +255,7 @@ class Request(object):
         else:
             return req
 
-    def put(self, json=None, data=None):
+    def put(self, json=None, data=None) -> RequestResponse:
         """Makes PUT request.
         Makes a PUT request to Firemon API. Not sure why we have PUT statements
         with no data but it is what it is.
@@ -272,7 +273,7 @@ class Request(object):
         """
         return self._make_call(verb="put", json=json, data=data)
 
-    def post(self, json=None, data=None, files=None):
+    def post(self, json=None, data=None, files=None) -> RequestResponse:
         """Makes POST request.
         Makes a POST request to Firemon API.
 
@@ -297,7 +298,7 @@ class Request(object):
         """
         return self._make_call(verb="post", json=json, data=data, files=files)
 
-    def delete(self):
+    def delete(self) -> bool:
         """Makes DELETE request.
         Makes a DELETE request to Firemon API.
 
@@ -309,7 +310,7 @@ class Request(object):
         """
         return self._make_call(verb="delete")
 
-    def get_count(self):
+    def get_count(self) -> int:
         """Returns object count for query
         returns the value of the "total" field.
 
@@ -323,7 +324,7 @@ class Request(object):
 
         return self._make_call()["total"]
 
-    def get_content(self):
+    def get_content(self) -> bytes:
         """Get content
         In some cases the appending of default pageSize
         my break our API calls. Appears to happen

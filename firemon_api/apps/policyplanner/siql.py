@@ -8,14 +8,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 # Standard packages
-import functools
-import json
 import logging
 
 # Local packages
-# from firemon_api.core.endpoint import Endpoint
-from firemon_api.core.response import Record
-from firemon_api.core.query import Request, url_param_builder
+from firemon_api.core.app import App
+from firemon_api.core.api import FiremonAPI
+from firemon_api.core.query import Request
 from firemon_api.apps.securitymanager.siql import SiqlData
 
 log = logging.getLogger(__name__)
@@ -34,9 +32,8 @@ class SiqlPP(object):
     ep_name = "siql"
     _is_domain_url = False
 
-    def __init__(self, api, app):
+    def __init__(self, api: FiremonAPI, app: App):
         self._return_obj = SiqlData
-        # self.return_obj = JsonField
         self.api = api
         self.session = api.session
         self.app = app
@@ -49,7 +46,7 @@ class SiqlPP(object):
         return self._return_obj(values, self.app)
         # return self.return_obj()
 
-    def _raw(self, query, key):
+    def _raw(self, query: str, key: str) -> SiqlData:
         """Raw SIQL query. The incantation used to summon Cthulu.
 
         Args:
@@ -66,7 +63,7 @@ class SiqlPP(object):
 
         return [self._response_loader(i) for i in resp]
 
-    def ticket(self, query):
+    def ticket(self, query: str) -> SiqlData:
         return self._raw(query, key="ticket/paged-search")
 
     def __repr__(self):

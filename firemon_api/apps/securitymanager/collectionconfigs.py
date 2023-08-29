@@ -8,14 +8,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 # Standard packages
-import json
 import logging
 
 # Local packages
+from firemon_api.core.app import App
+from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
-from firemon_api.core.utils import _build_dict
-from firemon_api.core.query import Request, url_param_builder
+from firemon_api.core.query import Request, RequestResponse
 
 log = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class CollectionConfig(Record):
 
     _ep_name = "collectionconfig"
 
-    def __init__(self, config, app):
+    def __init__(self, config: dict, app: App):
         super().__init__(
             config,
             app,
@@ -60,8 +60,8 @@ class CollectionConfig(Record):
             "lastModifiedDate",
         ]
 
-    def devicepack_set(self) -> bool:
-        """ Set CollectionConfig for Device Pack assignment. """
+    def devicepack_set(self) -> RequestResponse:
+        """Set CollectionConfig for Device Pack assignment."""
         key = f"devicepack/{self.devicePackId}/assignment/{self.id}"
         req = Request(
             base=self._ep_url,
@@ -70,7 +70,7 @@ class CollectionConfig(Record):
         )
         return req.put()
 
-    def devicepack_unset(self) -> bool:
+    def devicepack_unset(self) -> RequestResponse:
         """Unset CollectionConfig for Device Pack assignment.
         Effectively sets back to 'default'
         """
@@ -82,7 +82,7 @@ class CollectionConfig(Record):
         )
         return req.delete()
 
-    def device_set(self, id) -> bool:
+    def device_set(self, id: int) -> RequestResponse:
         """Set CollectionConfig for a device by ID. If requested
         device IDs device pack does not match CC device pack server
         handles mismatch and will NOT set. If device ID is not
@@ -102,7 +102,7 @@ class CollectionConfig(Record):
         )
         return req.put()
 
-    def device_unset(self, id) -> bool:
+    def device_unset(self, id: int) -> RequestResponse:
         """Unset a device from CollectionConfig
 
         Args:
@@ -143,19 +143,19 @@ class CollectionConfigs(Endpoint):
 
     def __init__(
         self,
-        api,
-        app,
+        api: FiremonAPI,
+        app: App,
         record=CollectionConfig,
         device_id: int = None,
         devicepack_id: int = None,
     ):
-        super().__init__(api, app, record=CollectionConfig)
+        super().__init__(api, app, record=record)
 
         self._device_id = device_id
         self._devicepack_id = devicepack_id
 
-    def all(self):
-        """Get all `Record` """
+    def all(self) -> list[CollectionConfig]:
+        """Get all `Record`"""
         filters = None
         if self.device_id:
             filters = {"devicePackId": self.devicepack_id}
@@ -168,7 +168,7 @@ class CollectionConfigs(Endpoint):
 
         return [self._response_loader(i) for i in req.get()]
 
-    def filter(self, *args, **kwargs):
+    def filter(self, *args, **kwargs) -> list[CollectionConfig]:
         """Retrieve a filterd list of CollectionConfigs
         Note: review the dictionary for all keywords
         Args:
@@ -194,7 +194,7 @@ class CollectionConfigs(Endpoint):
 
         return [cc for cc in cc_all if kwargs.items() <= dict(cc).items()]
 
-    def count(self):
+    def count(self) -> int:
         return len(self.all())
 
     @property

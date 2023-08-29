@@ -8,14 +8,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 # Standard packages
-import functools
-import json
 import logging
 
 # Local packages
-# from firemon_api.core.endpoint import Endpoint
+from firemon_api.core.app import App
+from firemon_api.core.api import FiremonAPI
 from firemon_api.core.response import Record
-from firemon_api.core.query import Request, url_param_builder
+from firemon_api.core.query import Request, RequestResponse
 
 log = logging.getLogger(__name__)
 
@@ -23,16 +22,16 @@ log = logging.getLogger(__name__)
 class SiqlData(Record):
     """A Siql Record."""
 
-    def __init__(self, config, app):
+    def __init__(self, config: dict, app: App):
         super().__init__(config, app)
 
-    def save(self):
+    def save(self) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
-    def update(self):
+    def update(self) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
-    def delete(self):
+    def delete(self) -> None:
         raise NotImplementedError("Writes are not supported for this Record.")
 
 
@@ -49,9 +48,8 @@ class Siql(object):
     ep_name = "siql"
     _is_domain_url = False
 
-    def __init__(self, api, app):
+    def __init__(self, api: FiremonAPI, app: App):
         self.return_obj = SiqlData
-        # self.return_obj = JsonField
         self.api = api
         self.session = api.session
         self.app = app
@@ -62,9 +60,8 @@ class Siql(object):
 
     def _response_loader(self, values):
         return self.return_obj(values, self.app)
-        # return self.return_obj()
 
-    def _raw(self, query, key):
+    def _raw(self, query: str, key: str) -> RequestResponse:
         """Raw SIQL query. The incantation used to summon Cthulu.
 
         Args:

@@ -9,12 +9,14 @@ limitations under the License.
 """
 # Standard packages
 import logging
+from typing import Optional
 
 # Local packages
+from firemon_api.core.app import App
+from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
-from firemon_api.core.response import Record, JsonField
-from firemon_api.core.query import Request, url_param_builder, RequestError
-from firemon_api.core.utils import _build_dict
+from firemon_api.core.response import Record
+from firemon_api.core.query import Request, RequestResponse
 
 log = logging.getLogger(__name__)
 
@@ -33,18 +35,24 @@ class Map(Record):
     _ep_name = "map"
     _is_domain_url = True
 
-    def __init__(self, config, app, device_id: int = None, group_id: int = 1):
+    def __init__(
+        self,
+        config: dict,
+        app: App,
+        device_id: Optional[int] = None,
+        group_id: int = 1,
+    ):
         super().__init__(config, app)
         self._device_id = device_id
         self._group_id = group_id
 
-    def save(self):
+    def save(self) -> None:
         raise NotImplementedError("Writes are not supported.")
 
-    def update(self):
+    def update(self) -> None:
         raise NotImplementedError("Writes are not supported.")
 
-    def delete(self):
+    def delete(self) -> None:
         raise NotImplementedError("Writes are not supported.")
 
 
@@ -67,8 +75,15 @@ class Maps(Endpoint):
     ep_name = "map"
     _is_domain_url = True
 
-    def __init__(self, api, app, record=Map, device_id: int = None, group_id: int = 1):
-        super().__init__(api, app, record=Map)
+    def __init__(
+        self,
+        api: FiremonAPI,
+        app: App,
+        record=Map,
+        device_id: Optional[int] = None,
+        group_id: int = 1,
+    ):
+        super().__init__(api, app, record=record)
         self._device_id = device_id
         self._group_id = group_id
 
@@ -86,13 +101,13 @@ class Maps(Endpoint):
             values, self.app, device_id=self._device_id, group_id=self._group_id
         )
 
-    def all(self):
+    def all(self) -> None:
         raise NotImplementedError("Unavailable")
 
-    def filter(self):
+    def filter(self) -> None:
         raise NotImplementedError("Unavailable")
 
-    def get(self):
+    def get(self) -> Map:
         """Get `Record`"""
 
         req = Request(
@@ -102,7 +117,7 @@ class Maps(Endpoint):
 
         return self._response_loader(req.get())
 
-    def create(self):
+    def create(self) -> Optional[RequestResponse]:
         """Create/Update `Record`"""
         if self._device_id:
             req = Request(

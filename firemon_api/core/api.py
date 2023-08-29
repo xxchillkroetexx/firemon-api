@@ -20,14 +20,10 @@ import requests  # performing web requests
 
 # Local packages
 import firemon_api
-from firemon_api.core.query import Request, url_param_builder, RequestError
-from firemon_api.apps import (
-    GlobalPolicyController,
-    Orchestration,
-    PolicyOptimizer,
-    PolicyPlanner,
-    SecurityManager,
-    ControlPanel,
+from firemon_api.core.query import (
+    Request,
+    RequestError,
+    RequestResponse,
 )
 
 log = logging.getLogger(__name__)
@@ -95,12 +91,11 @@ class FiremonAPI(object):
         self,
         host: str,
         timeout: int = 20,
-        verify: Optional = True,
-        cert: Optional = None,
+        verify: bool = True,
+        cert: Optional[str] = None,
         domain_id: int = 1,
         proxy: str = None,
     ):
-
         self.timeout = timeout
         self.verify = verify
         self.cert = cert
@@ -135,7 +130,7 @@ class FiremonAPI(object):
         self.username = username
         key = "securitymanager/api/authentication/login"
         payload = {"username": username, "password": password}
-        resp = Request(
+        Request(
             base=self.base_url,
             key=key,
             session=self.session,
@@ -148,9 +143,15 @@ class FiremonAPI(object):
         self._version = self._versions()["fmosVersion"]
         self._verify_domain(self.domain_id)
 
+        from firemon_api.apps import (
+            Orchestration,
+            PolicyOptimizer,
+            PolicyPlanner,
+            SecurityManager,
+        )
+
         self.sm = SecurityManager(self)
         self.orc = Orchestration(self)
-        self.gpc = GlobalPolicyController(self)
         self.po = PolicyOptimizer(self)
         self.pp = PolicyPlanner(self)
         return self
@@ -173,10 +174,13 @@ class FiremonAPI(object):
         ).post_cpl_auth(data=payload)
         self._cpl_cookies = r.cookies
         log.debug(r.json())
+
+        from firemon_api.apps import ControlPanel
+
         self.cpl = ControlPanel(self)
         return self
 
-    def _versions(self):
+    def _versions(self) -> RequestResponse:
         """All the version info from API"""
         key = "securitymanager/api/version"
         resp = Request(
@@ -186,7 +190,7 @@ class FiremonAPI(object):
         ).get()
         return resp
 
-    def _verify_domain(self, id):
+    def _verify_domain(self, id: int) -> None:
         """Verify that requested domain Id exists.
         Set the domain_id that will be used.
         """
@@ -202,7 +206,7 @@ class FiremonAPI(object):
         except RequestError:
             warnings.warn("User does not have access to requested domain calls")
 
-    def change_password(self, username: str, oldpw: str, newpw: str):
+    def change_password(self, username: str, oldpw: str, newpw: str) -> RequestResponse:
         """Allow change of SecMgr password without being authed for other
         API calls.
 
