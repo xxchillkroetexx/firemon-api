@@ -105,10 +105,6 @@ class DevicePack(Record):
         template["description"] = None
         template["managementIp"] = None
         template["domainId"] = self._app.api.domain_id  # set and verified in API
-        # Fix? in later versions we require a Group
-        # template['dataCollectorId'] = 1  # Assuming
-        # template['collectorGroupId] = ''
-        # template['collectorGroupName'] = ''
         template["devicePack"] = {}
         template["devicePack"]["artifactId"] = self.artifactId
         template["devicePack"]["deviceName"] = self.deviceName
@@ -127,10 +123,6 @@ class DevicePack(Record):
             return template
 
         for response in _find_dicts_with_key("key", resp):
-            # Get rid of headings that are capitalized
-            # hopefully all Json name format is followed
-            if response["key"][0].isupper():
-                continue
             # apparently we are serializing values `key.subkey` "interestingly".
             #   unsure if this is an Angular thing. Told that max of 1 key deep?
             key = None
@@ -138,17 +130,19 @@ class DevicePack(Record):
             k_s = response["key"].split(".", maxsplit=1)
             if len(k_s) == 1:
                 key = response["key"]
-                template["extendedSettingsJson"].setdefault(key)
             else:
                 key = k_s[0]
                 sub_key = k_s[1]
-                template["extendedSettingsJson"].setdefault(key, {}).setdefault(sub_key)
-            if "defaultValue" in response and not sub_key:
-                template["extendedSettingsJson"][key] = response["defaultValue"]
-            elif "defaultValue" in response:
-                template["extendedSettingsJson"][key][sub_key] = response[
-                    "defaultValue"
-                ]
+            default_value = response.get("defaultValue", None)
+            if default_value is not None:
+                if not sub_key:
+                    template["extendedSettingsJson"].setdefault(key)
+                    template["extendedSettingsJson"][key] = default_value
+                else:
+                    template["extendedSettingsJson"].setdefault(key, {}).setdefault(
+                        sub_key
+                    )
+                    template["extendedSettingsJson"][key][sub_key] = default_value
         return template
 
     def __str__(self):
