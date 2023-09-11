@@ -5,21 +5,24 @@ This project is for wrapper for the Firemon APIs (Security Manager, etc).
 
 The User Guide available on `Read the Docs <https://firemon-api.readthedocs.io/>` 
 
-Current Design
---------------
+Current Philosophy
+------------------
 
-Everything is basically being coded by hand to attempt to fit a schema that makes sense to me. 
-Endpoints are made and return objects which may have their own functions. For example search 
-and manipulation of devices and their data. This is attempt to make the API a bit more user 
-friendly without requiring more interaction by the user.
+The ``firemon-api`` is an attempt to make a Pythonic wrapper to the FireMon SIP APIs (Security Manager, etc...).
 
-I have attempted to create a dynamic interface for all API calls if there is something needed 
-that does not currently fit within the re-imagining of the API schema for user friendliness. 
-Each application should automatically create these. Unfortunately many of the ``operationId`` 
-for the API are not helpful in what they actually do:
+The intent is to hopefully speed up development of projects. There is no intent to do a 1-to-1 reference of all
+the potential API calls. If that is desired you may try to use the dynamically built functions created using
+the ``get_api()``. Or read the ``/api-doc`` of your FireMon product and make use of the ``request()`` function for
+the individually created application objects.
 
-ex: (``get_1``, ``get_2``, ``get_3``, ...)
+**Request Example**::
 
+   >>> fm.sm.request(key="device", use_domain=True).get()
+   [{'id': 27, 'domainId': 1, 'name': 'PA-VM 11.0.1', 'managementIp': <snip...>]
+
+There is currently no intention to follow any version of the FireMon products and so there may
+be instances where a function worked in one version but no longer in another though this generally is not a 
+problem.
 
 Installation of FireMon API
 ---------------------------
@@ -32,6 +35,7 @@ Install ``firemon-api`` into a Python ``venv``.
     ~$ source ~/virtualenvs/fmapi/bin/activate
     (fmapi) ~$ pip install firemon-api
     Collecting firemon-api
+    ...
 
 
 Usage

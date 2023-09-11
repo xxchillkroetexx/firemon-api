@@ -18,7 +18,7 @@ the individually created application objects.
    >>> fm.sm.request(key="device", use_domain=True).get()
    [{'id': 27, 'domainId': 1, 'name': 'PA-VM 11.0.1', 'managementIp': <snip...>]
 
-There is also no intention to follow any version of the FireMon products and so there may
+There is currently no intention to follow any version of the FireMon products and so there may
 be instances where a function worked in one version but no longer in another though this generally is not a 
 problem.
 
