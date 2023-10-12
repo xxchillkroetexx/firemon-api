@@ -13,6 +13,7 @@ from .centralsyslogs import CentralSyslogs, CentralSyslog
 from .collectionconfigs import CollectionConfigs, CollectionConfig
 from .collectors import Collectors, Collector, CollectorGroups, CollectorGroup
 from .deviceclusters import DeviceCluster, DeviceClusters
+from .devicegroups import DeviceGroup, DeviceGroups
 from .devicepacks import DevicePacks, DevicePack
 from .devices import Devices, Device
 from .elasticsearch import ElasticSearch
@@ -36,6 +37,8 @@ __all__ = [
     "Collector",
     "CollectorGroups",
     "CollectorGroup",
+    "DeviceGroups",
+    "DeviceGroup",
     "DevicePacks",
     "DevicePack",
     "Devices",

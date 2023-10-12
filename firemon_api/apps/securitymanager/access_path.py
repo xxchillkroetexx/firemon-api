@@ -15,13 +15,13 @@ from typing import Optional
 
 # Local packages
 from firemon_api.core.app import App
-from firemon_api.core.response import Record
+from firemon_api.core.response import BaseRecord
 from firemon_api.core.query import Request, RequestResponse
 
 log = logging.getLogger(__name__)
 
 
-class AccessPathEvent(Record):
+class AccessPathEvent(BaseRecord):
     """AccessPathEvent"""
 
     _ep_name = "apa"
@@ -34,17 +34,8 @@ class AccessPathEvent(Record):
     def _url_create(self):
         return self._url
 
-    def save(self) -> None:
-        raise NotImplementedError("Writes are not supported.")
 
-    def update(self) -> None:
-        raise NotImplementedError("Writes are not supported.")
-
-    def delete(self) -> None:
-        raise NotImplementedError("Writes are not supported.")
-
-
-class AccessPath(Record):
+class AccessPath(BaseRecord):
     """AccessPath"""
 
     _ep_name = "apa"
@@ -102,15 +93,6 @@ class AccessPath(Record):
         else:
             path["packet_result"] = event.get("ipPacketResult", {})
             self.paths.append(path)
-
-    def save(selfr) -> None:
-        raise NotImplementedError("Writes are not supported.")
-
-    def update(self) -> None:
-        raise NotImplementedError("Writes are not supported.")
-
-    def delete(self) -> None:
-        raise NotImplementedError("Writes are not supported.")
 
     def get_graphml(self) -> RequestResponse:
         req = Request(

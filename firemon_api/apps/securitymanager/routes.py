@@ -15,13 +15,13 @@ from typing import Optional
 from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
-from firemon_api.core.response import Record
+from firemon_api.core.response import BaseRecord
 from firemon_api.core.query import Request
 
 log = logging.getLogger(__name__)
 
 
-class Route(Record):
+class Route(BaseRecord):
     """Device Route Object `Record`.
 
     Args:
@@ -39,15 +39,8 @@ class Route(Record):
         super().__init__(config, app)
 
     def _url_create(self):
-        """General self._url create. What is normally 'deviceId'. <sigh>"""
         url = f"{self._ep_url}/{self.deviceid}"
         return url
-
-    def save(self) -> None:
-        raise NotImplementedError("Writes are not supported.")
-
-    def update(self) -> None:
-        raise NotImplementedError("Writes are not supported.")
 
 
 class Routes(Endpoint):

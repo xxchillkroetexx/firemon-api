@@ -17,7 +17,7 @@ from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
 from firemon_api.core.query import Request, RequestResponse, RequestError
-from .packets import Packets, Packet
+from .packets import Packets
 
 log = logging.getLogger(__name__)
 

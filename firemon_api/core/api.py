@@ -151,7 +151,7 @@ class FiremonAPI(object):
         )
 
         self.sm = SecurityManager(self)
-        self.orc = Orchestration(self)
+        self.orch = Orchestration(self)
         self.po = PolicyOptimizer(self)
         self.pp = PolicyPlanner(self)
         return self

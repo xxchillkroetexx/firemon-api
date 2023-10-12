@@ -13,26 +13,17 @@ import logging
 # Local packages
 from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
-from firemon_api.core.response import Record
+from firemon_api.core.response import BaseRecord
 from firemon_api.core.query import Request, RequestResponse
 
 log = logging.getLogger(__name__)
 
 
-class SiqlData(Record):
+class SiqlData(BaseRecord):
     """A Siql Record."""
 
     def __init__(self, config: dict, app: App):
         super().__init__(config, app)
-
-    def save(self) -> None:
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def update(self) -> None:
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def delete(self) -> None:
-        raise NotImplementedError("Writes are not supported for this Record.")
 
 
 class Siql(object):

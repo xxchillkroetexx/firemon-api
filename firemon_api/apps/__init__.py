@@ -18,6 +18,7 @@ from firemon_api.core.query import Request, RequestResponse
 log = logging.getLogger(__name__)
 
 
+from .orchestration import *
 from .policyoptimizer import *
 from .policyplanner import *
 from .securitymanager import *
@@ -55,6 +56,7 @@ class SecurityManager(App):
         self.collectors = Collectors(self.api, self)
         self.collectorgroups = CollectorGroups(self.api, self)
         self.deviceclusters = DeviceClusters(self.api, self)
+        self.devicegroups = DeviceGroups(self.api, self)
         self.devices = Devices(self.api, self)
         self.dp = DevicePacks(self.api, self)  # Todo: create the other /plugin
         self.es = ElasticSearch(self.api, self)
@@ -87,7 +89,7 @@ class Orchestration(App):
         super().__init__(api)
 
         # Endpoints
-        # self.xx = EndPoint(self)
+        self.changes = Changes(self.api, self)
 
 
 class PolicyOptimizer(App):
@@ -107,7 +109,7 @@ class PolicyOptimizer(App):
         super().__init__(api)
 
         # Endpoints
-        # self.xx = EndPoint(self)
+        # self.xx = EndPoint(self.api, self)
 
 
 class PolicyPlanner(App):

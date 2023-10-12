@@ -30,7 +30,7 @@ class JsonField(object):
     _json_field = True
 
 
-class Record(object):
+class BaseRecord(object):
     """Create python objects for json responses from Firemon
 
     Args:
@@ -80,11 +80,12 @@ class Record(object):
         if self._ep_url:
             self._url = self._url_create()
 
-        self._no_no_keys = []
-
     def _url_create(self) -> str:
         """General self._url create"""
-        url = f"{self._ep_url}/{self._config['id']}"
+        if self._config.get("id", None):
+            url = f"{self._ep_url}/{self._config['id']}"
+        else:
+            url = f"{self._ep_url}"
         return url
 
     def __iter__(self):
@@ -110,7 +111,6 @@ class Record(object):
         )
 
     def __repr__(self):
-        # return str(self)
         return f"<{self.__class__.__name__}({str(self)})>"
 
     def __getstate__(self):
@@ -178,6 +178,32 @@ class Record(object):
             return True
         return False
 
+    def dump(self) -> dict:
+        """Dump of unparsed config"""
+        return copy.deepcopy(self._config)
+
+
+class Record(BaseRecord):
+    """Create python objects for json responses from Firemon
+
+    Args:
+        config (dict): dictionary of things values from json
+        app (obj): App()
+
+    Example:
+        Cast object as a dictionary
+
+        >>> import pprint
+        >>> pprint.pprint(dict(x))
+        {'all': the.things,
+        ...}
+    """
+
+    def __init__(self, config: dict, app: App):
+        super().__init__(config, app)
+
+        self._no_no_keys = []
+
     def _clean_no_no(self, d: dict) -> dict:
         # remove no_no_keys from a dict. A list of keys for a Record
         # that might break if trying to `save` or `update`
@@ -240,10 +266,6 @@ class Record(object):
             {fmt_dict(k, v) for k, v in self.serialize(init=True).items()}
         )
         return set([i[0] for i in set(current.items()) ^ set(init.items())])
-
-    def dump(self) -> dict:
-        """Dump of unparsed config"""
-        return copy.deepcopy(self._config)
 
     def attr_set(self, k: str, v: Union[str, list, dict]) -> None:
         """Set an attribute and add it to the cache
