@@ -18,7 +18,7 @@ from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.query import Request
 from firemon_api.core.response import BaseRecord
-from firemon_api.apps.structure import RuleRecRequirement, PolicyPlanRequirement
+from firemon_api.apps.structure import RuleRecRequirement, ChangeRequestRequirement
 
 log = logging.getLogger(__name__)
 
@@ -128,7 +128,7 @@ class Changes(Endpoint):
 
     def rule_rec(
         self,
-        requirement: PolicyPlanRequirement,
+        requirement: ChangeRequestRequirement,
         license_category: Optional[
             Literal[
                 "LOG_SERVERS",

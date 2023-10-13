@@ -35,3 +35,9 @@ class RuleRecRequirement(TypedDict):
     sources: list[str]
     urlMatchers: Optional[list[str]]
     users: Optional[list[str]]
+    sourceMatchingStrategy: Optional[
+        Literal["INTERSECTS", "SUPERSET_OF"]
+    ]  # Planner defaults to INTERSECTS but RuleRec defaults to SUPERSET_OF
+    destinationMatchingStrategy: Optional[
+        Literal["INTERSECTS", "SUPERSET_OF"]
+    ]  # Planner defaults to INTERSECTS but RuleRec defaults to SUPERSET_OF
