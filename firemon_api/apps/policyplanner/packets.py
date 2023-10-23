@@ -17,7 +17,7 @@ from typing import Optional, TypedDict
 from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
-from firemon_api.core.response import Record
+from firemon_api.core.response import BaseRecord, Record
 from firemon_api.core.query import Request, RequestResponse
 from firemon_api.apps.structure import PolicyPlanRequirement
 from .siql import SiqlPP
@@ -276,7 +276,7 @@ class PacketTasks(Endpoint):
         return packet_task
 
 
-class Packet(Record):
+class Packet(BaseRecord):
     """Represents the Packet/Ticket record"""
 
     _ep_name = "packet"
@@ -293,17 +293,6 @@ class Packet(Record):
         self._url = self._url_create()
 
         self.pt = PacketTasks(self._app.api, self, self.id)
-
-    def save(self) -> None:
-        """Someday... maybe"""
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def update(self) -> None:
-        """Someday... maybe"""
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def delete(self) -> None:
-        raise NotImplementedError("Writes are not supported for this Record.")
 
     def refresh(self):
         key = f"{self.id}"
