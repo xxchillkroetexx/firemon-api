@@ -45,10 +45,7 @@ class BaseEndpoint(object):
         self.app = app
         self.base_url = api.base_url
         self.app_url = app.app_url
-        if self.__class__._is_domain_url:
-            self.domain_url = app.domain_url
-        else:
-            self.domain_url = app.base_url
+        self.domain_url = app.domain_url
         if self.__class__._is_domain_url and self.__class__.ep_name:
             self.url = f"{self.domain_url}/{self.__class__.ep_name}"
         elif self.__class__.ep_name:
