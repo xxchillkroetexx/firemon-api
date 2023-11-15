@@ -75,7 +75,7 @@ class BaseRecord(object):
         if config:
             self._parse_config(config)
 
-        # In almost every case this is the format of the `Record` url
+        # In almost every case this is the format of the `BaseRecord` url
         # if not, re-work in child class
         if self._ep_url:
             self._url = self._url_create()
@@ -178,6 +178,58 @@ class BaseRecord(object):
             return True
         return False
 
+    def _diff(self) -> set:
+        def fmt_dict(k, v):
+            if isinstance(v, dict):
+                return k, Hashabledict(v)
+            if isinstance(v, list):
+                return k, ",".join(map(str, v))
+            return k, v
+
+        current = Hashabledict({fmt_dict(k, v) for k, v in self.serialize().items()})
+        init = Hashabledict(
+            {fmt_dict(k, v) for k, v in self.serialize(init=True).items()}
+        )
+        return set([i[0] for i in set(current.items()) ^ set(init.items())])
+
+    def serialize(self, nested=False, init=False) -> dict:
+        """Serializes an object
+        Pulls all the attributes in an object and creates a dict that
+        can be turned into the json that Firemon is expecting.
+        If an attribute's value is a ``BaseRecord`` type it's replaced with
+        the ``id`` field of that object.
+        .. note::
+            Using this to get a dictionary representation of the record
+            is discouraged. It's probably better to cast to dict() or
+            dump() instead. See BaseRecord docstring for example. Why? Because
+            we are popping out _no_no_keys from the full config in the
+            hope that `update()` and `save()` just work
+
+        Return:
+            (dict)
+        """
+
+        if nested:
+            return get_return(self)
+
+        if init:
+            init_vals = self._clean_no_no(dict(self._init_cache))
+
+        ret = {}
+        for i in self._clean_no_no(dict(self)):
+            current_val = getattr(self, i) if not init else init_vals.get(i)
+
+            if isinstance(current_val, BaseRecord):
+                current_val = getattr(current_val, "serialize")(nested=True)
+
+            if isinstance(current_val, list):
+                current_val = [
+                    v.id if isinstance(v, BaseRecord) else v for v in current_val
+                ]
+
+            ret[i] = current_val
+        return ret
+
     def dump(self) -> dict:
         """Dump of unparsed config"""
         return copy.deepcopy(self._config)
@@ -213,59 +265,6 @@ class Record(BaseRecord):
             except KeyError:
                 continue
         return d
-
-    def serialize(self, nested=False, init=False) -> dict:
-        """Serializes an object
-        Pulls all the attributes in an object and creates a dict that
-        can be turned into the json that Firemon is expecting.
-        If an attribute's value is a ``Record`` type it's replaced with
-        the ``id`` field of that object.
-        .. note::
-            Using this to get a dictionary representation of the record
-            is discouraged. It's probably better to cast to dict() or
-            dump() instead. See Record docstring for example. Why? Because
-            we are popping out _no_no_keys from the full config in the
-            hope that `update()` and `save()` just work
-
-        Return:
-            (dict)
-        """
-
-        if nested:
-            return get_return(self)
-
-        if init:
-            init_vals = self._clean_no_no(dict(self._init_cache))
-
-        ret = {}
-        for i in self._clean_no_no(dict(self)):
-            current_val = getattr(self, i) if not init else init_vals.get(i)
-            # log.debug(current_val)
-
-            if isinstance(current_val, Record):
-                current_val = getattr(current_val, "serialize")(nested=True)
-
-            if isinstance(current_val, list):
-                current_val = [
-                    v.id if isinstance(v, Record) else v for v in current_val
-                ]
-
-            ret[i] = current_val
-        return ret
-
-    def _diff(self) -> set:
-        def fmt_dict(k, v):
-            if isinstance(v, dict):
-                return k, Hashabledict(v)
-            if isinstance(v, list):
-                return k, ",".join(map(str, v))
-            return k, v
-
-        current = Hashabledict({fmt_dict(k, v) for k, v in self.serialize().items()})
-        init = Hashabledict(
-            {fmt_dict(k, v) for k, v in self.serialize(init=True).items()}
-        )
-        return set([i[0] for i in set(current.items()) ^ set(init.items())])
 
     def attr_set(self, k: str, v: Union[str, list, dict]) -> None:
         """Set an attribute and add it to the cache
