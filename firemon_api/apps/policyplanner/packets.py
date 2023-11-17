@@ -17,33 +17,13 @@ from typing import Optional, TypedDict
 from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
-from firemon_api.core.response import Record
+from firemon_api.core.response import BaseRecord, Record
 from firemon_api.core.query import Request, RequestResponse
+from firemon_api.apps.structure import PolicyPlanRequirement
 from .siql import SiqlPP
 from .policyplan import Changes, Requirements
 
 log = logging.getLogger(__name__)
-
-
-class PolicyPlanRequirementVars(TypedDict, total=False):
-    deviceGroupId: int
-    expiration: str  # format "YYYY-MM-DDTHH:mm:ss+0000"
-    review: str  # format "YYYY-MM-DDTHH:mm:ss+0000"
-
-
-class PolicyPlanRequirement(TypedDict, total=False):
-    requirementType: str  # "RULE" / "CLONE" / "??"
-    app: list[str]
-    destinations: list[str]
-    services: list[str]
-    sources: list[str]
-    users: list[str]
-    childKey: str  # "add_access" / "??"
-    action: str  # "ACCEPT" / "DROP"
-    urlMatchers: list[str]
-    profiles: list[str]
-    addressesToClone: list[str]  # used for "CLONE" type and the list is a single IP
-    variables: PolicyPlanRequirementVars
 
 
 class PacketTaskError(Exception):
@@ -296,7 +276,7 @@ class PacketTasks(Endpoint):
         return packet_task
 
 
-class Packet(Record):
+class Packet(BaseRecord):
     """Represents the Packet/Ticket record"""
 
     _ep_name = "packet"
@@ -313,17 +293,6 @@ class Packet(Record):
         self._url = self._url_create()
 
         self.pt = PacketTasks(self._app.api, self, self.id)
-
-    def save(self) -> None:
-        """Someday... maybe"""
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def update(self) -> None:
-        """Someday... maybe"""
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def delete(self) -> None:
-        raise NotImplementedError("Writes are not supported for this Record.")
 
     def refresh(self):
         key = f"{self.id}"

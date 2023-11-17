@@ -26,7 +26,8 @@ from tenacity import (
     stop_after_attempt,
     wait_exponential,
 )
-from requests.exceptions import ConnectionError
+
+# from requests.exceptions import ConnectionError
 
 log = logging.getLogger(__name__)
 
@@ -162,7 +163,7 @@ class Request(object):
 
         if params:
             log.info(
-                f"{verb.upper()}: {url_override or f'{self.url}?{urlencode(params)}'}"
+                f"{verb.upper()}: {url_override or f'{self.url}?{urlencode(params, doseq=True)}'}"
             )
         else:
             log.info(f"{verb.upper()}: {url_override or f'{self.url}'}")

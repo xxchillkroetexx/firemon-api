@@ -15,28 +15,19 @@ from typing import Optional
 from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
-from firemon_api.core.response import Record
+from firemon_api.core.response import BaseRecord
 from firemon_api.core.query import Request, RequestResponse, RequestError
 
 log = logging.getLogger(__name__)
 
 
-class NormalizedData(Record):
+class NormalizedData(BaseRecord):
     """A NORMALIZED Revision. All the things."""
 
     _ep_name = "rev"
 
     def __init__(self, config: dict, app: App):
         super().__init__(config, app)
-
-    def save(self) -> None:
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def update(self) -> None:
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def delete(self) -> None:
-        raise NotImplementedError("Writes are not supported for this Record.")
 
     def _url_create(self):
         """General self.url create"""
@@ -47,7 +38,7 @@ class NormalizedData(Record):
         return str(self.revisionId)
 
 
-class RevFile(Record):
+class RevFile(BaseRecord):
     """A Revision File"""
 
     _ep_name = "rev"
@@ -60,15 +51,6 @@ class RevFile(Record):
         """General self.url create"""
         url = f"{self._ep_url}/{self.rev_id}/nd/file/{self._config['id']}"
         return url
-
-    def save(self) -> None:
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def update(self) -> None:
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def delete(self) -> None:
-        raise NotImplementedError("Writes are not supported for this Record.")
 
     def get(self) -> RequestResponse:
         """Get the raw file
@@ -89,7 +71,7 @@ class RevFile(Record):
         return f"{self.name}"
 
 
-class Revision(Record):
+class Revision(BaseRecord):
     """Revision `Record`
     'ndrevisions' and 'normalization'.
 
@@ -119,12 +101,6 @@ class Revision(Record):
         self._domain_id = config["domainId"]
         self._device_id = config["deviceId"]
         self.files = self._files_load()
-
-    def save(self) -> None:
-        raise NotImplementedError("Writes are not supported.")
-
-    def update(self) -> None:
-        raise NotImplementedError("Writes are not supported.")
 
     def delete(self) -> RequestResponse:
         """Deletes an existing object.

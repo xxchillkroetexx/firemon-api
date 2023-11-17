@@ -15,13 +15,13 @@ from typing import Optional
 from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
-from firemon_api.core.response import Record
+from firemon_api.core.response import BaseRecord
 from firemon_api.core.query import Request, RequestResponse
 
 log = logging.getLogger(__name__)
 
 
-class Zone(Record):
+class Zone(BaseRecord):
     """Device Zone Object `Record`.
 
     Args:
@@ -42,12 +42,6 @@ class Zone(Record):
         """General self._url create. What is normally 'deviceId'. <sigh>"""
         url = f"{self._ep_url}/{self.deviceid}"
         return url
-
-    def save(self) -> None:
-        raise NotImplementedError("Writes are not supported.")
-
-    def update(self) -> None:
-        raise NotImplementedError("Writes are not supported.")
 
 
 class Zones(Endpoint):
@@ -169,7 +163,7 @@ class Zones(Endpoint):
         return [zone for zone in zone_all if kwargs.items() <= dict(zone).items()]
 
 
-class FmZone(Record):
+class FmZone(BaseRecord):
     """Firemon System Zone `Record`.
 
     Args:

@@ -15,28 +15,19 @@ from typing import Optional
 from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
-from firemon_api.core.response import Record
+from firemon_api.core.response import Record, BaseRecord
 from firemon_api.core.query import Request, RequestResponse, RequestError
 
 log = logging.getLogger(__name__)
 
 
-class Permission(Record):
+class Permission(BaseRecord):
     """A Permission."""
 
     _ep_name = "permissions"
 
     def __init__(self, config: dict, app: App):
         super().__init__(config, app)
-
-    def save(self) -> None:
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def update(self) -> None:
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def delete(self) -> None:
-        raise NotImplementedError("Writes are not supported for this Record.")
 
     def __repr__(self):
         return f"Permission<(id='{self.id}')>"

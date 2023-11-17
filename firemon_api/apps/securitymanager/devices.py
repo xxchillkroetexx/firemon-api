@@ -9,9 +9,11 @@ limitations under the License.
 """
 # Standard packages
 import logging
-from typing import TypedDict
-from urllib.parse import quote
 import uuid
+from urllib.parse import quote
+from typing import Literal
+from typing import Optional
+
 
 # Local packages
 from firemon_api.core.app import App
@@ -19,24 +21,18 @@ from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record, JsonField
 from firemon_api.core.query import Request, RequestResponse, RequestError
+from firemon_api.apps.structure import ApaInterface
+from firemon_api.apps.structure import RuleRecRequirement
 from .access_path import AccessPath
 from .devicepacks import DevicePack
 from .collectionconfigs import CollectionConfigs
 from .maps import Maps
 from .revisions import Revision, Revisions, NormalizedData
 from .routes import Routes
+from .rulerec import RuleRecommendation
 from .zones import Zones
 
 log = logging.getLogger(__name__)
-
-
-class ApaInterface(TypedDict):
-    intfName: str
-    virtualRouterId: str  # guid
-    routes: bool
-    handles: bool
-    arps: bool
-    gatewayy: bool
 
 
 class Device(Record):
@@ -768,6 +764,54 @@ class Device(Record):
             session=self._session,
         )
         return req.get()
+
+    def rule_rec(
+        self,
+        requirement: RuleRecRequirement,
+        license_category: Optional[
+            Literal[
+                "LOG_SERVERS",
+                "ROUTERS",
+                "OPERATING_SYSTEMS",
+                "FIREWALLS",
+                "FIREWALL_MANAGER_MODULES",
+                "EDGE_DEVICES",
+                "GENERIC_DEVICES",
+                "TRAFFIC_MANAGER_MODULES",
+                "UNKNOWN",
+                "SALES_ONLY_SMLO_HA",
+                "SALES_ONLY_SMSO_HA",
+                "SALES_ONLY_SMM_HA",
+                "POLICY_PLANNER",
+                "RISK",
+                "POLICY_OPTIMIZER",
+                "INSIGHT",
+                "GLOBAL_POLICY_CONTROLLER",
+                "AUTOMATION",
+                "LICENSE_NOT_REQUIRED",
+            ]
+        ] = None,
+        strategy: Literal["NAME_PATTERN", "HITCOUNT", "REFERENCES", "NONE"] = "NONE",
+        force_tiebreak: Optional[bool] = None,
+        pattern: Optional[str] = None,
+    ) -> RuleRecommendation:
+        key = f"rulerec"
+        filters = {}
+        if license_category:
+            filters["licenseCategory"] = license_category
+        if strategy:
+            filters["strategy"] = strategy
+        if force_tiebreak:
+            filters["forceTiebreak"] = force_tiebreak
+        if pattern:
+            filters["pattern"] = pattern
+        req = Request(
+            base=self._url,
+            key=key,
+            filters=filters,
+            session=self._session,
+        )
+        return RuleRecommendation(req.put(json=requirement), self)
 
 
 class Devices(Endpoint):

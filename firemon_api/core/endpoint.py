@@ -14,11 +14,11 @@ from typing import Optional, Union
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.app import App
 from firemon_api.core.query import Request
-from firemon_api.core.response import Record, JsonField
+from firemon_api.core.response import BaseRecord, Record, JsonField
 
 
-class Endpoint(object):
-    """Represent actions available on endpoints
+class BaseEndpoint(object):
+    """Represents a Basic Endpoint
 
     Args:
         api (obj): FiremonAPI()
@@ -34,23 +34,45 @@ class Endpoint(object):
         self,
         api: FiremonAPI,
         app: App,
-        record: Optional[Union[Record, JsonField]] = None,
+        record: Optional[Union[BaseRecord, JsonField]] = None,
     ):
         if record:
             self.return_obj = record
         else:
-            self.return_obj = Record
+            self.return_obj = BaseRecord
         self.api = api
         self.session = api.session
         self.app = app
         self.base_url = api.base_url
         self.app_url = app.app_url
         self.domain_url = app.domain_url
-        self.url = None
         if self.__class__._is_domain_url and self.__class__.ep_name:
             self.url = f"{self.domain_url}/{self.__class__.ep_name}"
         elif self.__class__.ep_name:
             self.url = f"{self.app_url}/{self.__class__.ep_name}"
+        else:
+            self.url = self.app_url
+
+    def _response_loader(self, values: dict) -> BaseRecord:
+        return self.return_obj(values, self.app)
+
+
+class Endpoint(BaseEndpoint):
+    """Represent actions available on endpoints beyond just a base
+
+    Args:
+        api (obj): FiremonAPI()
+        app (obj): App()
+        record (obj): optional `Record` to use
+    """
+
+    def __init__(
+        self,
+        api: FiremonAPI,
+        app: App,
+        record: Optional[Union[Record, JsonField]] = None,
+    ):
+        super().__init__(api, app, record=record)
 
         # These will be used update `key` values for `query.Request`
         # (i.e. they will be appended to 'self.url' to get full path)
@@ -62,9 +84,6 @@ class Endpoint(object):
             "create": None,
             "count": None,
         }
-
-    def _response_loader(self, values: dict):
-        return self.return_obj(values, self.app)
 
     def _make_filters(self, values: dict):
         # Our filters do not appear to be standardized across
@@ -201,7 +220,7 @@ class Endpoint(object):
         return f"{self.url}"
 
 
-class EndpointCpl(object):
+class EndpointCpl(BaseEndpoint):
     """Represent actions available on Control Panel
 
     Args:
@@ -210,22 +229,10 @@ class EndpointCpl(object):
         record (obj): optional `Record` to use
     """
 
-    url = None
-    ep_name = None
-
-    def __init__(self, api, app, record=None):
-        if record:
-            self.return_obj = record
-        else:
-            self.return_obj = Record
-        self.api = api
-        self.session = api.session
-        self.app = app
-        self.base_url = api.base_url
-        self.app_url = app.app_url
-        self.url = None
-        if self.__class__.ep_name:
-            self.url = f"{self.app_url}/{self.__class__.ep_name}"
-
-    def _response_loader(self, values: dict) -> Record:
-        return self.return_obj(values, self.app)
+    def __init__(
+        self,
+        api: FiremonAPI,
+        app: App,
+        record: Optional[Union[Record, JsonField]] = None,
+    ):
+        super().__init__(api, app, record=record)

@@ -14,15 +14,15 @@ from typing import Optional
 # Local packages
 from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
-from firemon_api.core.endpoint import Endpoint
-from firemon_api.core.response import Record
+from firemon_api.core.endpoint import BaseEndpoint
+from firemon_api.core.response import BaseRecord
 from firemon_api.core.query import Request, RequestResponse
 
 log = logging.getLogger(__name__)
 
 
-class Map(Record):
-    """APA Map Object `Record`.
+class Map(BaseRecord):
+    """APA Map Object `BaseRecord`.
 
     Args:
         config (dict): dictionary of things values from json
@@ -46,17 +46,8 @@ class Map(Record):
         self._device_id = device_id
         self._group_id = group_id
 
-    def save(self) -> None:
-        raise NotImplementedError("Writes are not supported.")
 
-    def update(self) -> None:
-        raise NotImplementedError("Writes are not supported.")
-
-    def delete(self) -> None:
-        raise NotImplementedError("Writes are not supported.")
-
-
-class Maps(Endpoint):
+class Maps(BaseEndpoint):
     """Access Path Maps Object Endpoint.
 
     Args:
@@ -100,12 +91,6 @@ class Maps(Endpoint):
         return self.return_obj(
             values, self.app, device_id=self._device_id, group_id=self._group_id
         )
-
-    def all(self) -> None:
-        raise NotImplementedError("Unavailable")
-
-    def filter(self) -> None:
-        raise NotImplementedError("Unavailable")
 
     def get(self) -> Map:
         """Get `Record`"""

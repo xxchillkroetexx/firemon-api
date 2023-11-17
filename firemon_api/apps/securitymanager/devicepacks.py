@@ -15,7 +15,7 @@ from typing import Optional
 from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
-from firemon_api.core.response import Record
+from firemon_api.core.response import BaseRecord
 from firemon_api.core.query import Request, RequestResponse, RequestError
 from firemon_api.core.utils import _find_dicts_with_key
 from .collectionconfigs import CollectionConfig
@@ -23,7 +23,7 @@ from .collectionconfigs import CollectionConfig
 log = logging.getLogger(__name__)
 
 
-class DevicePack(Record):
+class DevicePack(BaseRecord):
     """Representation of the device pack
 
     Args:
@@ -40,7 +40,6 @@ class DevicePack(Record):
 
     _ep_name = "plugin"
     collectionConfig = CollectionConfig
-    # collectionConfig = JsonField
 
     def __init__(self, config: dict, app: App):
         super().__init__(config, app)
@@ -52,13 +51,6 @@ class DevicePack(Record):
         """General self.url create"""
         url = f"{self._ep_url}/{self.groupId}/{self.artifactId}"
         return url
-
-    def update(self) -> None:
-        """Nothing to update"""
-        raise NotImplementedError("Writes are not supported for this endpoint.")
-
-    def save(self) -> None:
-        raise NotImplementedError("Writes are not supported for this endpoint.")
 
     def layout(self) -> RequestResponse:
         key = "layout"
@@ -286,21 +278,12 @@ class DevicePacks(Endpoint):
         return req.post(files=files)
 
 
-class ArtifactFile(Record):
+class ArtifactFile(BaseRecord):
     """An Artifact File"""
 
     def __init__(self, config: dict, app: App, ep_url: str):
         super().__init__(config, app)
         self._url = f"{ep_url}/{config['name']}"
-
-    def save(self) -> None:
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def update(self) -> None:
-        raise NotImplementedError("Writes are not supported for this Record.")
-
-    def delete(self) -> None:
-        raise NotImplementedError("Writes are not supported for this Record.")
 
     def get(self) -> RequestResponse:
         """Get the raw file
