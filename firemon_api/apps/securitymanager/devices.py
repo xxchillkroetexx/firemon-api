@@ -261,13 +261,13 @@ class Device(Record):
                 "protocol": protocol,
             },
         }
-        if source_port:
+        if not source_port == None:
             json["testIpPacket"]["sourcePort"] = source_port
-        if dest_port:
+        if not dest_port == None:
             json["testIpPacket"]["port"] = dest_port
-        if icmp_type:
+        if not icmp_type == None:
             json["testIpPacket"]["icmpType"] = icmp_type
-        if icmp_code:
+        if not icmp_code == None:
             json["testIpPacket"]["icmpCode"] = icmp_code
         if user:
             json["testIpPacket"]["user"] = user
@@ -351,16 +351,16 @@ class Device(Record):
                 "protocol": protocol,
             },
         }
-        if source_port:
+        if not source_port == None:
             json["testIpPacket"]["sourcePort"] = source_port
             kwargs["source_port"] = source_port
-        if dest_port:
+        if not dest_port == None:
             json["testIpPacket"]["port"] = dest_port
             kwargs["dest_port"] = dest_port
-        if icmp_type:
+        if not icmp_type == None:
             json["testIpPacket"]["icmpType"] = icmp_type
             kwargs["icmp_type"] = icmp_type
-        if icmp_code:
+        if not icmp_code == None:
             json["testIpPacket"]["icmpCode"] = icmp_code
             kwargs["icmp_code"] = icmp_code
         if user:
