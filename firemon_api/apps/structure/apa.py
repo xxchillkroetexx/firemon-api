@@ -7,4 +7,4 @@ class ApaInterface(TypedDict, total=False):
     routes: bool
     handles: bool
     arps: bool
-    gatewayy: bool
+    gateway: bool

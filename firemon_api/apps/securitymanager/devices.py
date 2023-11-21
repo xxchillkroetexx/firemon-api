@@ -261,29 +261,29 @@ class Device(Record):
                 "protocol": protocol,
             },
         }
-        if not source_port is None:
+        if isinstance(source_port, int):
             json["testIpPacket"]["sourcePort"] = source_port
-        if not dest_port is None:
+        if isinstance(dest_port, int):
             json["testIpPacket"]["port"] = dest_port
-        if not icmp_type is None:
+        if isinstance(icmp_type, int):
             json["testIpPacket"]["icmpType"] = icmp_type
-        if not icmp_code is None:
+        if isinstance(icmp_code, int):
             json["testIpPacket"]["icmpCode"] = icmp_code
-        if not user is None:
+        if isinstance(user, str):
             json["testIpPacket"]["user"] = user
-        if not users is None:
+        if isinstance(users, list):
             json["testIpPacket"]["users"] = users
-        if not application is None:
+        if isinstance(application, str):
             json["testIpPacket"]["application"] = application
-        if not applications is None:
+        if isinstance(applications, list):
             json["testIpPacket"]["applications"] = applications
-        if not url_matchers is None:
+        if isinstance(url_matchers, list):
             json["testIpPacket"]["urlMatchers"] = url_matchers
-        if not profiles is None:
+        if isinstance(profiles, list):
             json["testIpPacket"]["profiles"] = profiles
-        if not accept is None:
+        if isinstance(accept, bool):
             json["testIpPacket"]["accept"] = accept
-        if not recommend is None:
+        if isinstance(recommend, bool):
             json["testIpPacket"]["recommend"] = recommend
 
         req = Request(
@@ -351,44 +351,44 @@ class Device(Record):
                 "protocol": protocol,
             },
         }
-        if not source_port is None:
+        if isinstance(source_port, int):
             json["testIpPacket"]["sourcePort"] = source_port
             kwargs["source_port"] = source_port
-        if not dest_port is None:
+        if isinstance(dest_port, int):
             json["testIpPacket"]["port"] = dest_port
             kwargs["dest_port"] = dest_port
-        if not icmp_type is None:
+        if isinstance(icmp_type, int):
             json["testIpPacket"]["icmpType"] = icmp_type
             kwargs["icmp_type"] = icmp_type
-        if not icmp_code is None:
+        if isinstance(icmp_code, int):
             json["testIpPacket"]["icmpCode"] = icmp_code
             kwargs["icmp_code"] = icmp_code
-        if not user is None:
+        if isinstance(user, str):
             json["testIpPacket"]["user"] = user
             kwargs["user"] = user
-        if not users is None:
+        if isinstance(users, list):
             json["testIpPacket"]["users"] = users
             kwargs["users"] = users
-        if not application is None:
+        if isinstance(application, str):
             json["testIpPacket"]["application"] = application
             kwargs["application"] = application
-        if not applications is None:
+        if isinstance(applications, list):
             json["testIpPacket"]["applications"] = applications
             kwargs["applications"] = applications
-        if not url_matchers is None:
+        if isinstance(url_matchers, list):
             json["testIpPacket"]["urlMatchers"] = url_matchers
             kwargs["url_matchers"] = url_matchers
-        if not profiles is None:
+        if isinstance(profiles, list):
             json["testIpPacket"]["profiles"] = profiles
             kwargs["profiles"] = profiles
-        if not accept is None:
+        if isinstance(accept, bool):
             json["testIpPacket"]["accept"] = accept
             kwargs["accept"] = accept
-        if not recommend is None:
+        if isinstance(recommend, bool):
             json["testIpPacket"]["recommend"] = recommend
             kwargs["recommend"] = recommend
 
-        if interface:
+        if isinstance(interface, str):
             json["inboundInterface"] = interface
         else:
             si = self.apa_starting_interface(**kwargs)
