@@ -261,29 +261,29 @@ class Device(Record):
                 "protocol": protocol,
             },
         }
-        if source_port:
+        if not source_port is None:
             json["testIpPacket"]["sourcePort"] = source_port
-        if dest_port:
+        if not dest_port is None:
             json["testIpPacket"]["port"] = dest_port
-        if icmp_type:
+        if not icmp_type is None:
             json["testIpPacket"]["icmpType"] = icmp_type
-        if icmp_code:
+        if not icmp_code is None:
             json["testIpPacket"]["icmpCode"] = icmp_code
-        if user:
+        if not user is None:
             json["testIpPacket"]["user"] = user
-        if users:
+        if not users is None:
             json["testIpPacket"]["users"] = users
-        if application:
+        if not application is None:
             json["testIpPacket"]["application"] = application
-        if applications:
+        if not applications is None:
             json["testIpPacket"]["applications"] = applications
-        if url_matchers:
+        if not url_matchers is None:
             json["testIpPacket"]["urlMatchers"] = url_matchers
-        if profiles:
+        if not profiles is None:
             json["testIpPacket"]["profiles"] = profiles
-        if accept:
+        if not accept is None:
             json["testIpPacket"]["accept"] = accept
-        if recommend:
+        if not recommend is None:
             json["testIpPacket"]["recommend"] = recommend
 
         req = Request(
@@ -351,40 +351,40 @@ class Device(Record):
                 "protocol": protocol,
             },
         }
-        if source_port:
+        if not source_port is None:
             json["testIpPacket"]["sourcePort"] = source_port
             kwargs["source_port"] = source_port
-        if dest_port:
+        if not dest_port is None:
             json["testIpPacket"]["port"] = dest_port
             kwargs["dest_port"] = dest_port
-        if icmp_type:
+        if not icmp_type is None:
             json["testIpPacket"]["icmpType"] = icmp_type
             kwargs["icmp_type"] = icmp_type
-        if icmp_code:
+        if not icmp_code is None:
             json["testIpPacket"]["icmpCode"] = icmp_code
             kwargs["icmp_code"] = icmp_code
-        if user:
+        if not user is None:
             json["testIpPacket"]["user"] = user
             kwargs["user"] = user
-        if users:
+        if not users is None:
             json["testIpPacket"]["users"] = users
             kwargs["users"] = users
-        if application:
+        if not application is None:
             json["testIpPacket"]["application"] = application
             kwargs["application"] = application
-        if applications:
+        if not applications is None:
             json["testIpPacket"]["applications"] = applications
             kwargs["applications"] = applications
-        if url_matchers:
+        if not url_matchers is None:
             json["testIpPacket"]["urlMatchers"] = url_matchers
             kwargs["url_matchers"] = url_matchers
-        if profiles:
+        if not profiles is None:
             json["testIpPacket"]["profiles"] = profiles
             kwargs["profiles"] = profiles
-        if accept:
+        if not accept is None:
             json["testIpPacket"]["accept"] = accept
             kwargs["accept"] = accept
-        if recommend:
+        if not recommend is None:
             json["testIpPacket"]["recommend"] = recommend
             kwargs["recommend"] = recommend
 
