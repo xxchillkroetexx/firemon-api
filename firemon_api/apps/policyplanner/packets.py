@@ -17,6 +17,7 @@ from typing import Optional, TypedDict
 from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
+from firemon_api.core.errors import PolicyPlannerError
 from firemon_api.core.response import BaseRecord, Record
 from firemon_api.core.query import Request, RequestResponse
 from firemon_api.apps.structure import PolicyPlanRequirement
@@ -26,7 +27,7 @@ from .policyplan import Changes, Requirements
 log = logging.getLogger(__name__)
 
 
-class PacketTaskError(Exception):
+class PacketTaskError(PolicyPlannerError):
     pass
 
 
@@ -221,7 +222,9 @@ class PacketTasks(Endpoint):
             if len(pt_l) == 1:
                 return pt_l[0]
             else:
-                raise Exception(f"The requested Packet Task: {id} could not be found")
+                raise PacketTaskError(
+                    f"The requested Packet Task: {id} could not be found"
+                )
         except IndexError:
             id = None
 

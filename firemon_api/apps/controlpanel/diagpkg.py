@@ -2,7 +2,7 @@
 import logging
 
 # Local packages
-from .errors import ControlPanelError
+from firemon_api.core.errors import ControlPanelError
 from firemon_api.core.endpoint import EndpointCpl
 from firemon_api.core.response import Record
 from firemon_api.core.query import Request
@@ -15,7 +15,6 @@ class Value(Record):
 
 
 class DiagPkg(EndpointCpl):
-
     ep_name = "diagpkg"
 
     def __init__(self, api, app):

@@ -15,10 +15,15 @@ from typing import Optional
 from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
+from firemon_api.core.errors import SecurityManagerError
 from firemon_api.core.response import BaseRecord
 from firemon_api.core.query import Request, RequestResponse
 
 log = logging.getLogger(__name__)
+
+
+class ZonesError(SecurityManagerError):
+    pass
 
 
 class Zone(BaseRecord):
@@ -125,7 +130,7 @@ class Zones(Endpoint):
             elif len(zone_l) == 1:
                 return zone_l[0]
             else:
-                raise Exception(f"The requested zone: {id} could not " "be found")
+                raise ZonesError(f"The requested zone: {id} could not " "be found")
         except IndexError:
             id = None
 

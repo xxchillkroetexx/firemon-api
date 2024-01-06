@@ -19,6 +19,7 @@ from typing import Optional
 from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
+from firemon_api.core.errors import SecurityManagerError
 from firemon_api.core.response import Record, JsonField
 from firemon_api.core.query import Request, RequestResponse, RequestError
 from firemon_api.apps.structure import ApaInterface
@@ -33,6 +34,10 @@ from .rulerec import RuleRecommendation
 from .zones import Zones
 
 log = logging.getLogger(__name__)
+
+
+class DevicesError(SecurityManagerError):
+    pass
 
 
 class Device(Record):
@@ -316,7 +321,7 @@ class Device(Record):
         """Perform an Access Path Analysis query
 
         Args:
-            interface (str): Inbound interface name ex: 'ethernet1/2'
+            interface (str): Inbound interface name ex: 'ethernet1/2'. You will likely want to provide this.
             source_ip (str): ipv4/6 address ex: '192.168.202.95'
             dest_ip (str): ipv4/6 address ex: '192.168.203.66'
             protocol (int): for all practical purposes it is only 1 (icmp), 6 (tcp), 17 (udp), 58 (icmpv6)
@@ -392,8 +397,11 @@ class Device(Record):
             json["inboundInterface"] = interface
         else:
             si = self.apa_starting_interface(**kwargs)
-            if si:
-                json["inboundInterface"] = si[0].get("intfName", None)
+            if len(si) != 1:
+                raise DevicesError(
+                    f"Found {len(si)} potential starting interfaces. Must provide specific value."
+                )
+            json["inboundInterface"] = si[0].get("intfName", None)
 
         key = "apa"
 

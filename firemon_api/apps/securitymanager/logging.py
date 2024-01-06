@@ -15,10 +15,15 @@ from typing import Optional
 from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
+from firemon_api.core.errors import SecurityManagerError
 from firemon_api.core.response import Record, JsonField
 from firemon_api.core.query import Request, RequestResponse, RequestError
 
 log = logging.getLogger(__name__)
+
+
+class SmLoggingError(SecurityManagerError):
+    pass
 
 
 class Logger(Record):
@@ -181,7 +186,7 @@ class Logging(Endpoint):
             if len(logger_l) == 1:
                 return logger_l[0]
             else:
-                raise Exception(f"The requested logger: {id} could not be found")
+                raise SmLoggingError(f"The requested logger: {id} could not be found")
         except IndexError:
             id = None
 

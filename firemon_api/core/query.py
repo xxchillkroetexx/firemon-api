@@ -27,7 +27,7 @@ from tenacity import (
     wait_exponential,
 )
 
-# from requests.exceptions import ConnectionError
+from firemon_api.core.errors import FiremonApiError
 
 log = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ def calc_pages(pageSize: int, total: int) -> int:
     return int(total / pageSize) + (pageSize % total > 0)
 
 
-class RequestError(Exception):
+class RequestError(FiremonApiError):
     """Basic Request Exception
     More detailed exception that returns the original requests object
     for inspection. Along with some attributes with specific details

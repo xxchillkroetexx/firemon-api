@@ -15,12 +15,17 @@ from typing import Optional
 from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
+from firemon_api.core.errors import SecurityManagerError
 from firemon_api.core.response import BaseRecord
 from firemon_api.core.query import Request, RequestResponse, RequestError
 from firemon_api.core.utils import _find_dicts_with_key
 from .collectionconfigs import CollectionConfig
 
 log = logging.getLogger(__name__)
+
+
+class DevicePackError(SecurityManagerError):
+    pass
 
 
 class DevicePack(BaseRecord):
@@ -210,7 +215,9 @@ class DevicePacks(Endpoint):
             if len(dp_l) == 1:
                 return dp_l[0]
             else:
-                raise Exception(f"The requested aritfactId: {id} could not be found")
+                raise DevicePackError(
+                    f"The requested aritfactId: {id} could not be found"
+                )
         except IndexError:
             id = None
 

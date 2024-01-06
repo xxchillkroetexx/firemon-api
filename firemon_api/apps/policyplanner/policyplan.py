@@ -15,11 +15,16 @@ from typing import Optional
 # Local packages
 from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
+from firemon_api.core.errors import PolicyPlannerError
 from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
 from firemon_api.core.query import Request
 
 log = logging.getLogger(__name__)
+
+
+class PolicyPlanError(PolicyPlannerError):
+    pass
 
 
 class Requirement(Record):
@@ -146,7 +151,7 @@ class Requirements(Endpoint):
             if len(requirment_l) == 1:
                 return requirment_l[0]
             else:
-                raise Exception(f"The requested Id: {id} could not be found")
+                raise PolicyPlanError(f"The requested Id: {id} could not be found")
         except IndexError:
             id = None
 
@@ -274,7 +279,7 @@ class Changes(Endpoint):
             if len(changes_l) == 1:
                 return changes_l[0]
             else:
-                raise Exception(f"The requested Id: {id} could not be found")
+                raise PolicyPlanError(f"The requested Id: {id} could not be found")
         except IndexError:
             id = None
 
