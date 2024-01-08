@@ -1,12 +1,3 @@
-"""
-(c) 2019 Firemon
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
 # Standard packages
 import logging
 
@@ -28,18 +19,23 @@ class CollectionConfig(Record):
         endpoint (obj): Endpoint()
 
     Examples:
+
         Get a list of all Collection Configs
+
         >>> fm.sm.cc.all()
         [4, 36, 18, 38, 24, ...]
 
         Get a Collection Config by ID
+
         >>> cc = fm.sm.cc.get(47)
 
         Set a Device by ID to the Collection Config
+
         >>> cc.device_set(21)
         True
 
         Set this CC as the default for associate Device Pack
+
         >>> cc.devicepack_set()
         True
     """
@@ -133,6 +129,7 @@ class CollectionConfigs(Endpoint):
         device_id (int): Device id
 
     Examples:
+
         >>> cc = fm.sm.cc.get(46)
         >>> cc = fm.sm.cc.filter(
                 activatedForDevicePack=True,
@@ -170,12 +167,17 @@ class CollectionConfigs(Endpoint):
 
     def filter(self, *args, **kwargs) -> list[CollectionConfig]:
         """Retrieve a filterd list of CollectionConfigs
+
         Note: review the dictionary for all keywords
+
         Args:
             **kwargs: key value pairs in a collectionconfig dictionary
+
         Return:
             list: a list of CollectionConfig(object)
+
         Examples:
+
             >>> fm.sm.cc.filter(devicePackArtifactId='juniper_srx')
             [47, 21, 46]
             >>> fm.sm.cc.filter(activatedForDevicePack=True, devicePackId=3)

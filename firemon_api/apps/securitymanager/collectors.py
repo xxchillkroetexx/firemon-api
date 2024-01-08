@@ -1,18 +1,6 @@
-"""
-(c) 2019 Firemon
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
 # Standard packages
 # import json
 import logging
-
-# import uuid
-from typing import TypedDict
 
 # Local packages
 from firemon_api.core.app import App
@@ -21,31 +9,10 @@ from firemon_api.core.endpoint import Endpoint
 from firemon_api.core.response import Record
 from firemon_api.core.query import Request, RequestResponse
 
+from firemon_api.apps.structure.collector import UsageObjects, RuleUsages, Usage
 from .devices import Device
 
 log = logging.getLogger(__name__)
-
-
-class UsageObjects(TypedDict):
-    id: str  # guid
-    parentId: str  # guid
-    hitCount: int
-
-
-class RuleUsages(TypedDict, total=False):
-    deviceId: int
-    ruleId: str  # guid
-    sources: list[UsageObjects]
-    destinations: list[UsageObjects]
-    services: list[UsageObjects]
-    apps: list[UsageObjects]
-    users: list[UsageObjects]
-
-
-class Usage(TypedDict):
-    endDate: str  # format "YYYY-MM-DDTHH:mm:ss+0000"
-    ruleUsages: list[RuleUsages]
-    async_aggregation: bool  # ???
 
 
 class Collector(Record):

@@ -1,12 +1,3 @@
-"""
-(c) 2019 Firemon
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
 # Standard packages
 import logging
 from typing import Optional
@@ -36,6 +27,7 @@ class DevicePack(BaseRecord):
         app (obj): App()
 
     Example:
+
         >>> dp = fm.sm.dp.get('juniper_srx')
         >>> dp
         juniper_srx
@@ -155,13 +147,17 @@ class DevicePacks(Endpoint):
         app (obj): App()
 
     Examples:
+
         Get a list of all device packs
+
         >>> device_packs = fm.sm.dp.all()
 
         Get a single device pack by artifactId
+
         >>> dp = fm.sm.dp.get('juniper_srx')
 
         Get a list of device packs by config options
+
         >>> fm.sm.dp.filter(ssh=True)
     """
 
@@ -175,7 +171,7 @@ class DevicePacks(Endpoint):
 
         Examples:
 
-        >>> device_packs = fm.sm.dp.all()
+            >>> device_packs = fm.sm.dp.all()
         """
 
         key = "list/DEVICE_PACK"
@@ -201,10 +197,10 @@ class DevicePacks(Endpoint):
 
         Examples:
 
-        >>> fm.sm.dp.get('juniper_srx')
-        juniper_srx
-        >>> fm.sm.dp.get(groupId='com.fm.sm.dp.juniper_srx')
-        juniper_srx
+            >>> fm.sm.dp.get('juniper_srx')
+            juniper_srx
+            >>> fm.sm.dp.get(groupId='com.fm.sm.dp.juniper_srx')
+            juniper_srx
         """
 
         dp_all = self.all()
@@ -245,7 +241,7 @@ class DevicePacks(Endpoint):
 
         Examples:
 
-        >>> fm.sm.dp.filter(ssh=True)
+            >>> fm.sm.dp.filter(ssh=True)
         """
 
         if not kwargs:
@@ -264,7 +260,8 @@ class DevicePacks(Endpoint):
         Returns:
             bool: The return value. True for success upload, False otherwise
 
-        Example:
+        Examples:
+
             >>> fn = '/path/to/file/srx.jar'
             >>> with open(fn, 'rb') as f:
             >>>     file = f.read()

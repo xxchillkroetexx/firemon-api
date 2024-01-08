@@ -1,32 +1,26 @@
-"""
-(c) 2019 Firemon
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
-
+from .access_path import AccessPathEvent, AccessPath
 from .centralsyslogconfigs import CentralSyslogConfigs, CentralSyslogConfig
 from .centralsyslogs import CentralSyslogs, CentralSyslog
 from .collectionconfigs import CollectionConfigs, CollectionConfig
 from .collectors import Collectors, Collector, CollectorGroups, CollectorGroup
 from .deviceclusters import DeviceCluster, DeviceClusters
 from .devicegroups import DeviceGroup, DeviceGroups
-from .devicepacks import DevicePacks, DevicePack
-from .devices import Devices, Device
+from .devicepacks import DevicePackError, DevicePacks, DevicePack, ArtifactFile
+from .devices import DevicesError, Devices, Device
 from .elasticsearch import ElasticSearch
 from .license import License
-from .logging import Logging, Logger
+from .logging import SmLoggingError, Logging, Logger
 from .maps import Map, Maps
-from .revisions import Revisions, Revision, NormalizedData
-from .routes import Route, Routes
-from .users import Users, User, UserGroup, UserGroups
-from .siql import Siql
-from .zones import Zone, Zones, FmZone, FmZones
+from .revisions import Revisions, Revision, NormalizedData, RevFile
+from .routes import RoutesError, Route, Routes
+from .rulerec import RuleRecommendation
+from .siql import Siql, SiqlData
+from .users import UsersError, Permission, Users, User, UserGroup, UserGroups
+from .zones import ZonesError, Zone, Zones, FmZone, FmZones
 
 __all__ = [
+    "AccessPathEvent",
+    "AccessPath",
     "CentralSyslogs",
     "CentralSyslog",
     "CentralSyslogConfigs",
@@ -39,8 +33,11 @@ __all__ = [
     "CollectorGroup",
     "DeviceGroups",
     "DeviceGroup",
+    "DevicePackError",
     "DevicePacks",
     "DevicePack",
+    "ArtifactFile",
+    "DevicesError",
     "Devices",
     "Device",
     "DeviceCluster",
@@ -51,18 +48,26 @@ __all__ = [
     "License",
     "Logger",
     "Logging",
+    "SmLoggingError",
     "Maps",
     "Map",
     "Revisions",
     "Revision",
     "NormalizedData",
+    "RevFile",
+    "UsersError",
+    "Permission",
     "Users",
     "User",
     "UserGroup",
     "UserGroups",
+    "RoutesError",
     "Route",
     "Routes",
+    "RuleRecommendation",
+    "SiqlData",
     "Siql",
+    "ZonesError",
     "Zone",
     "Zones",
 ]

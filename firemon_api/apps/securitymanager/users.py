@@ -1,12 +1,3 @@
-"""
-(c) 2019 Firemon
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
 # Standard packages
 import logging
 from typing import Optional
@@ -49,7 +40,9 @@ class User(Record):
         app (obj): App()
 
     Examples:
+
         Unlock and Enable all users
+
         >>> for user in fm.sm.users.all():
         ...   user.enabled = True
         ...   user.locked = False
@@ -154,7 +147,9 @@ class Users(Endpoint):
             **kwargs (str): (optional) see filter() for available filters
 
         Examples:
+
             Get by ID
+
             >>> fm.sm.devices.get(1)
             <User(firemon)>
 
@@ -226,7 +221,6 @@ class UserGroup(Record):
     Args:
         config (dict): dictionary of things values from json
         app (obj): App()
-
     """
 
     _ep_name = "usergroup"

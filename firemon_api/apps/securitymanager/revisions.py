@@ -1,12 +1,3 @@
-"""
-(c) 2019 Firemon
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
 # Standard packages
 import logging
 from typing import Optional
@@ -82,6 +73,7 @@ class Revision(BaseRecord):
         app (obj): App()
 
     Examples:
+
         >>> rev = fm.sm.revisions.filter(latest=True, deviceName='vSRX-2')[0]
         >>> zip = rev.export()
         >>> with open('export.zip', 'wb') as f:
@@ -104,13 +96,17 @@ class Revision(BaseRecord):
 
     def delete(self) -> RequestResponse:
         """Deletes an existing object.
-        :returns: True if DELETE operation was successful.
-        :example:
-        >>> dev = fm.sm.devices.get(name='vsrx2')
-        >>> rev = dev.revisions.get(224)
-        >>> rev.delete()
-        True
-        >>>
+
+        Return:
+            bool: True if DELETE operation was successful.
+
+        Examples:
+
+            >>> dev = fm.sm.devices.get(name='vsrx2')
+            >>> rev = dev.revisions.get(224)
+            >>> rev.delete()
+            True
+            >>>
         """
         req = Request(
             base=self._app_url,
@@ -217,6 +213,7 @@ class Revisions(Endpoint):
         device_id (int): Device id
 
     Examples:
+
         >>> rev = fm.sm.revisions.get(34)
         >>> rev = fm.sm.revisions.filter(latest=True, deviceName='vSRX-2')[0]
     """
@@ -263,7 +260,7 @@ class Revisions(Endpoint):
 
         Examples:
 
-        >>> fm.sm.dp.filter(latest=True)
+            >>> fm.sm.dp.filter(latest=True)
         """
 
         rev_all = self.all()

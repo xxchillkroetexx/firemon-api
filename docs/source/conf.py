@@ -3,6 +3,15 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+
+# If extensions (or modules to document with autodoc) are in another directory,
+# add these directories to sys.path here.
+import pathlib
+import sys
+
+sys.path.insert(0, pathlib.Path(__file__).parents[2].resolve().as_posix())
+
+
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
@@ -15,6 +24,10 @@ author = "Luke Johannsen"
 
 extensions = [
     "sphinx.ext.todo",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.coverage",
+    "sphinx.ext.napoleon",
 ]
 
 # Display todos by setting to True
@@ -29,7 +42,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 html_theme = "alabaster"
 html_static_path = ["_static"]
-html_logo = "logo_firemon.png"
+html_logo = "./_static/logo_firemon.png"
 html_theme_options = {
     "show_powered_by": False,
     "github_banner": False,

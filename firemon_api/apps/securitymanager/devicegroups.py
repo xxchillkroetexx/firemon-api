@@ -1,12 +1,3 @@
-"""
-(c) 2023 Firemon
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
 # Standard packages
 import logging
 from typing import Optional, Literal
@@ -33,6 +24,7 @@ class DeviceGroup(Record):
         app (obj): App()
 
     Examples:
+
         >>> dg = fm.sm.devicegroups.get("my group")
         >>> dg.devices()
         [<Device(F5-V13-1)>, <Device(NS-5XP)>, <Device(cp-r8030-fw-d1-2)>]
@@ -193,6 +185,7 @@ class DeviceGroups(Endpoint):
         record (obj): default `Record` object
 
     Examples:
+
         >>> cluster = fm.sm.devicegroups.get(name="my group")
         >>> fm.sm.devicegroups.all()
     """
@@ -217,9 +210,10 @@ class DeviceGroups(Endpoint):
             **kwargs (str): (optional) see filter() for available filters
 
         Examples:
-            Get by ID
-            >>> fm.sm.devicegroupss.get(3)
 
+            Get by ID
+
+            >>> fm.sm.devicegroupss.get(3)
             >>> fm.sm.devicegroups.get("my group")
             <DeviceGroup(my group)>
         """

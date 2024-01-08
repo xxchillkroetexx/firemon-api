@@ -1,13 +1,3 @@
-"""
-(c) 2023 Firemon
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
-
 # Standard packages
 import logging
 from typing import Literal, Optional, Union
@@ -24,6 +14,8 @@ log = logging.getLogger(__name__)
 
 
 class OrchRuleRecommendation(BaseRecord):
+    """Orchestration Rule Recommendation Record"""
+
     _ep_name = "rulerec"
     _is_domain_url = True
 
@@ -35,11 +27,15 @@ class OrchRuleRecommendation(BaseRecord):
 
 
 class ChangeRequest(BaseRecord):
+    """Orchestration Change Request Record"""
+
     _ep_name = "change/request"
     _is_domain_url = True
 
 
 class Changes(Endpoint):
+    """Orchestration Changes Endpoint"""
+
     ep_name = "change/request"
     _is_domain_url = True
 

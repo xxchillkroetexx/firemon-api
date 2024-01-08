@@ -1,12 +1,3 @@
-"""
-(c) 2019 Firemon
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
 import copy
 import logging
 
@@ -38,6 +29,7 @@ class BaseRecord(object):
         app (obj): App()
 
     Example:
+
         Cast object as a dictionary
 
         >>> import pprint
@@ -170,8 +162,7 @@ class BaseRecord(object):
         In order to be idempotent we run this method in `save()`.
 
         Returns:
-            (bool): True indicates current instance has the same
-            attributes as the ones passed to `config`.
+            (bool): True indicates current instance has the same attributes as the ones passed to `config`.
         """
 
         if self.serialize(init=True) == self.serialize():
@@ -198,7 +189,8 @@ class BaseRecord(object):
         can be turned into the json that Firemon is expecting.
         If an attribute's value is a ``BaseRecord`` type it's replaced with
         the ``id`` field of that object.
-        .. note::
+
+        Note:
             Using this to get a dictionary representation of the record
             is discouraged. It's probably better to cast to dict() or
             dump() instead. See BaseRecord docstring for example. Why? Because
@@ -308,20 +300,22 @@ class Record(BaseRecord):
         overwritten from this simplified version.
 
         Return:
-            (bool): True if PUT request was successful.
+            bool: True if PUT request was successful.
 
         Example:
-        >>> dev = fm.sm.devices.get(name='vsrx3')
-        >>> dev.name = 'vsrx - updated'
-        >>> dev.save()
-        True
-        >>> dev.description
-            ...
-        AttributeError: 'Device' object has no attribute 'description'
-        >>> dev.add_attr('description', 'new description')
-        >>> dev.save()
-        True
-        >>>
+
+            >>> dev = fm.sm.devices.get(name='vsrx3')
+            >>> dev.name = 'vsrx - updated'
+            >>> dev.save()
+            True
+            >>> dev.description
+                ...
+            AttributeError: 'Device' object has no attribute 'description'
+            >>> dev.add_attr('description', 'new description')
+            >>> dev.save()
+            True
+            >>>
+
         """
         if self.id:
             diff = self._diff()
@@ -351,12 +345,14 @@ class Record(BaseRecord):
             bool: True if PUT request was successful.
 
         Example:
-        >>> dev = fm.sm.devices.get(1)
-        >>> dev.update({
-        ...   "name": "foo2",
-        ...   "description": "barbarbaaaaar",
-        ... })
-        True
+
+            >>> dev = fm.sm.devices.get(1)
+            >>> dev.update({
+            ...   "name": "foo2",
+            ...   "description": "barbarbaaaaar",
+            ... })
+            True
+
         """
 
         for k, v in data.items():
@@ -365,12 +361,15 @@ class Record(BaseRecord):
 
     def delete(self) -> bool:
         """Deletes an existing object.
-        :returns: True if DELETE operation was successful.
-        :example:
-        >>> dev = fm.sm.devices.get(name='vsrx2')
-        >>> dev.delete()
-        True
-        >>>
+        Returns:
+            bool: True if DELETE operation was successful.
+
+        Example:
+
+            >>> dev = fm.sm.devices.get(name='vsrx2')
+            >>> dev.delete()
+            True
+
         """
         req = Request(
             base=self._url or self._app.ep_url,

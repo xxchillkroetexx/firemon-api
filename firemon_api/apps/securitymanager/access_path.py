@@ -1,12 +1,3 @@
-"""
-(c) 2019 Firemon
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
 # Standard packages
 import logging
 import copy
@@ -22,7 +13,7 @@ log = logging.getLogger(__name__)
 
 
 class AccessPathEvent(BaseRecord):
-    """AccessPathEvent"""
+    """Access Path Event"""
 
     _ep_name = "apa"
     _is_domain_url = True
@@ -63,6 +54,10 @@ class AccessPath(BaseRecord):
         return url
 
     def _parse_apa(self) -> None:
+        """Attempt to parse the JSON blob into a list (paths) of of events so they are
+        a bit easier to work with.
+
+        """
         se = self._config["startingEvent"].copy()
         path = {
             "branch": se["id"],

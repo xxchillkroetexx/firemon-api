@@ -1,13 +1,3 @@
-"""
-(c) 2019 Firemon
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
-
 # Standard packages
 import concurrent.futures as cf
 
@@ -36,8 +26,7 @@ RequestResponse = Union[bool, dict, str, bytes]
 
 def url_param_builder(param_dict: dict) -> str:
     """Builds url parameters
-    Creates URL paramters (e.g. '.../?xyz=r21&abc=123') from a dict
-    passed in param_dict
+    Creates URL paramters (e.g. '.../?xyz=r21&abc=123') from a dict passed in param_dict
     """
     return f"?{urlencode(param_dict)}"
 
@@ -78,20 +67,19 @@ class RequestError(FiremonApiError):
 
 class Request(object):
     """Creates requests to the FireMon API
-    Responsible for building the url and making the HTTPS requests to
-    FireMon's API
+    Responsible for building the url and making the HTTPS requests to FireMon's API
 
     Args:
         base (str) Base URL
         session (`Session`): requests
 
     Kwargs:
-        filters (dict, optional): contains key/value pairs that
-            correlate to the filters a given endpoint accepts.
+        filters (dict, optional): contains key/value pairs that correlate to the filters a given endpoint accepts.
         key (str, optional): append to base to make up full url
         headers (dict, optional): specific headers to over ride session headers
         cookies (dict, optional):
         trailing_slash (bool): Ensure a trailing slash for `self.url`retry_count (int): number of times to retry request call for any error except `RequestError`. Helps with flakey connections.
+
     """
 
     def __init__(
@@ -262,8 +250,7 @@ class Request(object):
         with no data but it is what it is.
 
         Kwargs:
-            json (dict): Contains a dict that will be turned
-            into a json object and sent to the API.
+            json (dict): Contains a dict that will be turned into a json object and sent to the API.
             data (dict): x-form-url
 
         Raises:
@@ -283,13 +270,8 @@ class Request(object):
             into a json and sent to the API.
             data (dict): x-form-url
             files (list/dict): See `Requests` how-to
-            list of tuples formatted:
-                ('file', bytes, 'text/plain'))
-                ('file', ('<file-name>', open(<path_to_file>, 'rb'))
-            dict formatted:
-                {'file': bytes}
-                {'file': ('<file-name>', open(<path_to_file>, 'rb')}
-                {'devicepack.jar': bytes}
+            list of tuples formatted: ('file', bytes, 'text/plain')) or ('file', ('<file-name>', open(<path_to_file>, 'rb'))
+            dict formatted: {'file': bytes} or {'file': ('<file-name>', open(<path_to_file>, 'rb')} or  {'devicepack.jar': bytes}
 
         Raises:
             RequestError: if req.ok returns false.
@@ -327,9 +309,10 @@ class Request(object):
 
     def get_content(self) -> bytes:
         """Get content
-        In some cases the appending of default pageSize
-        my break our API calls. Appears to happen
-        when requesting data blobs but not always.
+
+        Warning:
+            In some cases the appending of default pageSize my break our API calls.
+            Appears to happen when requesting data blobs but not always.
         """
         log.info(f"GET: {self.url}")
 

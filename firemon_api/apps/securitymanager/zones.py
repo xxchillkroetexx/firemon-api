@@ -1,12 +1,3 @@
-"""
-(c) 2021 Firemon
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
 # Standard packages
 import logging
 from typing import Optional
@@ -32,9 +23,6 @@ class Zone(BaseRecord):
     Args:
         config (dict): dictionary of things values from json
         app (obj): App()
-
-    Examples:
-        >>>
     """
 
     _ep_name = "zoneobject"
@@ -61,6 +49,7 @@ class Zones(Endpoint):
         device_id (int): Device id
 
     Examples:
+
         >>> fm.sm.zones.get('GigabitEthernet0/7')
     """
 
@@ -110,10 +99,9 @@ class Zones(Endpoint):
 
         Examples:
 
-        >>> fm.sm.zones.get('GigabitEthernet0/7')
+            >>> fm.sm.zones.get('GigabitEthernet0/7')
 
-        >>> fm.sm.dp.get(matchId='6014fd68-010d-4437-80cb-8fd4807ba73b')
-
+            >>> fm.sm.dp.get(matchId='6014fd68-010d-4437-80cb-8fd4807ba73b')
         """
 
         zone_all = self.all()

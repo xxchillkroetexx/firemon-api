@@ -1,12 +1,3 @@
-"""
-(c) 2019 Firemon
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
 # Standard packages
 import logging
 from typing import Optional
@@ -118,7 +109,7 @@ class Logging(Endpoint):
 
         Examples:
 
-        >>> smloggers = fm.sm.logging.all()
+            >>> smloggers = fm.sm.logging.all()
         """
 
         req = Request(
@@ -139,7 +130,7 @@ class Logging(Endpoint):
 
         Examples:
 
-        >>> fm.sm.logging.filter(logger="com.fm.sm")
+            >>> fm.sm.logging.filter(logger="com.fm.sm")
         """
 
         if not kwargs:
@@ -174,8 +165,8 @@ class Logging(Endpoint):
 
         Examples:
 
-        >>> fm.sm.logging.get('com.fm.sm')
-        com.fm.sm
+            >>> fm.sm.logging.get('com.fm.sm')
+            com.fm.sm
         """
 
         logger_all = self.all()

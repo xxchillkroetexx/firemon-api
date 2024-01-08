@@ -4,34 +4,31 @@ Firemon API - (firemon-api)
 firemon-api is a library to assist in writing Python scripts using Firemon.
 
     Import the API
+
     >>> import firemon_api
     >>> fm = firemon_api.api('hobbes').auth('firemon', 'firemon')
     >>> fm
     <Firemon(host='hobbes', version='8.25.9')>
 
     A list of all device packs installed
+
     >>> fm.sm.dp.all()
 
     A list of all devices
+
     >>> fm.sm.devices.all()
 
     Get a device
+
     >>> dev = fm.sm.devices.get(name='my-asa')
 
     Change working domain
+
     >>> fm.domainId = 2
 
     Logging for debugging
+
     >>> firemon_api.add_stderr_logger()
-
-
-:copyright: (c) 2019 Firemon
-
-:license: Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
 """
 
 # Standard Modules

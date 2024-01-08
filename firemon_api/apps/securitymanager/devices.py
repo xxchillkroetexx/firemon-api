@@ -1,12 +1,3 @@
-"""
-(c) 2019 Firemon
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
 # Standard packages
 import logging
 import uuid
@@ -32,6 +23,7 @@ from .revisions import Revision, Revisions, NormalizedData
 from .routes import Routes
 from .rulerec import RuleRecommendation
 from .zones import Zones
+from firemon_api.apps.structure.device import RuleDoc
 
 log = logging.getLogger(__name__)
 
@@ -52,26 +44,32 @@ class Device(Record):
         * revisions
 
     Examples:
+
         Get device by ID
+
         >>> dev = fm.sm.devices.get(21)
         >>> dev
         vSRX-2
 
         Show configuration data
+
         >>> dict(dev)
         {'id': 21, 'domainId': 1, 'name': 'vSRX-2',
             'description': 'regression test SRX', ...}
 
         List all collection configs that device can use
+
         >>> dev.cc.all()
         [21, 46]
         >>> cc = dev.cc.get(46)
 
         List all revisions associated with device
+
         >>> dev.revisions.all()
         [76, 77, 108, 177, 178]
 
         Get the latest revision
+
         >>> rev = dev.revisions.filter(latest=True)[0]
         178
     """
@@ -115,13 +113,15 @@ class Device(Record):
         Return:
             (bool): True if PUT request was successful.
 
-        >>> dev = fm.sm.devices.get(name='vsrx3')
-        >>> dev.description
-        AttributeError: 'Device' object has no attribute 'description'
-        >>> dev.attr_set('description','Virtual SRX - DC 3')
-        >>> dev.save()
-        True
-        >>>
+        Examples:
+
+            >>> dev = fm.sm.devices.get(name='vsrx3')
+            >>> dev.description
+            AttributeError: 'Device' object has no attribute 'description'
+            >>> dev.attr_set('description','Virtual SRX - DC 3')
+            >>> dev.save()
+            True
+            >>>
         """
         if self.id:
             diff = self._diff()
@@ -162,12 +162,13 @@ class Device(Record):
             bool: True if PUT request was successful.
 
         Example:
-        >>> dev = fm.sm.devices.get(1)
-        >>> dev.update({
-        ...   "name": "foo2",
-        ...   "description": "barbarbaaaaar",
-        ... })
-        True
+
+            >>> dev = fm.sm.devices.get(1)
+            >>> dev.update({
+            ...   "name": "foo2",
+            ...   "description": "barbarbaaaaar",
+            ... })
+            True
         """
 
         for k, v in data.items():
@@ -190,7 +191,8 @@ class Device(Record):
             sendNotification (bool): ???
             postProcessing (bool): ???
 
-        Example:
+        Examples:
+
             >>> dev = fm.sm.devices.get(17)
             >>> dev
             CSM-2
@@ -429,7 +431,8 @@ class Device(Record):
         Returns:
             bytes: file
 
-        Example:
+        Examples:
+
             >>> import os
             >>> dev = fm.sm.devices.get(name='vsrx-2')
             >>> support = dev.rev_export()
@@ -454,19 +457,22 @@ class Device(Record):
         f_list: list,
         change_user=None,
         correlation_id=None,
-        action="IMPORT",
-        file_type="CONFIG",
+        action: Literal[
+            "AUTOMATIC", "INSTALL", "MANUAL", "SAVE", "SCHEDULED", "MIGRATE", "IMPORT"
+        ] = "IMPORT",
+        file_type: Literal[
+            "OS", "LOG", "CONFIG", "NORMALIZED", "BEHAVIOR", "LEGACY_NORMALIZED_XML"
+        ] = "CONFIG",
     ) -> RequestResponse:
         """Import config files for device to create a new revision
-        * NOTE: The API seems buggy and regardless of what `file_type` you attempt
-        they will always be sent to the `normalizer`. Use `support_import` if you
-        need to upload `.NORMALIZED` files to create a new revision.
+
+        Warning:
+            The API seems buggy and regardless of what `file_type` you attempt
+            they will always be sent to the `normalizer`. Use `support_import` if you
+            need to upload `.NORMALIZED` files to create a new revision.
 
         Args:
-            f_list (list): a list of tuples. Tuples are intended to uploaded
-            as a multipart form using 'requests'. format of the data in the
-            tuple is:
-            ('<file-name>', ('<file-name>', open(<path_to_file>, 'rb'), 'text/plain'))
+            f_list (list): a list of tuples. Tuples are intended to uploaded as a multipart form using 'requests'. format of the data in the tuple is: ('<file-name>', ('<file-name>', open(<path_to_file>, 'rb'), 'text/plain'))
 
         Kwargs:
             change_user (str): A name for display field
@@ -474,7 +480,8 @@ class Device(Record):
             action (str): AUTOMATIC, INSTALL, MANUAL, SAVE, SCHEDULED, MIGRATE, IMPORT
             file_type (str): OS, LOG, CONFIG, NORMALIZED, BEHAVIOR, LEGACY_NORMALIZED_XML
 
-        Example:
+        Examples:
+
             >>> import os
             >>> dev = fm.sm.devices.get(name='vsrx-2')
             >>> dir = '/path/to/config/files/'
@@ -483,6 +490,7 @@ class Device(Record):
             ...     path = os.path.join(dir, fn)
             ...     f_list.append((fn, (fn, open(path, 'rb'), 'text/plain')))
             >>> dev.config_import(f_list)
+
         """
         if not change_user:
             # Not needed as server will go on its merry way with nothing
@@ -513,16 +521,18 @@ class Device(Record):
         config files along with 'NORMALIZED' and meta-data files. Use this
         function and set 'renormalize = True' and mimic 'import_config'.
 
-        NOTE: Device packs must match from the support files descriptor.json
+        NOTE:
+            Device packs must match from the support files descriptor.json
 
         Args:
             zip_file (bytes): bytes that make a zip file
 
         Kwargs:
             renormalize (bool): defualt (False). Tell system to re-normalize from
-                config (True) or use imported 'NORMALIZED' files (False)
+            config (True) or use imported 'NORMALIZED' files (False)
 
-        Example:
+        Examples:
+
             >>> dev = fm.sm.devices.get(name='vsrx-2')
             >>> fn = '/path/to/file/vsrx-2.zip'
             >>> with open(fn, 'rb') as f:
@@ -563,12 +573,12 @@ class Device(Record):
         )
         return req.post()
 
-    def rule_usage(self, type: str = "total") -> RequestResponse:
+    def rule_usage(self, type: Literal["total", "daily"] = "total") -> RequestResponse:
         """Get rule usage for device.
         total hits for all rules on the device.
 
         Kwargs:
-            type (str): either 'total' or 'daily'
+            type (Literal["daly", "total"]): either 'total' or 'daily'
 
         Return:
             json: daily == {'hitDate': '....', 'totalHits': int}
@@ -656,11 +666,13 @@ class Device(Record):
         ).get()
         return req.get("testSuites", [])
 
-    def license_add(self, product_key: str) -> RequestResponse:
+    def license_add(
+        self, product_key: Literal["SM", "PO", "PP", "RA", "GPC", "AUTO"]
+    ) -> RequestResponse:
         """License device for feature
 
         Args:
-            product_key (str): SM, PO, PP, RA, GPC, AUTO
+            product_key (Literal["SM", "PO", "PP", "RA", "GPC", "AUTO"]): SM, PO, PP, RA, GPC, AUTO
         """
         key = f"device/license/{self.id}/product/{product_key}"
         req = Request(
@@ -677,11 +689,13 @@ class Device(Record):
             else:
                 raise e
 
-    def license_del(self, product_key: str) -> RequestResponse:
+    def license_del(
+        self, product_key: Literal["SM", "PO", "PP", "RA", "GPC", "AUTO"]
+    ) -> RequestResponse:
         """License device for feature
 
         Args:
-            product_key (str): SM, PO, PP, RA, GPC, AUTO
+            product_key (Literal["SM", "PO", "PP", "RA", "GPC", "AUTO"]): SM, PO, PP, RA, GPC, AUTO
         """
         key = f"device/license/{self.id}/product/{product_key}"
         req = Request(
@@ -691,61 +705,12 @@ class Device(Record):
         )
         return req.delete()
 
-    def ruledoc_update(self, config: dict) -> RequestResponse:
+    def ruledoc_update(self, config: RuleDoc) -> RequestResponse:
         """Update Rule Documentation - meta data
 
         Args:
             config (dict): all the properties that make up all the rule doc
                 updates. This can be gnarly looking
-
-        Example:
-            Properties seem to be:
-                * "stringval" : just a string
-                * "stringarray" : list of strings
-                * "dateval": "2021-12-29T00:00:00-0600" (example)
-            `deviceId` does not appear to be required.
-            Other dates do not appear to be required (may be prefereable to skip)
-            If you do not apply an expiration it will be empty even if originally set.
-            "expirationDate": "2022-01-01T06:00:00+0000"
-
-            {
-            "ruleId": "a0eb7fb2-5496-4d65-b7e5-2735710436a4",
-            "deviceId": 45,
-            "createDate": "1970-01-01T00:00:00.000Z",
-            "lastUpdated": "2021-12-15T23:00:01.071Z",
-            "lastRevisionDate": "2021-12-15T22:59:49.193Z",
-            "expirationDate": "2022-01-01T06:00:00+0000",
-            "props": [
-                {
-                "ruleId": "a0eb7fb2-5496-4d65-b7e5-2735710436a4",
-                "ruleCustomPropertyDefinition": {
-                    "id": 1,
-                    "customPropertyDefinition": {
-                    "id": 1,
-                    "name": "Business Justification",
-                    "key": "business_justification",
-                    "type": "STRING_ARRAY",
-                    "filterable": true,
-                    "inheritFromMgmtStation": false
-                    },
-                    "name": "Business Justification",
-                    "key": "business_justification",
-                    "type": "STRING_ARRAY"
-                },
-                "customProperty": {
-                    "id": 1,
-                    "name": "Business Justification",
-                    "key": "business_justification",
-                    "type": "STRING_ARRAY",
-                    "filterable": true,
-                    "inheritFromMgmtStation": false
-                },
-                "stringarray": [
-                    "For the LuLz"
-                ]
-                },
-            ],
-            }
         """
 
         key = "ruledoc"
@@ -848,14 +813,16 @@ class Devices(Endpoint):
             **kwargs (str): (optional) see filter() for available filters
 
         Examples:
+
             Get by ID
+
             >>> fm.sm.devices.get(12)
             <Device(REGRESSION-dc-load-test)>
-
             >>> fm.sm.devices.get("vSRX-2")
             <Device(vSRX-2)>
 
             Get by name. Case sensative.
+
             >>> fm.sm.centralsyslogs.get('REGRESSION-dc-load-test')
             <Device(REGRESSION-dc-load-test)>
 
@@ -905,6 +872,7 @@ class Devices(Endpoint):
             Device (obj): a Device() of the newly created device
 
         Examples:
+
             >>> cg = fm.sm.collectorgroups.all()[0]
             >>> config = fm.sm.dp.get('juniper_srx').template()
             >>> config['name'] = 'Conan'

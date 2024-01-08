@@ -1,12 +1,3 @@
-"""
-(c) 2021 Firemon
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
 # Standard packages
 import logging
 from typing import Optional
@@ -32,9 +23,6 @@ class Route(BaseRecord):
     Args:
         config (dict): dictionary of things values from json
         app (obj): App()
-
-    Examples:
-        >>>
     """
 
     _ep_name = "routeobject"
@@ -58,9 +46,6 @@ class Routes(Endpoint):
     Kwargs:
         record (obj): default `Record` object
         device_id (int): Device id
-
-    Examples:
-        >>>
     """
 
     ep_name = "routeobject/paged-search"
@@ -104,9 +89,9 @@ class Routes(Endpoint):
 
         Examples:
 
-        >>> fm.sm.routes.get('6014fd68-010d-4437-80cb-8fd4807ba73b')
+            >>> fm.sm.routes.get('6014fd68-010d-4437-80cb-8fd4807ba73b')
 
-        >>> fm.sm.routes.get(name='192.168.202.0/23, metric:0')
+            >>> fm.sm.routes.get(name='192.168.202.0/23, metric:0')
 
         """
 
@@ -152,7 +137,7 @@ class Routes(Endpoint):
 
         Examples:
 
-        >>> fm.sm.routes.filter(derived=True)
+            >>> fm.sm.routes.filter(derived=True)
         """
 
         route_all = self.all()

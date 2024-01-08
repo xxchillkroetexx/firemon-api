@@ -1,12 +1,3 @@
-"""
-(c) 2019 Firemon
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
 # Standard packages
 import logging
 import socket
@@ -30,7 +21,7 @@ log = logging.getLogger(__name__)
 
 
 class FiremonAPI(object):
-    """ The FiremonAPI object is the entry point to firemon_api
+    """The FiremonAPI object is the entry point to firemon_api
 
     Instantiate FiremonAPI() with the appropriate named arguments.
     `auth()` then specify which app and endpoint with which to interact.
@@ -42,28 +33,22 @@ class FiremonAPI(object):
 
     Kwargs:
         timeout (int): timeout value for Requests Session(). (default: 20)
-        verify (optional): Requests verify ssl cert (bool) or a path (str) to
-            PEM certificate. (default: ``True``)
-            hint: get the cert for fmos instance or append it to the CA bundle.
-            -----BEGIN CERTIFICATE-----
-            <base64>
-            -----END CERTIFICATE-----
-            ex: export REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
-        cert (optional): if String, path to ssl client cert file (.pem).
-            If Tuple, ('cert', 'key') pair.
-            ex: openssl x509 -in <(openssl s_client -connect {SERVER}:{PORT} \
-                -prexit 2>/dev/null) > {SERVER}.pem
+        verify (optional): Requests verify ssl cert (bool) or a path (str) to PEM certificate. (default: ``True``)
+        cert (optional): if String, path to ssl client cert file (.pem). If Tuple, ('cert', 'key') pair. ex: openssl x509 -in <(openssl s_client -connect {SERVER}:{PORT} -prexit 2>/dev/null) > {SERVER}.pem
         domain_id (int): the domain.
         proxy (str): ip.add.re.ss:port of proxy
 
     Valid applications:
         * sm: SecurityManager()
-        * gpc: GlobalPolicyController()
+        * orch: Orchestration()
         * pp: PolicyPlanner()
         * po: PolicyOptimizer()
+        * cpl: ControlPanel()
 
     Examples:
+
         Import the API
+
         >>> import firemon_api as fmapi
         >>> fm = fmapi.api('redfin-aio').auth('user', 'password')
         >>> fm
@@ -74,10 +59,11 @@ class FiremonAPI(object):
         >>> fm.sm.devices.all()
 
         Change working domain
+
         >>> fm.domain_id = 2
 
-        Set your own requests.Session(). Override other settings here
-        if I forgot to set them.
+        Set your own requests.Session(). Override other settings here if I forgot to set them.
+
         >>> import requests
         >>> import firemon_api as fmapi
         >>> fm = fmapi.api('gizmo').auth('username', 'password')
