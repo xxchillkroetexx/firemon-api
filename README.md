@@ -6,19 +6,24 @@ The User Guide available on [Read the Docs](https://firemon-api.readthedocs.io)
 
 # Current Design
 
-Everything is basically being coded by hand to attempt to fit a schema that makes sense to me. Endpoints are made and return objects which may have their own functions. For example search and manipulation of devices and their data. This is attempt to make the API a bit more user friendly without requiring more interaction by the user.
+Everything is basically being coded by hand to a fit a schema that makes sense to me. Endpoints are made and return objects which may have their own functions. For example search and manipulation of devices and their data. This is an attempt to make the API a bit more user friendly without requiring more interaction by the user.
 
-I have attempted to create a dynamic interface for all API calls if there is something needed that does not currently fit within the re-imagining of the API schema for user friendliness. Each application should automatically create these. Unfortunately many of the `operationId` for the API are not helpful in what they actually do:
+## Application Requests
 
-ex: (`get_1`, `get_2`, `get_3`, ...)
-
-Or use the `/api-doc` from your FireMon server to extrapolate the need keys and methods to make and use the `request()`
-function for the specific FireMon application.
+The user may use the `/api-doc` from your FireMon server to extrapolate the need keys and methods to make and use the `request()` function for the specific FireMon application. This method is handy to test out what will be returned. This is handy for testing out functions and seeing results before coding up code that tries and fit the rhyme scheme for this module or get results that may yet not be coded.
 
 ```
 >>> fm.sm.request(key="device", use_domain=True).get()
 [{'id': 27, 'domainId': 1, 'name': 'PA-VM 11.0.1', 'managementIp': <snip...>]
 ```
+
+## Dynamic API
+
+I have attempted to create a dynamic interface for all API calls if there is something needed that does not currently fit within the re-imagining of the API schema for user friendliness. Each application should automatically create these. Unfortunately many of the `operationId` for the API are not helpful in what they actually do:
+
+ex: (`get_1`, `get_2`, `get_3`, ...)
+
+Probably best to avoid this unless you are a sadist.
 
 # Usage
 
