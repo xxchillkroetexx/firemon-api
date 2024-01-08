@@ -10,7 +10,7 @@ build:
     python: "3.10"
 
 sphinx:
-  configuration: docs/source/conf.py
+  configuration: docs/conf.py
 
 # Explicitly set the version of Python and its requirements
 python:
