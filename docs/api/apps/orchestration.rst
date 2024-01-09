@@ -1,7 +1,9 @@
 Orchestration
 =============
 
-.. automodule:: firemon_api.apps.orchestration
-    :members:
-    :undoc-members:
-    :show-inheritance:
+The Orchestration application is used to directly execute automation without having to make Policy Planner tickets.
+
+.. toctree::
+   :maxdepth: 1
+
+   orchestration/changes

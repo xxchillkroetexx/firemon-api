@@ -40,8 +40,8 @@ class Device(Record):
         app (obj): App()
 
     Attributes:
-        * cc: CollectionConfigs()
-        * revisions: Revisions()
+        cc: CollectionConfigs()
+        revisions: Revisions()
 
     Examples:
 

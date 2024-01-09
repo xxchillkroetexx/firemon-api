@@ -22,6 +22,11 @@ firemon-api is a library to assist in writing Python scripts using Firemon.
 
     >>> dev = fm.sm.devices.get(name='my-asa')
 
+    Query the Security Manager device api making a generic request call. 
+    This same rhyme scheme is available for all the FireMon applications.
+
+    >>> json = fm.sm.request(key="device", use_domain=True).get()
+
     Change working domain
 
     >>> fm.domainId = 2
@@ -33,7 +38,7 @@ firemon-api is a library to assist in writing Python scripts using Firemon.
 
 # Standard Modules
 import logging
-from logging import NullHandler
+from logging import NullHandler, StreamHandler
 from importlib.metadata import version, PackageNotFoundError
 
 # import urllib3
@@ -51,15 +56,15 @@ except PackageNotFoundError:
 logging.getLogger(__name__).addHandler(NullHandler())
 
 
-def add_stderr_logger(level=logging.DEBUG):
+def add_stderr_logger(level=logging.DEBUG) -> StreamHandler:
     """
     Helper for quickly adding a StreamHandler to the logger. Useful for debugging.
 
     Keyword Arguments:
-        level (logging.level)
+        level (int): logging level
 
     Returns:
-        handler: the handler after adding it.
+        StreamHandler
     """
     # This method needs to be in this __init__.py to get the __name__ correct
     # even if firemon_api is vendored within another package.
@@ -77,9 +82,12 @@ def add_stderr_logger(level=logging.DEBUG):
 del NullHandler
 
 
-def disable_warnings():
+def disable_warnings() -> None:
     """
     Hate warnings? Disable them here.
+
+    Returns:
+        None
     """
     # urllib3.disable_warnings()
     import warnings

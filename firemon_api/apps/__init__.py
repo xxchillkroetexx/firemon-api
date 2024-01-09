@@ -24,25 +24,25 @@ class SecurityManager(App):
         name (str): name of the application
 
     Attributes:
-        * centralsyslogconfigs: CentralSyslogConfigs()
-        * centralsyslogs: CentralSyslogs()
-        * collectionconfigs: CollectionConfigs()
-        * collectors: Collectors()
-        * collectorgroups: CollectorGroups()
-        * deviceclusters: DeviceClusters()
-        * devices: Devices()
-        * dp: DevicePacks()
-        * es: ElasticSearch()
-        * license: License()
-        * logging: Logging()
-        * maps: Maps()
-        * revisions: Revisions()
-        * users: Users()
-        * usergroups: UserGroups()
-        * routes: Routes()
-        * siql: Siql()
-        * zones: Zones()
-        * fmzones: FmZones()
+        centralsyslogconfigs: CentralSyslogConfigs()
+        centralsyslogs: CentralSyslogs()
+        collectionconfigs: CollectionConfigs()
+        collectors: Collectors()
+        collectorgroups: CollectorGroups()
+        deviceclusters: DeviceClusters()
+        devices: Devices()
+        dp: DevicePacks()
+        es: ElasticSearch()
+        license: License()
+        logging: Logging()
+        maps: Maps()
+        revisions: Revisions()
+        users: Users()
+        usergroups: UserGroups()
+        routes: Routes()
+        siql: Siql()
+        zones: Zones()
+        fmzones: FmZones()
     """
 
     name = "securitymanager"
@@ -81,7 +81,7 @@ class Orchestration(App):
         name (str): name of the application
 
     Attributes:
-        * changes: Changes()
+        changes: Changes()
     """
 
     name = "orchestration"
@@ -101,7 +101,7 @@ class PolicyOptimizer(App):
         name (str): name of the application
 
     Attributes:
-        * xx: EndPoint()
+        xx: EndPoint()
     """
 
     name = "policyoptimizer"
@@ -121,9 +121,9 @@ class PolicyPlanner(App):
         name (str): name of the application
 
     Attributes:
-        * siql: SiqlPP()
-        * tasks: Tasks()
-        * workflows: Workflows()
+        siql: SiqlPP()
+        tasks: Tasks()
+        workflows: Workflows()
     """
 
     name = "policyplanner"
@@ -145,11 +145,11 @@ class ControlPanel(App):
         name (str): name of the application
 
     Attributes:
-        * ca: CertAuth()
-        * cleanup: Cleanup()
-        * config: Config()
-        * db: Database()
-        * diagpkg: DiagPkg()
+        ca: CertAuth()
+        cleanup: Cleanup()
+        config: Config()
+        db: Database()
+        diagpkg: DiagPkg()
     """
 
     def __init__(self, api):

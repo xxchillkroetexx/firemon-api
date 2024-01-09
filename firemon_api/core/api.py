@@ -39,11 +39,11 @@ class FiremonAPI(object):
         proxy (str): ip.add.re.ss:port of proxy
 
     Attributes:
-        * sm: SecurityManager()
-        * orch: Orchestration()
-        * pp: PolicyPlanner()
-        * po: PolicyOptimizer()
-        * cpl: ControlPanel()
+        sm: SecurityManager() application
+        orch: Orchestration() application
+        pp: PolicyPlanner() application
+        po: PolicyOptimizer() application
+        cpl: ControlPanel() application
 
     Examples:
 

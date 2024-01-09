@@ -70,15 +70,15 @@ objects of the named type.
     |      api (obj): FiremonAPI()
     |      name (str): name of the application
     |
-    |  Valid attributes are:
-    |      * centralsyslogs: CentralSyslogs()
-    |      * collectionconfigs: CollectionConfigs()
-    |      * collectors: Collectors()
-    |      * collectorgroups: CollectorGroups()
-    |      * devices: Devices()
-    |      * dp: DevicePacks()
-    |      * revisions: Revisions()
-    |      * users: Users()
+    |  Attributes:
+    |      centralsyslogs: CentralSyslogs()
+    |      collectionconfigs: CollectionConfigs()
+    |      collectors: Collectors()
+    |      collectorgroups: CollectorGroups()
+    |      devices: Devices()
+    |      dp: DevicePacks()
+    |      revisions: Revisions()
+    |      users: Users()
     <snip>
 
 
