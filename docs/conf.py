@@ -39,16 +39,18 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
+import sphinx_nameko_theme
 
-html_theme = "alabaster"
+html_theme = "nameko"
+html_theme_path = [sphinx_nameko_theme.get_html_theme_path()]
 html_static_path = ["_static"]
 html_logo = "./_static/logo_firemon.png"
-html_theme_options = {
-    "show_powered_by": False,
-    "github_banner": False,
-    "show_related": False,
-    "note_bg": "#FFF59C",
-}
+# html_theme_options = {
+#     "show_powered_by": False,
+#     "github_banner": False,
+#     "show_related": False,
+#     "note_bg": "#FFF59C",
+# }
 
 # If true, links to the reST sources are added to the pages.
 html_show_sourcelink = False
