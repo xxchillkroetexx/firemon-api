@@ -66,7 +66,7 @@ objects of the named type.
     |
     |  Represents Security Manager in Firemon
     |
-    |  Args:
+    |  Parameters:
     |      api (obj): FiremonAPI()
     |      name (str): name of the application
     |

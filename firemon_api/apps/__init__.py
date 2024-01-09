@@ -19,20 +19,30 @@ from .controlpanel import *
 class SecurityManager(App):
     """Represents Security Manager in Firemon
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         name (str): name of the application
 
-    Valid attributes are:
+    Attributes:
+        * centralsyslogconfigs: CentralSyslogConfigs()
         * centralsyslogs: CentralSyslogs()
         * collectionconfigs: CollectionConfigs()
         * collectors: Collectors()
         * collectorgroups: CollectorGroups()
+        * deviceclusters: DeviceClusters()
         * devices: Devices()
         * dp: DevicePacks()
+        * es: ElasticSearch()
+        * license: License()
+        * logging: Logging()
+        * maps: Maps()
         * revisions: Revisions()
         * users: Users()
-        * Todo: add more as needed
+        * usergroups: UserGroups()
+        * routes: Routes()
+        * siql: Siql()
+        * zones: Zones()
+        * fmzones: FmZones()
     """
 
     name = "securitymanager"
@@ -66,12 +76,12 @@ class SecurityManager(App):
 class Orchestration(App):
     """Represents Orchestration in Firemon
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         name (str): name of the application
 
-    Valid attributes are:
-        * xx: EndPoint()
+    Attributes:
+        * changes: Changes()
     """
 
     name = "orchestration"
@@ -86,11 +96,11 @@ class Orchestration(App):
 class PolicyOptimizer(App):
     """Represents Policy Optimizer in Firemon
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         name (str): name of the application
 
-    Valid attributes are:
+    Attributes:
         * xx: EndPoint()
     """
 
@@ -106,12 +116,14 @@ class PolicyOptimizer(App):
 class PolicyPlanner(App):
     """Represents Policy Planner in Firemon
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         name (str): name of the application
 
-    Valid attributes are:
-        * xx: EndPoint()
+    Attributes:
+        * siql: SiqlPP()
+        * tasks: Tasks()
+        * workflows: Workflows()
     """
 
     name = "policyplanner"
@@ -128,16 +140,16 @@ class PolicyPlanner(App):
 class ControlPanel(App):
     """Represents Control Panel in Firemon
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         name (str): name of the application
 
-    Valid attributes are:
-        * ca: EndPoint()
-        * cleanup: EndPoint()
-        * config: EndPoint()
-        * db: EndPoint()
-        * diagpkg: EndPoint()
+    Attributes:
+        * ca: CertAuth()
+        * cleanup: Cleanup()
+        * config: Config()
+        * db: Database()
+        * diagpkg: DiagPkg()
     """
 
     def __init__(self, api):
@@ -181,7 +193,7 @@ class ControlPanel(App):
         k: Optional[str] = None,
     ) -> RequestResponse:
         """
-        Kwargs:
+        Keyword Arguments:
             k (str)
             username (str)
         """
@@ -225,7 +237,7 @@ class ControlPanel(App):
     ) -> RequestResponse:
         """verbose state and health info
 
-        Kwargs:
+        Keyword Arguments:
             checks (str): default, detailed, full
             cache (str): default, ignore, only
         """
@@ -269,7 +281,7 @@ class ControlPanel(App):
     def user_update(self, config: dict) -> RequestResponse:
         """update user info
 
-        Args:
+        Parameters:
             config (dict)
         """
 

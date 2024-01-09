@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 class Collector(Record):
     """Represents the Data Collector
 
-    Args:
+    Parameters:
         config (dict): dictionary of things values from json
         app (obj): App()
     """
@@ -29,7 +29,11 @@ class Collector(Record):
         super().__init__(config, app)
 
     def status(self) -> RequestResponse:
-        """Get status of Collector"""
+        """Get status of Collector
+
+        Returns:
+            dict
+        """
         key = f"status/{self.id}"
         req = Request(
             base=self._ep_url,
@@ -39,7 +43,11 @@ class Collector(Record):
         return req.get()
 
     def devices(self) -> list[Device]:
-        """Get all devices assigned to collector"""
+        """Get all devices assigned to collector
+
+        Returns:
+            list[Device]
+        """
         key = "device"
         req = Request(
             base=self._url,
@@ -52,11 +60,11 @@ class Collector(Record):
 class Collectors(Endpoint):
     """Represents the Data Collectors
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
 
-    Kwargs:
+    Keyword Arguments:
         record (obj): default `Record` object
     """
 
@@ -76,12 +84,11 @@ class Collectors(Endpoint):
     ) -> RequestResponse:
         """Save usage
 
-        Args:
+        Parameters:
             config (Usage): dictionary of usage data.
 
         Return:
-            Union[bool, dict, str]
-
+            bool
         """
         filters = {"asyncAggregation": async_aggregation}
         key = "usage"
@@ -98,7 +105,7 @@ class Collectors(Endpoint):
 class CollectorGroup(Record):
     """Represents the Collector Group
 
-    Args:
+    Parameters:
         config (dict): dictionary of things values from json
         app (obj): App()
     """
@@ -113,7 +120,7 @@ class CollectorGroup(Record):
 
         note: no changes if device is already assigned.
 
-        Args:
+        Parameters:
             cid (int): Collector ID
         """
         key = f"member/{cid}"
@@ -130,10 +137,15 @@ class CollectorGroup(Record):
 
     def device_set(self, id: int) -> RequestResponse:
         """Assign a Device
-        note: no changes if device is already assigned. How to unassign?
 
-        Args:
+        Notes:
+            No changes if device is already assigned. How to unassign?
+
+        Parameters:
             id (int): Device id
+
+        Returns:
+            bool
         """
         key = f"member/{id}"
         req = Request(
@@ -144,7 +156,11 @@ class CollectorGroup(Record):
         return req.put()
 
     def assigned(self) -> RequestResponse:
-        """Get assigned devices"""
+        """Get assigned devices
+
+        Returns:
+            dict
+        """
         key = f"assigned"
         req = Request(
             base=self._url,
@@ -157,11 +173,11 @@ class CollectorGroup(Record):
 class CollectorGroups(Endpoint):
     """Represents the Data Collector Groups
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
 
-    Kwargs:
+    Keyword Arguments:
         record (obj): default `Record` object
     """
 

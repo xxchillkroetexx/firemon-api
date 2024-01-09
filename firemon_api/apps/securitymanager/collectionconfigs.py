@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 class CollectionConfig(Record):
     """Collection Configuration Record
 
-    Args:
+    Parameters:
         config (dict): dictionary of things values from json
         endpoint (obj): Endpoint()
 
@@ -57,7 +57,11 @@ class CollectionConfig(Record):
         ]
 
     def devicepack_set(self) -> RequestResponse:
-        """Set CollectionConfig for Device Pack assignment."""
+        """Set CollectionConfig for Device Pack assignment.
+
+        Returns:
+            bool
+        """
         key = f"devicepack/{self.devicePackId}/assignment/{self.id}"
         req = Request(
             base=self._ep_url,
@@ -84,7 +88,7 @@ class CollectionConfig(Record):
         handles mismatch and will NOT set. If device ID is not
         found server handles mismatch and will NOT set.
 
-        Args:
+        Parameters:
             id (int): The ID for the device as understood by Firemon
 
         Return:
@@ -101,7 +105,7 @@ class CollectionConfig(Record):
     def device_unset(self, id: int) -> RequestResponse:
         """Unset a device from CollectionConfig
 
-        Args:
+        Parameters:
             id (int): The ID for the device as understood by Firemon
 
         Return:
@@ -119,11 +123,11 @@ class CollectionConfig(Record):
 class CollectionConfigs(Endpoint):
     """Collection Configs Endpoint
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
 
-    Kwargs:
+    Keyword Arguments:
         record (obj): default `Record` object
         devicepack_id (int): Device Pack id
         device_id (int): Device id
@@ -152,7 +156,11 @@ class CollectionConfigs(Endpoint):
         self._devicepack_id = devicepack_id
 
     def all(self) -> list[CollectionConfig]:
-        """Get all `Record`"""
+        """Get all `Record`
+
+        Returns:
+            list[CollectionConfig]: a list of CollectionConfig(object)
+        """
         filters = None
         if self.device_id:
             filters = {"devicePackId": self.devicepack_id}
@@ -170,11 +178,11 @@ class CollectionConfigs(Endpoint):
 
         Note: review the dictionary for all keywords
 
-        Args:
+        Parameters:
             **kwargs: key value pairs in a collectionconfig dictionary
 
         Return:
-            list: a list of CollectionConfig(object)
+            list[CollectionConfig]: a list of CollectionConfig(object)
 
         Examples:
 
@@ -197,6 +205,10 @@ class CollectionConfigs(Endpoint):
         return [cc for cc in cc_all if kwargs.items() <= dict(cc).items()]
 
     def count(self) -> int:
+        """
+        Returns:
+            int
+        """
         return len(self.all())
 
     @property

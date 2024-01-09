@@ -57,11 +57,11 @@ class Task(BaseRecord):
 class Tasks(Endpoint):
     """Represents the Tasks
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
 
-    Kwargs:
+    Keyword Arguments:
         record (obj): default `Record` object
     """
 
@@ -128,7 +128,7 @@ class Tasks(Endpoint):
     def filter(self, *args, **kwargs) -> list[Task]:
         """Attempt to use the filter options. Really only a single query
 
-        Kwargs:
+        Keyword Arguments:
             q (str):
         """
 
@@ -158,7 +158,7 @@ class Tasks(Endpoint):
     def get_services(self, query: Optional[str] = None, include_cannot_create=False):
         """Retrieve a list of task services
 
-        Kwargs:
+        Keyword Arguments:
             queary (str): if you are inclined to search
             include_cannot_create (bool): default False.
         """
@@ -181,7 +181,7 @@ class Tasks(Endpoint):
     def layout(self, task: str) -> RequestResponse:
         """Retrieve a task layout.
 
-        Args:
+        Parameters:
             task (str):
         """
 

@@ -19,7 +19,7 @@ class DynamicApi(object):
 
     def __init__(self, dynamic_api: dict, session: Session, app_url: str):
         """
-        Args:
+        Parameters:
             dynamic_api (dict): all the json from `get_api`
         """
         self.session = session

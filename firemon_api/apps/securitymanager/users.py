@@ -35,7 +35,7 @@ class Permission(BaseRecord):
 class User(Record):
     """Represents a User in Firemon
 
-    Args:
+    Parameters:
         config (dict): dictionary of things values from json
         app (obj): App()
 
@@ -56,6 +56,14 @@ class User(Record):
         super().__init__(config, app)
 
     def set_password(self, password: str) -> RequestResponse:
+        """Set user password
+
+        Parameters:
+            password (str): password
+
+        Returns:
+            bool
+        """
         key = "password"
         data = {"password": password}
         headers = {
@@ -78,12 +86,12 @@ class User(Record):
 class Users(Endpoint):
     """Represents the Users
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
         name (str): name of the endpoint
 
-    Kwargs:
+    Keyword Arguments:
         record (obj): default `Record` object
     """
 
@@ -101,7 +109,11 @@ class Users(Endpoint):
         return filters
 
     def all(self) -> list[User]:
-        """Get all `Record`"""
+        """Get all `Record`
+
+        Returns:
+            list[User]
+        """
         filters = {"includeSystem": True, "includeDisabled": True}
 
         req = Request(
@@ -115,14 +127,14 @@ class Users(Endpoint):
     def create(self, user_config: dict, system_user: bool = False) -> User:
         """Creates an object on an endpoint.
 
-        Args:
+        Parameters:
             user_config (dict): a dictionary of all the needed options
 
-        Kwargs:
+        Keyword Arguments:
             system_user (bool): default (False) create user as a system user
 
         Return:
-            (obj): Record
+            User
         """
 
         base_url = None
@@ -142,7 +154,7 @@ class Users(Endpoint):
     def get(self, *args, **kwargs) -> Optional[User]:
         """Get single User
 
-        Args:
+        Parameters:
             *args (int/str): (optional) id or name to retrieve.
             **kwargs (str): (optional) see filter() for available filters
 
@@ -218,7 +230,7 @@ class Users(Endpoint):
 class UserGroup(Record):
     """Represents a UserGroup in Firemon
 
-    Args:
+    Parameters:
         config (dict): dictionary of things values from json
         app (obj): App()
     """
@@ -233,7 +245,7 @@ class UserGroup(Record):
         """List all available permissions in Firemon.
 
         Return:
-            list: list of available permissions.
+            list[Permission]: list of available permissions.
         """
 
         key = "permissiondefinition"
@@ -252,6 +264,10 @@ class UserGroup(Record):
         return perms
 
     def permission_show(self) -> list[Permission]:
+        """
+        Returns:
+            list[Permission]
+        """
         key = "permissions"
         resp = Request(
             base=self._url,
@@ -268,8 +284,11 @@ class UserGroup(Record):
     def permission_set(self, id: int) -> RequestResponse:
         """Set a permision for UserGroup.
 
-        Args:
+        Parameters:
             id (int): see permission_list() for id values and meaning
+
+        Returns:
+            bool
         """
         key = f"permission/{id}"
         resp = Request(
@@ -283,8 +302,11 @@ class UserGroup(Record):
     def permission_unset(self, id: int) -> RequestResponse:
         """Unset a permision for UserGroup.
 
-        Args:
+        Parameters:
             id (int): see permission_list() for id values and meaning
+
+        Returns:
+            bool
         """
         key = f"permission/{id}"
         resp = Request(
@@ -299,12 +321,12 @@ class UserGroup(Record):
 class UserGroups(Endpoint):
     """Represents the User Groups
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
         name (str): name of the endpoint
 
-    Kwargs:
+    Keyword Arguments:
         record (obj): default `Record` object
     """
 

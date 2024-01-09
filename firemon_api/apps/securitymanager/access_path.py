@@ -49,7 +49,11 @@ class AccessPath(BaseRecord):
         self._parse_apa()
 
     def _url_create(self) -> str:
-        """General self._url create"""
+        """General self._url create
+
+        Returns:
+            str
+        """
         url = f"{self._ep_url}"
         return url
 
@@ -57,6 +61,8 @@ class AccessPath(BaseRecord):
         """Attempt to parse the JSON blob into a list (paths) of of events so they are
         a bit easier to work with.
 
+        Returns:
+            None
         """
         se = self._config["startingEvent"].copy()
         path = {
@@ -90,6 +96,11 @@ class AccessPath(BaseRecord):
             self.paths.append(path)
 
     def get_graphml(self) -> RequestResponse:
+        """Get graphml data
+
+        Returns:
+            RequestResponse
+        """
         req = Request(
             base=self._url,
             headers={

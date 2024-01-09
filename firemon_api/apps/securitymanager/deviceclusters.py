@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 class DeviceCluster(Record):
     """Device Cluster Record
 
-    Args:
+    Parameters:
         config (dict): dictionary of things values from json
         app (obj): App()
 
@@ -34,7 +34,11 @@ class DeviceCluster(Record):
         super().__init__(config, app)
 
     def devices(self) -> list[Device]:
-        """Get all devices assigned to cluster"""
+        """Get all devices assigned to cluster
+
+        Returns:
+            list[Device]
+        """
         key = "device"
         req = Request(
             base=self._url,
@@ -47,11 +51,11 @@ class DeviceCluster(Record):
 class DeviceClusters(Endpoint):
     """Represents the Device Clusters
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
 
-    Kwargs:
+    Keyword Arguments:
         record (obj): default `Record` object
 
     Examples:

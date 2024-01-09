@@ -22,7 +22,7 @@ class DevicePackError(SecurityManagerError):
 class DevicePack(BaseRecord):
     """Representation of the device pack
 
-    Args:
+    Parameters:
         config (dict): dictionary of things values from json
         app (obj): App()
 
@@ -63,7 +63,7 @@ class DevicePack(BaseRecord):
     def get(self, name="dc.zip") -> RequestResponse:
         """Get the blob (artifact) from Device Pack
 
-        Kwargs:
+        Keyword Arguments:
             name (str): name of the artifact (dc.zip, plugin.jar, etc)
 
         Return:
@@ -142,7 +142,7 @@ class DevicePacks(Endpoint):
     """Device Packs. There is no API to query individual Device
     Packs to filter thus we retrieve all DPs and query locally.
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
 
@@ -188,7 +188,7 @@ class DevicePacks(Endpoint):
     def get(self, *args, **kwargs) -> Optional[DevicePack]:
         """Query and retrieve individual DevicePack. Spelling matters.
 
-        Args:
+        Parameters:
             *args: device pack name (artifactId)
             **kwargs: key value pairs in a device pack dictionary
 
@@ -233,7 +233,7 @@ class DevicePacks(Endpoint):
     def filter(self, **kwargs):
         """Retrieve a filtered list of DevicePacks
 
-        Args:
+        Parameters:
             **kwargs: key value pairs in a device pack dictionary
 
         Return:
@@ -254,7 +254,7 @@ class DevicePacks(Endpoint):
     def upload(self, file: bytes):
         """Upload device pack
 
-        Args:
+        Parameters:
             file (bytes): the bytes to send that make a device pack (JAR)
 
         Returns:

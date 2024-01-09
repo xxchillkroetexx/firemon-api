@@ -32,7 +32,7 @@ class DiagPkg(EndpointCpl):
     def get(self, name: str):
         """Get diag package
 
-        Args:
+        Parameters:
             name (str): package name
         """
         key = f"{name}"
@@ -46,10 +46,10 @@ class DiagPkg(EndpointCpl):
     def create(self, ticket: str, upload=False):
         """Create diag package
 
-        Args:
+        Parameters:
             ticket (str): ticket number
 
-        Kwargs:
+        Keyword Arguments:
             upload (bool): default False
         """
         data = {"ticket": ticket, "upload": upload}
@@ -69,7 +69,7 @@ class DiagPkg(EndpointCpl):
     def delete(self, name: str):
         """Delete package
 
-        Args:
+        Parameters:
             name (str): package name
         """
         key = f"{name}"

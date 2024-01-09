@@ -31,7 +31,7 @@ class Cleanup(EndpointCpl):
 
     def exec(self, action: str):
         """
-        Args:
+        Parameters:
             action (str): analyze, clean
         """
 

@@ -93,11 +93,11 @@ class Workflow(Record):
 class Workflows(Endpoint):
     """Represents the Workflows
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
 
-    Kwargs:
+    Keyword Arguments:
         record (obj): default `Record` object
     """
 
@@ -110,10 +110,10 @@ class Workflows(Endpoint):
     def create(self, name: str, config: dict = None) -> Workflow:
         """Create a new Workflow
 
-        Args:
+        Parameters:
             name (str): Name of the new workflow
 
-        Kwargs:
+        Keyword Arguments:
             config (dict): dictionary of configuration data.
 
         Return:

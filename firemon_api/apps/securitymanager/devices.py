@@ -35,13 +35,13 @@ class DevicesError(SecurityManagerError):
 class Device(Record):
     """Device Record
 
-    Args:
+    Parameters:
         config (dict): dictionary of things values from json
         app (obj): App()
 
     Attributes:
-        * cc (collection configs)
-        * revisions
+        * cc: CollectionConfigs()
+        * revisions: Revisions()
 
     Examples:
 
@@ -107,11 +107,11 @@ class Device(Record):
         Checks the state of `_diff` and sends the entire
         `serialize` to Request.put().
 
-        Kwargs:
+        Keyword Arguments:
             retrieve (bool): Perform manual retrieval on save
 
-        Return:
-            (bool): True if PUT request was successful.
+        Returns:
+            bool: True if PUT request was successful.
 
         Examples:
 
@@ -154,7 +154,7 @@ class Device(Record):
         For nested and choice fields you'd pass an int the same as
         if you were modifying the attribute and calling save().
 
-        Args:
+        Parameters:
             data (dict): Dictionary containing the k/v to update the
             record object with.
 
@@ -185,11 +185,14 @@ class Device(Record):
     ) -> RequestResponse:
         """Delete the device (and child devices)
 
-        Kwargs:
+        Keyword Arguments:
             deleteChildren (bool): delete all associated child devices
             a_sync (bool): ???
             sendNotification (bool): ???
             postProcessing (bool): ???
+
+        Returns:
+            bool
 
         Examples:
 
@@ -237,12 +240,12 @@ class Device(Record):
     ) -> list[ApaInterface]:
         """Get apa guessed starting interface
 
-        Args:
+        Parameters:
             source_ip (str): ipv4/6 address ex: '192.168.202.95'
             dest_ip (str): ipv4/6 address ex: '192.168.203.66'
             protocol (int): for all practical purposes it is only 1 (icmp), 6 (tcp), 17 (udp), 58 (icmpv6)
 
-        Kwargs:
+        Keyword Arguments:
             source_port (int): source port
             dest_port (int): destination port. required if the protocol has ports
             icmp_type (int): apparently not required
@@ -322,13 +325,13 @@ class Device(Record):
     ) -> AccessPath:
         """Perform an Access Path Analysis query
 
-        Args:
+        Parameters:
             interface (str): Inbound interface name ex: 'ethernet1/2'. You will likely want to provide this.
             source_ip (str): ipv4/6 address ex: '192.168.202.95'
             dest_ip (str): ipv4/6 address ex: '192.168.203.66'
             protocol (int): for all practical purposes it is only 1 (icmp), 6 (tcp), 17 (udp), 58 (icmpv6)
 
-        Kwargs:
+        Keyword Arguments:
             source_port (int): source port
             dest_port (int): destination port. required if the protocol has ports
             icmp_type (int): apparently not required
@@ -343,8 +346,7 @@ class Device(Record):
             recommend (bool): Rule Rec
 
         Return:
-            AccessPath: as always AccessPath().dump() gets you the dictionary. But the AccessPath object
-                gets some parsed data. `events` as a list, `packet_result` as a dictionary.
+            AccessPath: as always AccessPath().dump() gets you the dictionary. But the AccessPath object gets some parsed data. `events` as a list, `packet_result` as a dictionary.
         """
         kwargs = {
             "source_ip": source_ip,
@@ -425,7 +427,7 @@ class Device(Record):
         Raw configs include only those files as found by Firemon
         during a retrieval.
 
-        Kwargs:
+        Keyword Arguments:
             meta (bool): True gets a SUPPORT file. False is Raw only
 
         Returns:
@@ -471,14 +473,17 @@ class Device(Record):
             they will always be sent to the `normalizer`. Use `support_import` if you
             need to upload `.NORMALIZED` files to create a new revision.
 
-        Args:
+        Parameters:
             f_list (list): a list of tuples. Tuples are intended to uploaded as a multipart form using 'requests'. format of the data in the tuple is: ('<file-name>', ('<file-name>', open(<path_to_file>, 'rb'), 'text/plain'))
 
-        Kwargs:
+        Keyword Arguments:
             change_user (str): A name for display field
             correlation_id (str): A UUID1
             action (str): AUTOMATIC, INSTALL, MANUAL, SAVE, SCHEDULED, MIGRATE, IMPORT
             file_type (str): OS, LOG, CONFIG, NORMALIZED, BEHAVIOR, LEGACY_NORMALIZED_XML
+
+        Returns:
+            bool
 
         Examples:
 
@@ -517,19 +522,22 @@ class Device(Record):
     def support_import(
         self, zip_file: bytes, renormalize: bool = False
     ) -> RequestResponse:
-        """Todo: Import a 'support' file, a zip file with the expected device
+        """Import a 'support' file, a zip file with the expected device
         config files along with 'NORMALIZED' and meta-data files. Use this
         function and set 'renormalize = True' and mimic 'import_config'.
 
-        NOTE:
+        Notes:
             Device packs must match from the support files descriptor.json
 
-        Args:
+        Parameters:
             zip_file (bytes): bytes that make a zip file
 
-        Kwargs:
+        Keyword Arguments:
             renormalize (bool): defualt (False). Tell system to re-normalize from
             config (True) or use imported 'NORMALIZED' files (False)
+
+        Returns:
+            bool
 
         Examples:
 
@@ -559,8 +567,11 @@ class Device(Record):
     def retrieval_exec(self, debug: bool = False) -> RequestResponse:
         """Execute a manual retrieval for device.
 
-        Kwargs:
+        Keyword Arguments:
             debug (bool): Unsure what this does
+
+        Returns:
+            RequestResponse
         """
         key = "manualretrieval"
         filters = {"debug": debug}
@@ -577,12 +588,19 @@ class Device(Record):
         """Get rule usage for device.
         total hits for all rules on the device.
 
-        Kwargs:
+        Keyword Arguments:
             type (Literal["daly", "total"]): either 'total' or 'daily'
 
         Return:
-            json: daily == {'hitDate': '....', 'totalHits': int}
-                  total == {'totalHits': int}
+            dict
+
+                daily:
+
+                    {'hitDate': '....', 'totalHits': int}
+
+                total:
+
+                    {'totalHits': int}
         """
         key = f"ruleusagestat/{type}"
         req = Request(
@@ -593,7 +611,11 @@ class Device(Record):
         return req.get()
 
     def nd_problem(self) -> RequestResponse:
-        """Retrieve problems with latest normalization"""
+        """Retrieve problems with latest normalization
+
+        Return:
+            RequestResponse
+        """
         key = f"device/{self.id}/nd/problem"
         req = Request(
             base=self._app_url,
@@ -603,7 +625,11 @@ class Device(Record):
         return req.get()
 
     def nd_latest_get(self) -> NormalizedData:
-        """Gets the latest revision as a fully parsed object"""
+        """Gets the latest revision as a fully parsed object
+
+        Return:
+            NormalizedData
+        """
         key = "rev/latest/nd/all"
         req = Request(
             base=self._url,
@@ -613,7 +639,11 @@ class Device(Record):
         return NormalizedData(req.get(), self._app)
 
     def rev_latest_get(self) -> Revision:
-        """Gets the latest revision object"""
+        """Gets the latest revision object
+
+        Return:
+            Revision
+        """
         key = "rev/latest"
         req = Request(
             base=self._url,
@@ -627,6 +657,9 @@ class Device(Record):
 
         Notes:
             SSH Key location: /var/lib/firemon/dc/.ssh/known_hosts
+
+        Returns:
+            bool
         """
         key = "sshhostkey"
         req = Request(
@@ -637,7 +670,11 @@ class Device(Record):
         return req.put()
 
     def capabilities(self) -> RequestResponse:
-        """Retrieve device capabilities"""
+        """Retrieve device capabilities
+
+        Returns:
+            dict
+        """
         key = f"capabilities"
         req = Request(
             base=self._url,
@@ -647,7 +684,11 @@ class Device(Record):
         return req.get()
 
     def status(self) -> RequestResponse:
-        """Retrieve device status"""
+        """Retrieve device status
+
+        Returns:
+            dict
+        """
         key = f"status"
         req = Request(
             base=self._url,
@@ -657,7 +698,11 @@ class Device(Record):
         return req.get()
 
     def health(self) -> RequestResponse:
-        """Retrieve device health testSuites"""
+        """Retrieve device health testSuites
+
+        Returns:
+            dict
+        """
         key = f"health"
         req = Request(
             base=self._url,
@@ -671,8 +716,11 @@ class Device(Record):
     ) -> RequestResponse:
         """License device for feature
 
-        Args:
-            product_key (Literal["SM", "PO", "PP", "RA", "GPC", "AUTO"]): SM, PO, PP, RA, GPC, AUTO
+        Parameters:
+            product_key (Literal["SM", "PO", "PP", "RA", "GPC", "AUTO"])
+
+        Returns:
+            bool
         """
         key = f"device/license/{self.id}/product/{product_key}"
         req = Request(
@@ -694,8 +742,11 @@ class Device(Record):
     ) -> RequestResponse:
         """License device for feature
 
-        Args:
+        Parameters:
             product_key (Literal["SM", "PO", "PP", "RA", "GPC", "AUTO"]): SM, PO, PP, RA, GPC, AUTO
+
+        Returns:
+            bool
         """
         key = f"device/license/{self.id}/product/{product_key}"
         req = Request(
@@ -708,9 +759,11 @@ class Device(Record):
     def ruledoc_update(self, config: RuleDoc) -> RequestResponse:
         """Update Rule Documentation - meta data
 
-        Args:
-            config (dict): all the properties that make up all the rule doc
-                updates. This can be gnarly looking
+        Parameters:
+            config (RuleDoc): all the properties that make up all the rule doc updates. This can be gnarly looking
+
+        Return:
+            bool
         """
 
         key = "ruledoc"
@@ -724,7 +777,7 @@ class Device(Record):
     def ruledoc_get(self, rule_id: str) -> RequestResponse:
         """Get RuleDoc for given rule id
 
-        Args:
+        Parameters:
             rule_id (str): guid string data
 
         Return:
@@ -768,6 +821,21 @@ class Device(Record):
         force_tiebreak: Optional[bool] = None,
         pattern: Optional[str] = None,
     ) -> RuleRecommendation:
+        """Make a Security Manager rule recomendation
+
+        Parameters:
+            requriments (RuleRecRequirement): dict of requirements
+
+        Keyword Arguments:
+            license_category (Literal[...])
+            strategy (Literal[...])
+            force_tiebreak (bool)
+            pattern (str)
+
+        Returns:
+            RuleRecommendation
+
+        """
         key = f"rulerec"
         filters = {}
         if license_category:
@@ -790,11 +858,11 @@ class Device(Record):
 class Devices(Endpoint):
     """Represents the Devices
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
 
-    Kwargs:
+    Keyword Arguments:
         record (obj): default `Record` object
     """
 
@@ -808,9 +876,12 @@ class Devices(Endpoint):
     def get(self, *args, **kwargs) -> Device:
         """Get single Device
 
-        Args:
+        Parameters:
             *args (int/str): (optional) id or name to retrieve.
             **kwargs (str): (optional) see filter() for available filters
+
+        Returns:
+            Device
 
         Examples:
 
@@ -864,7 +935,7 @@ class Devices(Endpoint):
     def create(self, dev_config: dict, retrieve: bool = False) -> Device:
         """Create a new device
 
-        Args:
+        Parameters:
             dev_config (dict): dictionary of configuration data.
             retrieve (bool): whether to kick off a manual retrieval
 

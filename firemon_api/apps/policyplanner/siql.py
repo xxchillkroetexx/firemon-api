@@ -14,7 +14,7 @@ class SiqlPP(object):
     """Represent actions on the SIQL Policy Planner endpoint. All functions
     take a `query` which is a string containing the siql.
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
     """
@@ -40,7 +40,7 @@ class SiqlPP(object):
     def _raw(self, query: str, key: str) -> SiqlData:
         """Raw SIQL query. The incantation used to summon Cthulu.
 
-        Args:
+        Parameters:
             query (str): SIQL statement
             key (str): endpoint key
         """

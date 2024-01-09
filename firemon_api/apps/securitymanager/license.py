@@ -16,7 +16,7 @@ class License(Endpoint):
     It does not seem to fit here so just a plain `dict` for
     most things is being returned until I figure out better way.
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
     """
@@ -40,15 +40,27 @@ class License(Endpoint):
         return self.all()
 
     def filter(self) -> None:
+        """
+        Raises:
+            NotImplementedError
+        """
         raise NotImplementedError("Filter is not supported for this Endpoint.")
 
     def count(self) -> None:
+        """
+        Raises:
+            NotImplementedError
+        """
         raise NotImplementedError("Count is not supported for this Endpoint.")
 
     def load(self, lic: bytes) -> RequestResponse:
         """Load license file
-        Args:
+
+        Parameters:
             lic (bytes): bytes that make a license file
+
+        Returns:
+            bool
 
         Example:
             >>> fn = '/path/to/file/firemon.lic'

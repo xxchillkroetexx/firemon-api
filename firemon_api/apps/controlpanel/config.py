@@ -63,7 +63,7 @@ class Config(EndpointCpl):
 
     def get(self, category: str):
         """Get config values
-        Args:
+        Parameters:
             category (str): whatever
         """
         key = f"values/{category}"
@@ -76,7 +76,7 @@ class Config(EndpointCpl):
 
     def update(self, category: str, config: dict):
         """Update config values
-        Args:
+        Parameters:
             category (str): whatever
             config (dict): update data
         """
@@ -90,7 +90,7 @@ class Config(EndpointCpl):
 
     def schema(self, category: str):
         """Schema config values. Show how to make your dict for whatever
-        Args:
+        Parameters:
             category (str): whatever
         """
         key = f"schema/{category}"

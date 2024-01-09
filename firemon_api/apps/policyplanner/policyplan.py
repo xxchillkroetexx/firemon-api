@@ -43,7 +43,7 @@ class Requirement(Record):
     def set_review_decision(self, decision="APPROVED"):
         """Update workflow requirement approval
 
-        Kwargs:
+        Keyword Arguments:
             decision (str): "APPROVED" | "???"
         """
         key = f"requirement/{self.id}/reviewDecision/{decision}"
@@ -59,13 +59,13 @@ class Requirement(Record):
 class Requirements(Endpoint):
     """Represents the PolicyPlan Requirements endpoint
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
         workflow_id (int): Workflow ID
         ticket_id (int): Packet/Ticket Id
 
-    Kwargs:
+    Keyword Arguments:
         task_id (int): Task ID (this thing... good gravy... it doesn't even matter)
         record (obj): default `Record` object
     """
@@ -119,8 +119,9 @@ class Requirements(Endpoint):
     def get(self, *args, **kwargs) -> Optional[Requirement]:
         """Query and retrieve individual Requirement.
 
-        Args:
+        Parameters:
             *args: requirement id
+            **kwargs: arbitrary keyword arguments
 
         Return:
             Requirement(object): a Requirement(object)
@@ -189,13 +190,13 @@ class Change(Record):
 class Changes(Endpoint):
     """Represents the PolicyPlan Changes endpoint
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
         workflow_id (int): Workflow ID
         ticket_id (int): Packet/Ticket Id
 
-    Kwargs:
+    Keyword Arguments:
         task_id (int): Task ID (this thing... good gravy... it doesn't even matter)
         record (obj): default `Record` object
     """
@@ -249,7 +250,7 @@ class Changes(Endpoint):
     def get(self, *args, **kwargs) -> Optional[Change]:
         """Query and retrieve individual Change.
 
-        Args:
+        Parameters:
             *args: change id
 
         Return:

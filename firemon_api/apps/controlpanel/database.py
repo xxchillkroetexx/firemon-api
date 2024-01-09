@@ -33,7 +33,7 @@ class Database(EndpointCpl):
     def standby_get(self, fqdn: str):
         """Get info about standby db
 
-        Args:
+        Parameters:
             fqdn (str): db fqdn
         """
         key = f"standby/{fqdn}"
@@ -47,7 +47,7 @@ class Database(EndpointCpl):
     def standby_create(self, fqdn: str):
         """Create standby db
 
-        Args:
+        Parameters:
             fqdn (str): db fqdn
         """
         key = f"standby/"
@@ -62,7 +62,7 @@ class Database(EndpointCpl):
     def standby_delete(self, fqdn: str):
         """Delete standby db
 
-        Args:
+        Parameters:
             fqdn (str): db fqdn
         """
         key = f"standby/{fqdn}"

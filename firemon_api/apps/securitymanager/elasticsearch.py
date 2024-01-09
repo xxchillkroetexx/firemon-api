@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 class ElasticSearch(object):
     """Represent actions on the Elastic Search endpoint.
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
     """
@@ -30,7 +30,11 @@ class ElasticSearch(object):
         self.url = f"{self.app_url}/{self.__class__.ep_name}"
 
     def reindex(self) -> RequestResponse:
-        """Mark Elastic Search for reindex"""
+        """Mark Elastic Search for reindex
+
+        Returns:
+            bool
+        """
         key = "reindex"
         req = Request(
             base=self.url,

@@ -20,7 +20,7 @@ class RoutesError(SecurityManagerError):
 class Route(BaseRecord):
     """Device Route Object `Record`.
 
-    Args:
+    Parameters:
         config (dict): dictionary of things values from json
         app (obj): App()
     """
@@ -39,11 +39,11 @@ class Route(BaseRecord):
 class Routes(Endpoint):
     """Device Route Object Endpoint.
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
 
-    Kwargs:
+    Keyword Arguments:
         record (obj): default `Record` object
         device_id (int): Device id
     """
@@ -80,12 +80,12 @@ class Routes(Endpoint):
     def get(self, *args, **kwargs) -> Route:
         """Query and retrieve individual Routes. Spelling matters.
 
-        Args:
+        Parameters:
             *args: route UUID (matchId)
             **kwargs: key value pairs in a zone dictionary
 
         Return:
-            Zone(object): a Zone(object)
+           Route
 
         Examples:
 
@@ -129,11 +129,11 @@ class Routes(Endpoint):
     def filter(self, **kwargs) -> list[Route]:
         """Retrieve a filtered list of Routes
 
-        Args:
+        Parameters:
             **kwargs: key value pairs in a device pack dictionary
 
         Return:
-            list: a list of Route(object)
+            list[Route]: a list of Route()
 
         Examples:
 

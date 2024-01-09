@@ -20,7 +20,7 @@ class SmLoggingError(SecurityManagerError):
 class Logger(Record):
     """Represents a Logger
 
-    Args:
+    Parameters:
         config (dict): dictionary of things values from json
         app (obj): App()
     """
@@ -91,11 +91,11 @@ class Logger(Record):
 class Logging(Endpoint):
     """Represents the Logging
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
 
-    Kwargs:
+    Keyword Arguments:
         record (obj): default `Record` object
     """
 
@@ -122,7 +122,7 @@ class Logging(Endpoint):
     def filter(self, **kwargs) -> list[Logger]:
         """Retrieve a filtered list of Loggers
 
-        Args:
+        Parameters:
             **kwargs: `logger`
 
         Return:
@@ -156,7 +156,7 @@ class Logging(Endpoint):
     def get(self, *args, **kwargs) -> Optional[Logger]:
         """Query and retrieve individual Logger. Spelling matters.
 
-        Args:
+        Parameters:
             *args: logger name (`logger`)
             **kwargs:
 
@@ -195,7 +195,11 @@ class Logging(Endpoint):
             return None
 
     def reset(self) -> RequestResponse:
-        """Reset all loggers to their default values"""
+        """Reset all loggers to their default values
+
+        Returns:
+            bool
+        """
 
         key = "reset"
         Request(

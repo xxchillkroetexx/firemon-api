@@ -11,7 +11,7 @@ from firemon_api.core.response import BaseRecord, Record, JsonField
 class BaseEndpoint(object):
     """Represents a Basic Endpoint
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
         record (obj): optional `Record` to use
@@ -51,7 +51,7 @@ class BaseEndpoint(object):
 class Endpoint(BaseEndpoint):
     """Represent actions available on endpoints beyond just a base
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
         record (obj): optional `Record` to use
@@ -98,7 +98,7 @@ class Endpoint(BaseEndpoint):
     def get(self, *args, **kwargs) -> Record:
         """Get single Record
 
-        Args:
+        Parameters:
             *args (int): (optional) id to retrieve. If this is not type(int)
                         dump it into filter and grind it up there.
             **kwargs (str): (optional) see filter() for available filters
@@ -171,10 +171,10 @@ class Endpoint(BaseEndpoint):
     def create(self, *args, **kwargs) -> Record:
         """Creates an object on an endpoint.
 
-        Args:
+        Parameters:
             args (dict): optional. a dictionary of all the needed options
 
-        Kwargs:
+        Keyword Arguments:
             (str): keywords and args to create a new record
 
         Return:
@@ -216,7 +216,7 @@ class Endpoint(BaseEndpoint):
 class EndpointCpl(BaseEndpoint):
     """Represent actions available on Control Panel
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
         record (obj): optional `Record` to use

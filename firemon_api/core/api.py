@@ -26,19 +26,19 @@ class FiremonAPI(object):
     Instantiate FiremonAPI() with the appropriate named arguments.
     `auth()` then specify which app and endpoint with which to interact.
 
-    Args:
+    Parameters:
         host (str): host or IP.
         username (str): Firemon web username
         password (str): Firemon web password
 
-    Kwargs:
+    Keyword Arguments:
         timeout (int): timeout value for Requests Session(). (default: 20)
         verify (optional): Requests verify ssl cert (bool) or a path (str) to PEM certificate. (default: ``True``)
         cert (optional): if String, path to ssl client cert file (.pem). If Tuple, ('cert', 'key') pair. ex: openssl x509 -in <(openssl s_client -connect {SERVER}:{PORT} -prexit 2>/dev/null) > {SERVER}.pem
         domain_id (int): the domain.
         proxy (str): ip.add.re.ss:port of proxy
 
-    Valid applications:
+    Attributes:
         * sm: SecurityManager()
         * orch: Orchestration()
         * pp: PolicyPlanner()
@@ -110,6 +110,10 @@ class FiremonAPI(object):
         can be set at __init__ and if the u:p is correct access
         to calls goes fine. But if it is not correct it is easy
         to lock out a user.
+
+        Parameters:
+            username (str): FireMon username
+            password (str): password associated to username
         """
         log.info(f"Authenticating Firemon connection: {self.host}")
         self.session.auth = (username, password)
@@ -143,7 +147,15 @@ class FiremonAPI(object):
         return self
 
     def auth_cpl(self, username: str, password: str, cpl_proxy=False):
-        """Control Panel that is normally accessed via 55555"""
+        """Control Panel that is normally accessed via 55555
+
+        Parameters:
+            username (str): FMOS level username
+            password (str): FMOS level password associated to user
+
+        Keyword Arguments:
+            cpl_proxy (bool): default: Fasle
+        """
         log.info(f"Authenticating Firemon Control Panel: {self.host}")
         self._cpl_proxy = cpl_proxy
         self._cpl_cookies = requests.cookies.RequestsCookieJar()
@@ -196,10 +208,13 @@ class FiremonAPI(object):
         """Allow change of SecMgr password without being authed for other
         API calls.
 
-        Args:
+        Parameters:
             username (str): Username to change password
             oldpw (str): Old password
             newpw (str): New password
+
+        Returns:
+            bool
         """
         key = "securitymanager/api/user/password"
         data = {

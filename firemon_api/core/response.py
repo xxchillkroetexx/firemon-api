@@ -24,7 +24,7 @@ class JsonField(object):
 class BaseRecord(object):
     """Create python objects for json responses from Firemon
 
-    Args:
+    Parameters:
         config (dict): dictionary of things values from json
         app (obj): App()
 
@@ -230,7 +230,7 @@ class BaseRecord(object):
 class Record(BaseRecord):
     """Create python objects for json responses from Firemon
 
-    Args:
+    Parameters:
         config (dict): dictionary of things values from json
         app (obj): App()
 
@@ -266,7 +266,7 @@ class Record(BaseRecord):
         Add a new attribute to `Record`. This is to ensure that
         the `serialize` picks up attribute and `_diff`.
 
-        Args:
+        Parameters:
             k (str): key/attr
             v (str, list, dict): value
         """
@@ -283,7 +283,7 @@ class Record(BaseRecord):
         This is to ensure that the `serialize` picks up
         attribute and `_diff`.
 
-        Args:
+        Parameters:
             k (str): key/attr
         """
         if k in dict(self._init_cache).keys():
@@ -337,7 +337,7 @@ class Record(BaseRecord):
         For nested and choice fields you'd pass an int the same as
         if you were modifying the attribute and calling save().
 
-        Args:
+        Parameters:
             data (dict): Dictionary containing the k/v to update the
             record object with.
 

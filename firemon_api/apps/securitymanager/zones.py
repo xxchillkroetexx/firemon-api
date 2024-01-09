@@ -20,7 +20,7 @@ class ZonesError(SecurityManagerError):
 class Zone(BaseRecord):
     """Device Zone Object `Record`.
 
-    Args:
+    Parameters:
         config (dict): dictionary of things values from json
         app (obj): App()
     """
@@ -40,11 +40,11 @@ class Zone(BaseRecord):
 class Zones(Endpoint):
     """Device Zone Object Endpoint.
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
 
-    Kwargs:
+    Keyword Arguments:
         record (obj): default `Record` object
         device_id (int): Device id
 
@@ -72,7 +72,11 @@ class Zones(Endpoint):
         return filters
 
     def all(self) -> list[Zone]:
-        """Get all `Record`"""
+        """Get all `Record`
+
+        Returns:
+            list[Zone]
+        """
         if self._device_id:
             all_key = f"device/{self._device_id}/{self.__class__.ep_name}"
         else:
@@ -90,12 +94,12 @@ class Zones(Endpoint):
     def get(self, *args, **kwargs) -> Optional[Zone]:
         """Query and retrieve individual Zones. Spelling matters.
 
-        Args:
+        Parameters:
             *args: zone name (name)
             **kwargs: key value pairs in a zone dictionary
 
         Return:
-            Zone(object): a Zone(object)
+            Zone: a Zone()
 
         Examples:
 
@@ -138,11 +142,11 @@ class Zones(Endpoint):
     def filter(self, **kwargs) -> list[Zone]:
         """Retrieve a filtered list of Zones
 
-        Args:
+        Parameters:
             **kwargs: key value pairs in a device pack dictionary
 
         Return:
-            list: a list of Zone(object)
+            list[Zone]: a list of Zone()
 
         Examples:
 
@@ -159,7 +163,7 @@ class Zones(Endpoint):
 class FmZone(BaseRecord):
     """Firemon System Zone `Record`.
 
-    Args:
+    Parameters:
         config (dict): dictionary of things values from json
         app (obj): App()
 
@@ -175,11 +179,11 @@ class FmZone(BaseRecord):
 class FmZones(Endpoint):
     """Firemon System Zone Endpoint.
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
 
-    Kwargs:
+    Keyword Arguments:
         record (obj): default `Record` object
         device_id (int): Device id
 

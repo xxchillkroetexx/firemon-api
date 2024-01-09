@@ -69,11 +69,11 @@ class Request(object):
     """Creates requests to the FireMon API
     Responsible for building the url and making the HTTPS requests to FireMon's API
 
-    Args:
+    Parameters:
         base (str) Base URL
         session (`Session`): requests
 
-    Kwargs:
+    Keyword Arguments:
         filters (dict, optional): contains key/value pairs that correlate to the filters a given endpoint accepts.
         key (str, optional): append to base to make up full url
         headers (dict, optional): specific headers to over ride session headers
@@ -249,7 +249,7 @@ class Request(object):
         Makes a PUT request to Firemon API. Not sure why we have PUT statements
         with no data but it is what it is.
 
-        Kwargs:
+        Keyword Arguments:
             json (dict): Contains a dict that will be turned into a json object and sent to the API.
             data (dict): x-form-url
 
@@ -265,7 +265,7 @@ class Request(object):
         """Makes POST request.
         Makes a POST request to Firemon API.
 
-        Kwargs:
+        Keyword Arguments:
             json (dict): Contains a dict that will be turned
             into a json and sent to the API.
             data (dict): x-form-url

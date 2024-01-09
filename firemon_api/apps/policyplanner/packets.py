@@ -64,7 +64,7 @@ class PacketTask(Record):
     def add_requirement(self, config: PolicyPlanRequirement) -> RequestResponse:
         """Add a requirement
 
-        Args:
+        Parameters:
             config (PolicyPlanRequirement): dict of requirements
         """
 
@@ -105,7 +105,7 @@ class PacketTask(Record):
     def complete(self, action: str = "submit") -> RequestResponse:
         """Complete a packet task
 
-        Kwargs:
+        Keyword Arguments:
             button (str): "submit" | "approve"
         """
         key = "complete"
@@ -121,7 +121,7 @@ class PacketTask(Record):
     def exec_automation(self, changes: list[int]) -> RequestResponse:
         """Execute automation for all changes
 
-        Args:
+        Parameters:
             changes (list): a list of change id
         """
         if not changes:
@@ -140,12 +140,12 @@ class PacketTask(Record):
 class PacketTasks(Endpoint):
     """Represents the Packet Task for the Packets/Tickets endpoint
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
         packet_id (int): Packet Id
 
-    Kwargs:
+    Keyword Arguments:
         record (obj): default `Record` object
     """
 
@@ -192,7 +192,7 @@ class PacketTasks(Endpoint):
     def get(self, *args, **kwargs) -> Optional[PacketTask]:
         """Query and retrieve individual PacketTask
 
-        Args:
+        Parameters:
             *args: packet task id
             **kwargs: key value pairs in a device pack dictionary
 
@@ -234,7 +234,7 @@ class PacketTasks(Endpoint):
     def filter(self, **kwargs) -> list[PacketTask]:
         """Retrieve a filterd list of PacketTasks
 
-        Args:
+        Parameters:
             **kwargs: key value pairs in a device pack dictionary
 
         Return:
@@ -300,11 +300,11 @@ class Packet(BaseRecord):
 class Packets(Endpoint):
     """Represents the Packets/Tickets endpoint
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
 
-    Kwargs:
+    Keyword Arguments:
         record (obj): default `Record` object
     """
 
@@ -361,8 +361,9 @@ class Packets(Endpoint):
     def filter(self, *args, **kwargs) -> list[Packet]:
         """Attempt to use the filter options. Really only a single query
 
-        Kwargs:
-            siql (str): whatever siql query for tickets is available
+        Parameters:
+            *args: arbitrary args. only the first with update the kwargs siql
+            **kwargs: arbitary kwargs for siql
         """
 
         if args:
@@ -379,7 +380,7 @@ class Packets(Endpoint):
     def create(self, config: dict = None) -> Packet:
         """Create a workflow packet/ticket instance
 
-        Kwargs:
+        Keyword Arguments:
             config (dict):
         """
 

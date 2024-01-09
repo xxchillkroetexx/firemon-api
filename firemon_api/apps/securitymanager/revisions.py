@@ -68,7 +68,7 @@ class Revision(BaseRecord):
 
     (change configuration &/or normalization state)
 
-    Args:
+    Parameters:
         config (dict): dictionary of things values from json
         app (obj): App()
 
@@ -122,7 +122,7 @@ class Revision(BaseRecord):
         Raw configs include only those files as found by Firemon
         during a retrieval.
 
-        Kwargs:
+        Keyword Arguments:
             meta (bool): Include metadata and NORMALIZED config files
 
         Return:
@@ -144,12 +144,14 @@ class Revision(BaseRecord):
 
         Retrieve all the revision data in a single payload.
 
-        Kwargs:
+        Keyword Arguments:
             sections (list): different sections of Normalized Data to retrieve
                 "empty" (default): every section
                 "app":
                 "... etc": all the different things
 
+        Returns:
+            NormalizedData
         """
         key = f"nd/all"
         req = Request(
@@ -163,7 +165,11 @@ class Revision(BaseRecord):
         return NormalizedData(req.get(), self._app)
 
     def _files_load(self) -> list[RevFile]:
-        """Get the file descriptors attached to Revision"""
+        """Get the file descriptors attached to Revision
+
+        Returns:
+            list[RevFile]
+        """
         key = "nd/file"
         req = Request(
             base=self._url,
@@ -204,11 +210,11 @@ class Revisions(Endpoint):
     static domain requirements and device_id, or searching by a subset
     of our internal SIQL (but you cannot search by name or anything in SIQL).
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
 
-    Kwargs:
+    Keyword Arguments:
         record (obj): default `Record` object
         device_id (int): Device id
 
@@ -230,8 +236,12 @@ class Revisions(Endpoint):
         super().__init__(api, app, record=record)
         self._device_id = device_id
 
-    def all(self):
-        """Get all `Record`"""
+    def all(self) -> list[Revision]:
+        """Get all `Record`
+
+        Returns:
+            list[Revision]: a list of Revision()
+        """
         if self._device_id:
             all_key = f"device/{self._device_id}/{self.__class__.ep_name}"
         else:
@@ -252,11 +262,11 @@ class Revisions(Endpoint):
         I have no idea how our /filter endpoint works. Some SIQL but
         I cannot find any decent documentation.
 
-        Args:
+        Parameters:
             **kwargs: key value pairs in a device pack dictionary
 
         Return:
-            list: a list of Revision(object)
+            list[Revision]: a list of Revision()
 
         Examples:
 

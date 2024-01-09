@@ -31,7 +31,7 @@ class CertAuth(EndpointCpl):
 
     def chain(self, cert_type: str):
         """
-        Args:
+        Parameters:
             cert_type (str): "host", "server", "database"
         """
 
@@ -50,7 +50,7 @@ class CertAuth(EndpointCpl):
 
     def sign(self, cert_type: str):
         """
-        Args:
+        Parameters:
             cert_type (str): "host", "server", "database"
         """
 

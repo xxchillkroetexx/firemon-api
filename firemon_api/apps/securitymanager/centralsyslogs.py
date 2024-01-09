@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 class CentralSyslog(Record):
     """Central Syslog Record
 
-    Args:
+    Parameters:
         config (dict): dictionary of things values from json
         app (obj): App()
     """
@@ -33,11 +33,11 @@ class CentralSyslog(Record):
     def device_set(self, id: int) -> RequestResponse:
         """Set a device to this Central Syslog
 
-        Args:
+        Parameters:
             id (int): device id to assign
 
         Returns:
-            (bool): True if assigned
+            bool: True if assigned
         """
         key = f"devices/{id}"
         req = Request(
@@ -50,11 +50,11 @@ class CentralSyslog(Record):
     def device_unset(self, id: int) -> RequestResponse:
         """Unset a device to this Central Syslog
 
-        Args:
+        Parameters:
             id (int): device id to assign
 
         Returns:
-            (bool): True if assigned
+            bool: True if assigned
         """
         key = f"devices/{id}"
         req = Request(
@@ -67,11 +67,11 @@ class CentralSyslog(Record):
     def csc_set(self, id: int) -> RequestResponse:
         """Set a Central Syslog Config to this CS
 
-        Args:
+        Parameters:
             id (int): Central Syslog Config id to assign
 
         Returns:
-            (bool): True if assigned
+            bool: True if assigned
         """
         key = f"config/{id}"
         req = Request(
@@ -82,18 +82,24 @@ class CentralSyslog(Record):
         return req.put()
 
     def devices(self):
-        # todo: return all devices assigned to this CS
+        """
+        Todo:
+            return all devices assigned to this CS
+
+        Raises:
+            NotImplemented
+        """
         raise NotImplemented("todo")
 
 
 class CentralSyslogs(Endpoint):
     """Central Syslogs Endpoint
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
 
-    Kwargs:
+    Keyword Arguments:
         record (obj): default `Record` object
     """
 

@@ -8,7 +8,7 @@ def _find_dicts_with_key(key: str, dictionary: dict) -> Generator[dict, None, No
     """
     Find all dictionaries that contain a key.
 
-    Args:
+    Parameters:
         key (str): the key value to find.
         dictionary (dict): the dictionary hiding the keys to find.
 
@@ -33,7 +33,7 @@ def _build_dict(seq: list, key: str) -> dict:
     """Build a dictionary from a list(of dictionaries) against a given key
     https://stackoverflow.com/questions/4391697/find-the-index-of-a-dict-within-a-list-by-matching-the-dicts-value
 
-    Args:
+    Parameters:
         seq (list): a list of dictionaries
         key (str): the key value that is found in the dictionaries
 
@@ -60,7 +60,7 @@ class Hashabledict(dict):
 #    Note: Not sure that we will ever use this decorator and
 #        instead rely on the call failing from `Request`
 #
-#    Kwargs:
+#    Keyword Arguments:
 #        min_ver (str): minimum version
 #        max_ver (str): maximum version
 #    """

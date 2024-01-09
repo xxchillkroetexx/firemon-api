@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 class CentralSyslogConfig(Record):
     """Central Syslog Config Record
 
-    Args:
+    Parameters:
         config (dict): dictionary of things values from json
         app (obj): App()
     """
@@ -28,11 +28,11 @@ class CentralSyslogConfig(Record):
 class CentralSyslogConfigs(Endpoint):
     """Central Syslog Configs Endpoint
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
 
-    Kwargs:
+    Keyword Arguments:
         record (obj): default `Record` object
     """
 
@@ -43,6 +43,10 @@ class CentralSyslogConfigs(Endpoint):
         super().__init__(api, app, record=record)
 
     def filter(self, *args, **kwargs) -> list[CentralSyslogConfig]:
+        """
+        Returns:
+            list[CentralSyslogConfig]
+        """
         csc_all = self.all()
         if not kwargs:
             raise ValueError("filter must have kwargs")
@@ -50,4 +54,8 @@ class CentralSyslogConfigs(Endpoint):
         return [csc for csc in csc_all if kwargs.items() <= dict(csc).items()]
 
     def count(self) -> int:
+        """
+        Returns:
+            int
+        """
         return len(self.all())

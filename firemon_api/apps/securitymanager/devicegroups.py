@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 class DeviceGroup(Record):
     """Device Group Record
 
-    Args:
+    Parameters:
         config (dict): dictionary of things values from json
         app (obj): App()
 
@@ -37,7 +37,14 @@ class DeviceGroup(Record):
         super().__init__(config, app)
 
     def assign(self, id: int):
-        """assign a device by id to device group"""
+        """assign a device by id to device group
+
+        Parameters:
+            id (int): Device id
+
+        Returns:
+            bool
+        """
         key = f"device/{id}"
         req = Request(
             base=self._url,
@@ -47,7 +54,14 @@ class DeviceGroup(Record):
         req.post()
 
     def unassign(self, id: int):
-        """unassign a device by id from device group"""
+        """unassign a device by id from device group
+
+        Parameters:
+            id (int): Device id
+
+        Returns:
+            bool
+        """
         key = f"device/{id}"
         req = Request(
             base=self._url,
@@ -57,7 +71,11 @@ class DeviceGroup(Record):
         req.delete()
 
     def devices(self) -> list[Device]:
-        """Get all devices assigned to device group"""
+        """Get all devices assigned to device group
+
+        Returns:
+            list[Device]
+        """
         key = "device"
         req = Request(
             base=self._url,
@@ -177,11 +195,11 @@ class DeviceGroup(Record):
 class DeviceGroups(Endpoint):
     """Represents the Device Groups
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
 
-    Kwargs:
+    Keyword Arguments:
         record (obj): default `Record` object
 
     Examples:
@@ -205,7 +223,7 @@ class DeviceGroups(Endpoint):
     def get(self, *args, **kwargs) -> Optional[DeviceGroup]:
         """Get single DeviceGroup
 
-        Args:
+        Parameters:
             *args (int/str): (optional) id or name to retrieve.
             **kwargs (str): (optional) see filter() for available filters
 

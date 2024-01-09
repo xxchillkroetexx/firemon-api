@@ -53,9 +53,13 @@ logging.getLogger(__name__).addHandler(NullHandler())
 
 def add_stderr_logger(level=logging.DEBUG):
     """
-    Helper for quickly adding a StreamHandler to the logger. Useful for
-    debugging.
-    Returns the handler after adding it.
+    Helper for quickly adding a StreamHandler to the logger. Useful for debugging.
+
+    Keyword Arguments:
+        level (logging.level)
+
+    Returns:
+        handler: the handler after adding it.
     """
     # This method needs to be in this __init__.py to get the __name__ correct
     # even if firemon_api is vendored within another package.
@@ -75,7 +79,7 @@ del NullHandler
 
 def disable_warnings():
     """
-    Hate warnings? disable them
+    Hate warnings? Disable them here.
     """
     # urllib3.disable_warnings()
     import warnings

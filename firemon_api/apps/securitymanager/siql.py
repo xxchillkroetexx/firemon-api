@@ -21,7 +21,7 @@ class Siql(object):
     """Represent actions on the SIQL endpoint. All functions
     take a `query` which is a string containing the siql.
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
     """
@@ -46,9 +46,12 @@ class Siql(object):
     def _raw(self, query: str, key: str) -> RequestResponse:
         """Raw SIQL query. The incantation used to summon Cthulu.
 
-        Args:
+        Parameters:
             query (str): SIQL statement
             key (str): endpoint key
+
+        Returns:
+            RequestResponse
 
         Examples:
 
@@ -77,52 +80,52 @@ class Siql(object):
 
         return [self._response_loader(i) for i in resp]
 
-    def appobj(self, query):
+    def appobj(self, query: str) -> RequestResponse:
         return self._raw(query, key="appobj/paged-search")
 
-    def assessment(self, query):
+    def assessment(self, query: str) -> RequestResponse:
         return self._raw(query, key="assessment/paged-search")
 
-    def asset(self, query):
+    def asset(self, query: str) -> RequestResponse:
         return self._raw(query, key="asset/paged-search")
 
-    def control(self, query):
+    def control(self, query: str) -> RequestResponse:
         return self._raw(query, key="control/paged-search")
 
-    def device(self, query):
+    def device(self, query: str) -> RequestResponse:
         return self._raw(query, key="device/paged-search")
 
-    def devicegroup(self, query):
+    def devicegroup(self, query: str) -> RequestResponse:
         return self._raw(query, key="devicegroup/paged-search")
 
-    def interface(self, query):
+    def interface(self, query: str) -> RequestResponse:
         return self._raw(query, key="interface/paged-search")
 
-    def networkobj(self, query):
+    def networkobj(self, query: str) -> RequestResponse:
         return self._raw(query, key="networkobj/paged-search")
 
-    def natrule(self, query):
+    def natrule(self, query: str) -> RequestResponse:
         return self._raw(query, key="natrule/paged-search")
 
-    def policy(self, query):
+    def policy(self, query: str) -> RequestResponse:
         return self._raw(query, key="policy/paged-search")
 
-    def profileobj(self, query):
+    def profileobj(self, query: str) -> RequestResponse:
         return self._raw(query, key="profileobj/paged-search")
 
-    def scheduleobj(self, query):
+    def scheduleobj(self, query: str) -> RequestResponse:
         return self._raw(query, key="scheduleobj/paged-search")
 
-    def secrule(self, query):
+    def secrule(self, query: str) -> RequestResponse:
         return self._raw(query, key="secrule/paged-search")
 
-    def serviceobj(self, query):
+    def serviceobj(self, query: str) -> RequestResponse:
         return self._raw(query, key="serviceobj/paged-search")
 
-    def userobj(self, query):
+    def userobj(self, query: str) -> RequestResponse:
         return self._raw(query, key="userobj/paged-search")
 
-    def urlmatcher(self, query):
+    def urlmatcher(self, query: str) -> RequestResponse:
         return self._raw(query, key="urlmatcher/paged-search")
 
     def __repr__(self):

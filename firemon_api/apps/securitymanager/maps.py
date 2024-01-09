@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 class Map(BaseRecord):
     """APA Map Object `BaseRecord`.
 
-    Args:
+    Parameters:
         config (dict): dictionary of things values from json
         app (obj): App()
     """
@@ -38,11 +38,11 @@ class Map(BaseRecord):
 class Maps(BaseEndpoint):
     """Access Path Maps Object Endpoint.
 
-    Args:
+    Parameters:
         api (obj): FiremonAPI()
         app (obj): App()
 
-    Kwargs:
+    Keyword Arguments:
         record (obj): default `Record` object
         device_id (int): Device id
         group_id (int): Device Group ID
