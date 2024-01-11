@@ -26,20 +26,20 @@ class OrchRuleRecommendation(BaseRecord):
         return f"<{self.__class__.__name__}()>"
 
 
-class ChangeRequest(BaseRecord):
+class OrcChangeRequest(BaseRecord):
     """Orchestration Change Request Record"""
 
     _ep_name = "change/request"
     _is_domain_url = True
 
 
-class Changes(Endpoint):
+class OrcChanges(Endpoint):
     """Orchestration Changes Endpoint"""
 
     ep_name = "change/request"
     _is_domain_url = True
 
-    def __init__(self, api: FiremonAPI, app: App, record=ChangeRequest):
+    def __init__(self, api: FiremonAPI, app: App, record=OrcChangeRequest):
         super().__init__(api, app, record=record)
 
     def filter(
@@ -47,7 +47,7 @@ class Changes(Endpoint):
         *args,
         status: Literal["PENDING", "QUEUED", "COMPLETE", "ERROR"] = None,
         **kwargs,
-    ) -> list[ChangeRequest]:
+    ) -> list[OrcChangeRequest]:
         if args:
             _ = args
         if kwargs:

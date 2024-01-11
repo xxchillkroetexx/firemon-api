@@ -81,7 +81,7 @@ class Orchestration(App):
         name (str): name of the application
 
     Attributes:
-        changes: Changes()
+        changes: OrcChanges()
     """
 
     name = "orchestration"
@@ -90,7 +90,7 @@ class Orchestration(App):
         super().__init__(api)
 
         # Endpoints
-        self.changes = Changes(self.api, self)
+        self.changes = OrcChanges(self.api, self)
 
 
 class PolicyOptimizer(App):

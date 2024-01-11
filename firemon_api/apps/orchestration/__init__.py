@@ -1,7 +1,7 @@
-from .changes import Changes, OrchRuleRecommendation, ChangeRequest
+from .changes import OrcChanges, OrchRuleRecommendation, OrcChangeRequest
 
 __all__ = [
     "OrchRuleRecommendation",
-    "ChangeRequest",
-    "Changes",
+    "OrcChangeRequest",
+    "OrcChanges",
 ]
