@@ -10,6 +10,7 @@ class UsageObjects(TypedDict):
 class RuleUsages(TypedDict, total=False):
     deviceId: int
     ruleId: str  # guid
+    hitCount: int
     sources: list[UsageObjects]
     destinations: list[UsageObjects]
     services: list[UsageObjects]

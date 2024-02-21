@@ -26,7 +26,7 @@ RequestResponse = Union[bool, dict, str, bytes]
 
 def url_param_builder(param_dict: dict) -> str:
     """Builds url parameters
-    Creates URL paramters (e.g. '.../?xyz=r21&abc=123') from a dict passed in param_dict
+    Creates URL parameters (e.g. '.../?xyz=r21&abc=123') from a dict passed in param_dict
     """
     return f"?{urlencode(param_dict)}"
 
