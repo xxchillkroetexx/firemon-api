@@ -149,23 +149,7 @@ class Request(object):
             if add_params:
                 params.update(add_params)
 
-        if params:
-            log.info(
-                f"{verb.upper()}: {url_override or f'{self.url}?{urlencode(params, doseq=True)}'}"
-            )
-        else:
-            log.info(f"{verb.upper()}: {url_override or f'{self.url}'}")
-
-        if json:
-            log.info(f"Json: {json}")
-        if data:
-            log.info(f"Data: {data}")
-        if files:
-            log.info("Files present")
-            for file in files:
-                log.debug(f"File : {file}")
-
-        req = getattr(self.session, verb)(
+        resp = getattr(self.session, verb)(
             url_override or self.url,
             headers=headers,
             params=params,
@@ -176,24 +160,29 @@ class Request(object):
             cookies=self.cookies,
         )
 
-        log.debug(f"Sent HEADERS {req.request.headers}")  # sent headers
-        log.debug(f"Ret. HEADERS {req.headers}")  # returned headers
+        log.debug(f"{verb.upper()}: {resp.url}, HTTP CODE: {resp.status_code}")
         if verb == "delete":
-            if req.ok:
+            if resp.ok:
                 return True
             else:
-                raise RequestError(req)
-        elif req.ok:
+                raise RequestError(resp)
+        elif resp.ok:
             try:
-                return req.json()
+                return resp.json()
             except JSONDecodeError:
                 # Assuming an empty body or data download
-                if req.content:
-                    return req.content
+                if resp.content:
+                    return resp.content
                 else:
                     return True
         else:
-            raise RequestError(req)
+            log.debug(f"Request HEADERS {resp.request.headers}")  # sent headers
+            if resp.request.body:
+                log.debug(f"Request Body: \n{resp.request.body}")
+            log.debug(f"Response URL: {resp.url}")
+            log.debug(f"Response Headers: \n{resp.headers}")
+            log.debug(f"Response Text: {resp.text}")
+            raise RequestError(resp)
 
     def concurrent_get(self, ret: dict, page_size: int, page_range: list) -> None:
         futures_to_results = []
