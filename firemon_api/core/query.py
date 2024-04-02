@@ -203,7 +203,7 @@ class Request(object):
         any paginated results.
 
         Raises:
-            RequestError: if req.ok returns false.
+            RequestError: if resp.ok returns false.
 
         Returns:
             dict: data from the endpoint.
@@ -211,27 +211,27 @@ class Request(object):
         if add_params is None:
             # Hopefully this will cut down on queries without breaking things
             add_params = {"pageSize": 100}
-        req = self._make_call(add_params=add_params)
-        if isinstance(req, dict) and req.get("results") is not None:
-            ret = req["results"]
-            if req.get("total"):
-                # page_size = len(req["results"])
-                page_size = req["pageSize"]
-                pages = calc_pages(page_size, req["total"])
+        resp = self._make_call(add_params=add_params)
+        if isinstance(resp, dict) and resp.get("results") is not None:
+            ret = resp["results"]
+            if resp.get("total"):
+                # page_size = len(resp["results"])
+                page_size = resp["pageSize"]
+                pages = calc_pages(page_size, resp["total"])
                 # page_offsets = [
                 #    increment * page_size for increment in range(1, pages)
                 # ]
                 page_range = range(1, pages)
                 if pages == 1:
-                    # req = self._make_call(url_override=req.get("next"))
-                    # ret.extend(req["results"])
+                    # resp = self._make_call(url_override=resp.get("next"))
+                    # ret.extend(resp["results"])
                     return ret
                 else:
                     self.concurrent_get(ret, page_size, page_range)
                 return ret
             return ret
         else:
-            return req
+            return resp
 
     def put(self, json=None, data=None) -> RequestResponse:
         """Makes PUT request.
@@ -305,18 +305,18 @@ class Request(object):
         """
         log.info(f"GET: {self.url}")
 
-        req = getattr(self.session, "get")(self.url, verify=self.verify)
-        if req.ok:
-            return req.content
+        resp = getattr(self.session, "get")(self.url, verify=self.verify)
+        if resp.ok:
+            return resp.content
         else:
-            raise RequestError(req)
+            raise RequestError(resp)
 
     def post_cpl_auth(self, data=None):
         """Authorize to the Control Panel and get Cookie Jar"""
         log.info(f"POST: {self.url}")
 
-        req = getattr(self.session, "post")(self.url, data=data, verify=self.verify)
-        if req.ok:
-            return req
+        resp = getattr(self.session, "post")(self.url, data=data, verify=self.verify)
+        if resp.ok:
+            return resp
         else:
-            raise RequestError(req)
+            raise RequestError(resp)
