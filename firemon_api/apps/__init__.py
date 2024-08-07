@@ -64,6 +64,8 @@ class SecurityManager(App):
         self.license = License(self.api, self)
         self.logging = Logging(self.api, self)
         self.maps = Maps(self.api, self)
+        self.networksegments = NetworkSegments(self.api, self)
+        self.networksegmentnodes = NetworkSegmentNodes(self.api, self)
         self.revisions = Revisions(self.api, self)
         self.users = Users(self.api, self)
         self.usergroups = UserGroups(self.api, self)

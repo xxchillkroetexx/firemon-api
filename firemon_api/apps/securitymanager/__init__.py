@@ -11,6 +11,14 @@ from .elasticsearch import ElasticSearch
 from .license import License
 from .logging import SmLoggingError, Logging, Logger
 from .maps import Map, Maps
+from .networksegments import (
+    NetworkSegment,
+    NetworkSegmentError,
+    NetworkSegmentNode,
+    NetworkSegmentNodeError,
+    NetworkSegmentNodes,
+    NetworkSegments,
+)
 from .revisions import Revisions, Revision, NormalizedData, RevFile
 from .routes import RoutesError, Route, Routes
 from .rulerec import RuleRecommendation
@@ -51,6 +59,12 @@ __all__ = [
     "SmLoggingError",
     "Maps",
     "Map",
+    "NetworkSegment",
+    "NetworkSegmentError",
+    "NetworkSegmentNode",
+    "NetworkSegmentNodeError",
+    "NetworkSegmentNodes",
+    "NetworkSegments",
     "Revisions",
     "Revision",
     "NormalizedData",

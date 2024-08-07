@@ -888,17 +888,15 @@ class Devices(Endpoint):
             Get by ID
 
             >>> fm.sm.devices.get(12)
-            <Device(REGRESSION-dc-load-test)>
-            >>> fm.sm.devices.get("vSRX-2")
             <Device(vSRX-2)>
 
             Get by name. Case sensative.
 
-            >>> fm.sm.centralsyslogs.get('REGRESSION-dc-load-test')
-            <Device(REGRESSION-dc-load-test)>
+            >>> fm.sm.devices.get("vSRX-2")
+            <Device(vSRX-2)>
 
             >>> fm.sm.devices.get(mgmtip='192.168.104.12')
-            <Device(REGRESSION-dc-load-test)>
+            <Device(vSRX-2)>
         """
 
         try:
