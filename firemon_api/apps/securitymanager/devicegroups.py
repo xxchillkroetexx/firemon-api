@@ -10,8 +10,8 @@ from firemon_api.core.response import Record
 from firemon_api.core.query import Request
 from firemon_api.apps.structure import RuleRecRequirement
 
+from .access_path import NetworkAccessPath
 from .devices import Devices, Device
-from .rulerec import RuleRecommendation
 
 log = logging.getLogger(__name__)
 
@@ -83,6 +83,110 @@ class DeviceGroup(Record):
             session=self._session,
         )
         return [Device(config, self._app) for config in req.get()]
+
+    def apa(
+        self,
+        *,
+        starting_node_id: int,
+        source_ip: str,
+        dest_ip: str,
+        protocol: int,
+        source_port: int = None,
+        dest_port: int = None,
+        icmp_type: int = None,
+        icmp_code: int = None,
+        applications: list[str] = [],
+        applicationsMatchingStrategy: str = "NONE",
+        profiles: list[str] = [],
+        profilesMatchingStrategy: str = "ANY",
+        url_matchers: list[str] = [],
+        urlMatchersMatchingStrategy: str = "ANY",
+        users: list[str] = [],
+        usersMatchingStrategy: str = "NONE",
+        accept: bool = None,
+        recommend: bool = None,
+    ) -> NetworkAccessPath:
+        """Perform an Network Access Path Analysis query
+
+        Parameters:
+            starting_node_id (int): Starting Network Segment Node ID (see NetworkSegmentNode)
+            source_ip (str): ipv4/6 address ex: '192.168.202.95'
+            dest_ip (str): ipv4/6 address ex: '192.168.203.66'
+            protocol (int): for all practical purposes it is only 1 (icmp), 6 (tcp), 17 (udp), 58 (icmpv6)
+
+        Keyword Arguments:
+            source_port (int): source port
+            dest_port (int): destination port. required if the protocol has ports
+            icmp_type (int): apparently not required
+            icmp_code (int): apparently not required
+            applications (list[str]): Applications L7
+            applicationsMatchingStrategy (str): ???
+            profiles (list[str]): Profiles L7
+            profilesMatchingStrategy (str): ???
+            url_matchers (list[str]): URL Matcher L7
+            urlMatchersMatchingStrategy (str): ???
+            users (list[str]): Users L7
+            usersMatchingStrategy (str): ???
+            accept (bool): Rule Rec
+            recommend (bool): Rule Rec
+
+        Return:
+            AccessPath: as always AccessPath().dump() gets you the dictionary. But the AccessPath object gets some parsed data. `events` as a list, `packet_result` as a dictionary.
+        """
+        json = {
+            "startingNodeId": starting_node_id,
+            "testIpPacket": {
+                "sourceIp": source_ip,
+                "destinationIp": dest_ip,
+                "protocol": protocol,
+            },
+        }
+        if isinstance(source_port, int):
+            json["testIpPacket"]["sourcePort"] = source_port
+        if isinstance(dest_port, int):
+            json["testIpPacket"]["port"] = dest_port
+        if isinstance(icmp_type, int):
+            json["testIpPacket"]["icmpType"] = icmp_type
+        if isinstance(icmp_code, int):
+            json["testIpPacket"]["icmpCode"] = icmp_code
+        if isinstance(applications, list):
+            json["testIpPacket"]["applications"] = applications
+        if isinstance(applicationsMatchingStrategy, str):
+            json["testIpPacket"][
+                "applicationsMatchingStrategy"
+            ] = applicationsMatchingStrategy
+        if isinstance(profiles, list):
+            json["testIpPacket"]["profiles"] = profiles
+        if isinstance(profilesMatchingStrategy, str):
+            json["testIpPacket"]["profilesMatchingStrategy"] = profilesMatchingStrategy
+
+        if isinstance(url_matchers, list):
+            json["testIpPacket"]["urlMatchers"] = url_matchers
+        if isinstance(urlMatchersMatchingStrategy, str):
+            json["testIpPacket"][
+                "urlMatchersMatchingStrategy"
+            ] = urlMatchersMatchingStrategy
+        if isinstance(users, list):
+            json["testIpPacket"]["users"] = users
+        if isinstance(usersMatchingStrategy, str):
+            json["testIpPacket"]["usersMatchingStrategy"] = usersMatchingStrategy
+        if isinstance(accept, bool):
+            json["testIpPacket"]["accept"] = accept
+        if isinstance(recommend, bool):
+            json["testIpPacket"]["recommend"] = recommend
+
+        key = "apa"
+
+        req = Request(
+            base=self._url,
+            key=key,
+            headers={
+                "Content-Type": "application/json;",
+                "accept": "application/json;",
+            },
+            session=self._session,
+        )
+        return NetworkAccessPath(req.put(json=json), self, self.id, apa_request=json)
 
     def rule_rec_startingdevices(
         self,
