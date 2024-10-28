@@ -188,12 +188,18 @@ class Revision(BaseRecord):
         )
         return req.get()
 
-    def get_behavior_graphml(self) -> RequestResponse:
-        """Get the behavior model represented in a graphml format"""
+    def get_behavior_graphml(self, rebuild=False) -> RequestResponse:
+        """Get the behavior model represented in a graphml format
+
+        Keyword Arguments:
+            rebuild (bool): True rebuilds the behavior model
+        """
         key = "nd/behavior/graphml"
+        params = {"rebuild": rebuild}
         req = Request(
             base=self._url,
             key=key,
+            filters=params,
             headers={
                 "Content-Type": "application/json;",
                 "accept": "application/xml;",
