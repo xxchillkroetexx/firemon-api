@@ -33,6 +33,33 @@ class Map(BaseRecord):
         super().__init__(config, app)
         self._device_id = device_id
         self._group_id = group_id
+        self._device_url = None
+
+        if self._device_id:
+            self._device_url = (
+                f"{self._domain_url}/device/{self._device_id}/{self.__class__._ep_name}"
+            )
+        self._url = (
+            f"{self._domain_url}/devicegroup/{self._group_id}/{self.__class__._ep_name}"
+        )
+
+    def create(self):
+        """Create or Recreate map from latest revision"""
+        if not self._device_url:
+            raise NotImplementedError
+
+        req = Request(
+            base=self._device_url,
+            session=self._session,
+        )
+        return req.put()
+
+    def delete(self):
+        req = Request(
+            base=self._url,
+            session=self._session,
+        )
+        return req.delete()
 
 
 class Maps(BaseEndpoint):
