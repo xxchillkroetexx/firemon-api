@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>FireMon-API: Python wrapper &#8212; firemon-api  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d7e2fa82" />
+    <link rel="stylesheet" type="text/css" href="_static/nameko.css?v=2296cfae" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation of FireMon API" href="user/install.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Lora:400' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  </head><body>
+  
+  
+  <div class="indexwrapper">
+  
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="user/install.html" title="Installation of FireMon API"
+             accesskey="N">next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">firemon-api  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">FireMon-API: Python wrapper</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="firemon-api-python-wrapper">
+<h1>FireMon-API: Python wrapper<a class="headerlink" href="#firemon-api-python-wrapper" title="Link to this heading">¶</a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">firemon-api</span></code> is an attempt to make a Pythonic wrapper to the FireMon SIP APIs (Security Manager, etc…).</p>
+<p>The intent is to hopefully speed up development of projects. There is no intent to do a 1-to-1 reference of all
+the potential API calls. If that is desired you may try to use the dynamically built functions created using
+the <code class="docutils literal notranslate"><span class="pre">get_api()</span></code>. Or read the <code class="docutils literal notranslate"><span class="pre">/api-doc</span></code> of your FireMon product and make use of the <code class="docutils literal notranslate"><span class="pre">request()</span></code> function for
+the individually created application objects.</p>
+<p><strong>Request Example</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fm</span><span class="o">.</span><span class="n">sm</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;device&quot;</span><span class="p">,</span> <span class="n">use_domain</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">[{&#39;id&#39;: 27, &#39;domainId&#39;: 1, &#39;name&#39;: &#39;PA-VM 11.0.1&#39;, &#39;managementIp&#39;: &lt;snip...&gt;]</span>
+</pre></div>
+</div>
+<p>There is currently no intention to follow any version of the FireMon products and so there may
+be instances where a function worked in one version but no longer in another though this generally is not a
+problem.</p>
+<hr class="docutils" />
+<p><strong>Quick Example</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">firemon_api</span> <span class="k">as</span> <span class="nn">fmapi</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmapi</span><span class="o">.</span><span class="n">disable_warnings</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fm</span> <span class="o">=</span> <span class="n">fmapi</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="s1">&#39;saffron&#39;</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">auth</span><span class="p">(</span><span class="s1">&#39;firemon&#39;</span><span class="p">,</span> <span class="s1">&#39;firemon&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fm</span>
+<span class="go">&lt;Firemon(url=&#39;https://saffron&#39;, version=&#39;9.12.0&#39;)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">dev</span> <span class="ow">in</span> <span class="n">fm</span><span class="o">.</span><span class="n">sm</span><span class="o">.</span><span class="n">devices</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+<span class="gp">... </span>  <span class="nb">print</span><span class="p">(</span><span class="n">dev</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="go">asa-2961.lab.firemon.com</span>
+<span class="go">ASA5505-8-3-2</span>
+<span class="go">ciscoASA8dot2</span>
+<span class="go">CSM-2</span>
+<span class="go">vSRX-3</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fm</span><span class="o">.</span><span class="n">sm</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;device&quot;</span><span class="p">,</span> <span class="n">use_domain</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">[{&#39;id&#39;: 27, &#39;domainId&#39;: 1, &#39;name&#39;: &#39;PA-VM 11.0.1&#39;, &#39;managementIp&#39;: &lt;snip...&gt;]</span>
+</pre></div>
+</div>
+<section id="user-guide">
+<h2>User Guide<a class="headerlink" href="#user-guide" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user/install.html">Installation of FireMon API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user/quickstart.html">Quickstart</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user/quickstart.html#security-manager">Security Manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user/quickstart.html#device-packs">Device Packs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user/quickstart.html#devices">Devices</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="user/advanced.html">Advanced Topics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user/advanced.html#requests-sessions">Requests Sessions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user/advanced.html#open-api">Open API</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="security-manager">
+<h2>Security Manager<a class="headerlink" href="#security-manager" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="securitymanager/devicepacks.html">Device Packs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="securitymanager/devicepacks.html#endpoint-defaults">Endpoint Defaults</a></li>
+<li class="toctree-l2"><a class="reference internal" href="securitymanager/devicepacks.html#configuration-templates">Configuration Templates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="securitymanager/devicepacks.html#upload-a-new-device-pack">Upload a New Device Pack</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="securitymanager/devices.html">Devices</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="securitymanager/devices.html#endpoint-defaults">Endpoint Defaults</a></li>
+<li class="toctree-l2"><a class="reference internal" href="securitymanager/devices.html#create-a-device">Create a Device</a></li>
+<li class="toctree-l2"><a class="reference internal" href="securitymanager/devices.html#modify-a-device">Modify a Device</a></li>
+<li class="toctree-l2"><a class="reference internal" href="securitymanager/devices.html#delete-device-and-child-devices">Delete Device and Child Devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="securitymanager/devices.html#device-rule-usage">Device Rule Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="securitymanager/devices.html#perform-a-retrieval">Perform a Retrieval</a></li>
+<li class="toctree-l2"><a class="reference internal" href="securitymanager/devices.html#get-device-revisions">Get Device Revisions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="securitymanager/devices.html#get-device-latest-successful-revision-and-normalized-data">Get Device Latest Successful Revision and Normalized Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="securitymanager/devices.html#get-device-status">Get Device Status</a></li>
+<li class="toctree-l2"><a class="reference internal" href="securitymanager/devices.html#create-support-export-with-normalized-data">Create Support Export with Normalized Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="securitymanager/devices.html#run-access-path-analysis-apa">Run Access Path Analysis (APA)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="securitymanager/users.html">Users</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="securitymanager/users.html#endpoint-defaults">Endpoint Defaults</a></li>
+<li class="toctree-l2"><a class="reference internal" href="securitymanager/users.html#standard-user-template">Standard User Template</a></li>
+<li class="toctree-l2"><a class="reference internal" href="securitymanager/users.html#create-user">Create User</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="securitymanager/siql.html">SIQL Queries</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="securitymanager/siql.html#security-rules">Security Rules</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="policy-planner">
+<h2>Policy Planner<a class="headerlink" href="#policy-planner" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="policyplanner/workflows.html">Workflows</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="policyplanner/workflows.html#endpoint-defaults">Endpoint Defaults</a></li>
+<li class="toctree-l2"><a class="reference internal" href="policyplanner/workflows.html#create-a-workflow">Create a Workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="policyplanner/workflows.html#view-and-access-tickets-packets">View and Access Tickets/Packets</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="policyplanner/tickets.html">Tickets or Packets</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="policyplanner/tickets.html#automation-in-action">Automation In Action</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="technical">
+<h2>Technical<a class="headerlink" href="#technical" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/api.html">FireMon API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/core.html">FireMon Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/apps.html">FireMon Applications</a></li>
+</ul>
+</div>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="#">
+              <img class="logo" src="_static/logo_firemon.png" alt="Logo"/>
+            </a></p><!--
+<p class="logo">
+    <a href="#">
+        <img class="logo" src="_static/logo_firemon.png" alt="Firemon logo" />
+    </a>
+</p>
+-->
+
+<p>
+    FireMon-API is a Python web wrapper for the FireMon SIP (Security Mangager, etc...)
+    APIs. The intent is make something that is useful for quick and easy development
+    against FireMon products.
+</p>
+
+<h3>Useful Links</h3>
+<ul>
+    <li><a href="https://firemon-api.readthedocs.io/en/latest/user/install.html">Installation</a></li>
+    <li><a href="https://firemon-api.readthedocs.io/en/latest/user/quickstart.html">Quickstart</a></li>
+
+    <p></p>
+
+    <p></p>
+
+    <li><a href="https://github.com/lukejohannsen/firemon-api">FireMon-API @ GitHub</a></li>
+    <li><a href="https://pypi.org/project/firemon-api/">FireMon-API @ PyPI</a></li>
+    <li><a href="https://github.com/lukejohannsen/firemon-api/issues">Issue Tracker</a></li>
+</ul>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  
+  </div>
+  
+  </body>
+</html>

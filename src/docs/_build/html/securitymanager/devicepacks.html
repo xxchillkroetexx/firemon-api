@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Device Packs &#8212; firemon-api  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d7e2fa82" />
+    <link rel="stylesheet" type="text/css" href="../_static/nameko.css?v=2296cfae" />
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Devices" href="devices.html" />
+    <link rel="prev" title="Advanced Topics" href="../user/advanced.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Lora:400' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  </head><body>
+  
+  
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="devices.html" title="Devices"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../user/advanced.html" title="Advanced Topics"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">firemon-api  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Device Packs</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="device-packs">
+<h1>Device Packs<a class="headerlink" href="#device-packs" title="Link to this heading">¶</a></h1>
+<p>Device packs are one of a number of plugins. As they are one of the most important
+aspects of the SIP system they get their own <code class="docutils literal notranslate"><span class="pre">endpoint</span></code> to access them directly.</p>
+<section id="endpoint-defaults">
+<h2>Endpoint Defaults<a class="headerlink" href="#endpoint-defaults" title="Link to this heading">¶</a></h2>
+<p><strong>All</strong></p>
+<p>Return a list of all the Device Pack Records currently installed.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fm</span><span class="o">.</span><span class="n">sm</span><span class="o">.</span><span class="n">dp</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="go">[&lt;DevicePack(ahnlab_trusguard)&gt;, &lt;DevicePack(aws&#39;&gt;, &lt;DevicePack(aws_vpc)&gt;, &lt;DevicePack(azure)&gt;, &lt;DevicePack(azure_vnet)&gt;, &lt;DevicePack(bluecoat)&gt;, &lt;DevicePack(checkpoint_cma)&gt;,...]</span>
+</pre></div>
+</div>
+<p><strong>Filter</strong></p>
+<p>Return a list of all the DevicePack Records based on a filter request.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dp_lst</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">sm</span><span class="o">.</span><span class="n">dp</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">groupId</span><span class="o">=</span><span class="s1">&#39;com.fm.sm.dp.vmware&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dp_lst</span>
+<span class="go">[&lt;DevicePack(vmware_distributed_firewall)&gt;, &lt;DevicePack(vmware_edge)&gt;, &lt;DevicePack(vmware_nsx)&gt;]</span>
+</pre></div>
+</div>
+<p><strong>Get</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dp</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">sm</span><span class="o">.</span><span class="n">dp</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;juniper_srx&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dp</span>
+<span class="go">&lt;DevicePack(juniper_srx)&gt;</span>
+</pre></div>
+</div>
+</section>
+<section id="configuration-templates">
+<h2>Configuration Templates<a class="headerlink" href="#configuration-templates" title="Link to this heading">¶</a></h2>
+<p>Device packs may come with a <code class="docutils literal notranslate"><span class="pre">layout.json</span></code> file that is used in the user interface to
+provide defaults that will be used to create a device. The <code class="docutils literal notranslate"><span class="pre">template()</span></code> function
+attempts to provide a similar layout as a Python dictionary.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pprint</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dp</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">sm</span><span class="o">.</span><span class="n">dp</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;juniper_srx&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">template</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pprint</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<span class="go">{&#39;description&#39;: None,</span>
+<span class="go">&#39;devicePack&#39;: {&#39;artifactId&#39;: &#39;juniper_srx&#39;,</span>
+<span class="go">                &#39;deviceName&#39;: &#39;SRX&#39;,</span>
+<span class="go">                &#39;deviceType&#39;: &#39;FIREWALL&#39;,</span>
+<span class="go">                &#39;groupId&#39;: &#39;com.fm.sm.dp.juniper_srx&#39;,</span>
+<span class="go">                &#39;id&#39;: 61,</span>
+<span class="go">                &#39;type&#39;: &#39;DEVICE_PACK&#39;,</span>
+<span class="go">                &#39;version&#39;: &#39;9.8.22&#39;},</span>
+<span class="go">&#39;domainId&#39;: 1,</span>
+<span class="go">&#39;extendedSettingsJson&#39;: {&#39;automationPassword&#39;: None,</span>
+<span class="go">                        &#39;automationUsername&#39;: None,</span>
+<span class="go">                        &#39;batchConfigRetrieval&#39;: False,</span>
+<span class="go">                        &#39;changeMonitoringEnabled&#39;: True,</span>
+<span class="go">                        &#39;checkForChange&#39;: {&#39;intervalInMinutes&#39;: 1440},</span>
+<span class="go">                        &#39;checkForChangeEnabled&#39;: False,</span>
+<span class="go">                        &#39;checkForChangeOnChangeDetection&#39;: False,</span>
+<span class="go">                        &#39;deprecatedCA&#39;: False,</span>
+<span class="go">                        &#39;encoding&#39;: &#39;&#39;,</span>
+<span class="go">                        &#39;hitCounterRetrievalInterval&#39;: 10,</span>
+<span class="go">                        &#39;logMonitoringEnabled&#39;: True,</span>
+<span class="go">                        &#39;logMonitoringMethod&#39;: &#39;Syslog&#39;,</span>
+<span class="go">                        &#39;logUpdateInterval&#39;: 10,</span>
+<span class="go">                        &#39;password&#39;: &#39;&#39;,</span>
+<span class="go">                        &#39;port&#39;: &#39;22&#39;,</span>
+<span class="go">                        &#39;resetSSHKeyValue&#39;: False,</span>
+<span class="go">                        &#39;retrievalCallTimeOut&#39;: 120,</span>
+<span class="go">                        &#39;retrievalMethod&#39;: &#39;FromDevice&#39;,</span>
+<span class="go">                        &#39;retrieveSetSyntaxConfig&#39;: False,</span>
+<span class="go">                        &#39;routesFromConfig&#39;: False,</span>
+<span class="go">                        &#39;scheduledRetrieval&#39;: {&#39;time&#39;: None,</span>
+<span class="go">                                                &#39;timeZone&#39;: None},</span>
+<span class="go">                        &#39;scheduledRetrievalEnabled&#39;: False,</span>
+<span class="go">                        &#39;serverAliveInterval&#39;: 30,</span>
+<span class="go">                        &#39;skipRoute&#39;: False,</span>
+<span class="go">                        &#39;suppressFQDNCapabilities&#39;: False,</span>
+<span class="go">                        &#39;syslogAlternateIpAddress&#39;: None,</span>
+<span class="go">                        &#39;useCLICommandGeneration&#39;: False,</span>
+<span class="go">                        &#39;usePrivateConfig&#39;: False,</span>
+<span class="go">                        &#39;username&#39;: &#39;admin&#39;},</span>
+<span class="go">&#39;managementIp&#39;: None,</span>
+<span class="go">&#39;name&#39;: None}</span>
+</pre></div>
+</div>
+</section>
+<section id="upload-a-new-device-pack">
+<h2>Upload a New Device Pack<a class="headerlink" href="#upload-a-new-device-pack" title="Link to this heading">¶</a></h2>
+<p>Upload a new device pack from local filesystem</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">file</span> <span class="o">=</span> <span class="s2">&quot;/var/tmp/juniper_srx-9.10.25.jar&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fm</span><span class="o">.</span><span class="n">sm</span><span class="o">.</span><span class="n">dp</span><span class="o">.</span><span class="n">upload</span><span class="p">((</span><span class="n">file</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)))</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo_firemon.png" alt="Logo"/>
+            </a></p><p>
+    FireMon-API is a Python web wrapper for the FireMon SIP (Security Mangager, etc...)
+    APIs. The intent is make something that is useful for quick and easy development
+    against FireMon products.
+</p>
+
+<h3>Useful Links</h3>
+<ul>
+    <li><a href="https://firemon-api.readthedocs.io/en/latest/user/install.html">Installation</a></li>
+    <li><a href="https://firemon-api.readthedocs.io/en/latest/user/quickstart.html">Quickstart</a></li>
+
+    <p></p>
+
+    <p></p>
+
+    <li><a href="https://github.com/lukejohannsen/firemon-api">FireMon-API @ GitHub</a></li>
+    <li><a href="https://pypi.org/project/firemon-api/">FireMon-API @ PyPI</a></li>
+    <li><a href="https://github.com/lukejohannsen/firemon-api/issues">Issue Tracker</a></li>
+</ul>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  
+  </body>
+</html>

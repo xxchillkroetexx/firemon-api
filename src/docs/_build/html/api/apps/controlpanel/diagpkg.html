@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>firemon_api.apps.controlpanel.diagpkg &#8212; firemon-api  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d7e2fa82" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/nameko.css?v=2296cfae" />
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Orchestration" href="../orchestration.html" />
+    <link rel="prev" title="firemon_api.apps.controlpanel.database" href="database.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Lora:400' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  </head><body>
+  
+  
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../orchestration.html" title="Orchestration"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="database.html" title="firemon_api.apps.controlpanel.database"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">firemon-api  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../apps.html" >FireMon Applications</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../controlpanel.html" accesskey="U">Control Panel</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">firemon_api.apps.controlpanel.diagpkg</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-firemon_api.apps.controlpanel.diagpkg">
+<span id="firemon-api-apps-controlpanel-diagpkg"></span><h1>firemon_api.apps.controlpanel.diagpkg<a class="headerlink" href="#module-firemon_api.apps.controlpanel.diagpkg" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="firemon_api.apps.controlpanel.diagpkg.DiagPkg">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">firemon_api.apps.controlpanel.diagpkg.</span></span><span class="sig-name descname"><span class="pre">DiagPkg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#firemon_api.apps.controlpanel.diagpkg.DiagPkg" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../core/endpoint.html#firemon_api.core.endpoint.EndpointCpl" title="firemon_api.core.endpoint.EndpointCpl"><code class="xref py py-class docutils literal notranslate"><span class="pre">EndpointCpl</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.controlpanel.diagpkg.DiagPkg.all">
+<span class="sig-name descname"><span class="pre">all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#firemon_api.apps.controlpanel.diagpkg.DiagPkg.all" title="Link to this definition">¶</a></dt>
+<dd><p>Get list of diag packages</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.controlpanel.diagpkg.DiagPkg.create">
+<span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ticket</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upload</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#firemon_api.apps.controlpanel.diagpkg.DiagPkg.create" title="Link to this definition">¶</a></dt>
+<dd><p>Create diag package</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ticket</strong> (<em>str</em>) – ticket number</p>
+</dd>
+<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>upload</strong> (<em>bool</em>) – default False</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.controlpanel.diagpkg.DiagPkg.delete">
+<span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#firemon_api.apps.controlpanel.diagpkg.DiagPkg.delete" title="Link to this definition">¶</a></dt>
+<dd><p>Delete package</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – package name</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="firemon_api.apps.controlpanel.diagpkg.DiagPkg.ep_name">
+<span class="sig-name descname"><span class="pre">ep_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'diagpkg'</span></em><a class="headerlink" href="#firemon_api.apps.controlpanel.diagpkg.DiagPkg.ep_name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.controlpanel.diagpkg.DiagPkg.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#firemon_api.apps.controlpanel.diagpkg.DiagPkg.get" title="Link to this definition">¶</a></dt>
+<dd><p>Get diag package</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – package name</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/logo_firemon.png" alt="Logo"/>
+            </a></p><p>
+    FireMon-API is a Python web wrapper for the FireMon SIP (Security Mangager, etc...)
+    APIs. The intent is make something that is useful for quick and easy development
+    against FireMon products.
+</p>
+
+<h3>Useful Links</h3>
+<ul>
+    <li><a href="https://firemon-api.readthedocs.io/en/latest/user/install.html">Installation</a></li>
+    <li><a href="https://firemon-api.readthedocs.io/en/latest/user/quickstart.html">Quickstart</a></li>
+
+    <p></p>
+
+    <p></p>
+
+    <li><a href="https://github.com/lukejohannsen/firemon-api">FireMon-API @ GitHub</a></li>
+    <li><a href="https://pypi.org/project/firemon-api/">FireMon-API @ PyPI</a></li>
+    <li><a href="https://github.com/lukejohannsen/firemon-api/issues">Issue Tracker</a></li>
+</ul>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  
+  </body>
+</html>

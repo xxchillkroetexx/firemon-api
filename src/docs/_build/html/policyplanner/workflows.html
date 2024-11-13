@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Workflows &#8212; firemon-api  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d7e2fa82" />
+    <link rel="stylesheet" type="text/css" href="../_static/nameko.css?v=2296cfae" />
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Tickets or Packets" href="tickets.html" />
+    <link rel="prev" title="SIQL Queries" href="../securitymanager/siql.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Lora:400' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  </head><body>
+  
+  
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tickets.html" title="Tickets or Packets"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../securitymanager/siql.html" title="SIQL Queries"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">firemon-api  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Workflows</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="workflows">
+<h1>Workflows<a class="headerlink" href="#workflows" title="Link to this heading">¶</a></h1>
+<p>Workflows <code class="docutils literal notranslate"><span class="pre">endpoint</span></code> provides access to configured workflows and returns each workflow
+as a parsed object.</p>
+<section id="endpoint-defaults">
+<h2>Endpoint Defaults<a class="headerlink" href="#endpoint-defaults" title="Link to this heading">¶</a></h2>
+<p><strong>All</strong></p>
+<p>Return a list of all the workflows currently configured on the SIP instance.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fm</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">workflows</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="go">[&lt;Workflow(wf__476)&gt;, &lt;Workflow(wf__393)&gt;, &lt;snip...&gt;]</span>
+</pre></div>
+</div>
+<p><strong>Get</strong></p>
+<p>Get a single workflow by the workflow ID. You may also get the “default” workflow.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">wf</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">workflows</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wf</span>
+<span class="go">&lt;Workflow(wf__913)&gt;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wf</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">workflows</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wf</span>
+<span class="go">&lt;Workflow(wf__476)&gt;</span>
+</pre></div>
+</div>
+</section>
+<section id="create-a-workflow">
+<h2>Create a Workflow<a class="headerlink" href="#create-a-workflow" title="Link to this heading">¶</a></h2>
+<p>In most cases creating a device requires a few additional bits of information such
+as the management IP of the device, username, password, and a data collector to
+assign the device.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">wf</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">workflows</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Flow_Like_the_Water&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wf</span>
+<span class="go">&lt;Workflow(Flow_Like_the_Water)&gt;</span>
+</pre></div>
+</div>
+</section>
+<section id="view-and-access-tickets-packets">
+<h2>View and Access Tickets/Packets<a class="headerlink" href="#view-and-access-tickets-packets" title="Link to this heading">¶</a></h2>
+<p>To access and view all the tickets from a workflow.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">wf</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">workflows</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wf</span><span class="o">.</span><span class="n">tickets</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="go">[&lt;Packet(1)&gt;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ticket</span> <span class="o">=</span> <span class="n">wf</span><span class="o">.</span><span class="n">tickets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ticket</span>
+<span class="go">&lt;Packet(1)&gt;</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo_firemon.png" alt="Logo"/>
+            </a></p><p>
+    FireMon-API is a Python web wrapper for the FireMon SIP (Security Mangager, etc...)
+    APIs. The intent is make something that is useful for quick and easy development
+    against FireMon products.
+</p>
+
+<h3>Useful Links</h3>
+<ul>
+    <li><a href="https://firemon-api.readthedocs.io/en/latest/user/install.html">Installation</a></li>
+    <li><a href="https://firemon-api.readthedocs.io/en/latest/user/quickstart.html">Quickstart</a></li>
+
+    <p></p>
+
+    <p></p>
+
+    <li><a href="https://github.com/lukejohannsen/firemon-api">FireMon-API @ GitHub</a></li>
+    <li><a href="https://pypi.org/project/firemon-api/">FireMon-API @ PyPI</a></li>
+    <li><a href="https://github.com/lukejohannsen/firemon-api/issues">Issue Tracker</a></li>
+</ul>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  
+  </body>
+</html>

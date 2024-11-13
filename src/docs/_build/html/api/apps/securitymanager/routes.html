@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>firemon_api.apps.securitymanager.routes &#8212; firemon-api  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d7e2fa82" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/nameko.css?v=2296cfae" />
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="firemon_api.apps.securitymanager.rulerec" href="rulerec.html" />
+    <link rel="prev" title="firemon_api.apps.securitymanager.revisions" href="revisions.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Lora:400' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  </head><body>
+  
+  
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="rulerec.html" title="firemon_api.apps.securitymanager.rulerec"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="revisions.html" title="firemon_api.apps.securitymanager.revisions"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">firemon-api  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../apps.html" >FireMon Applications</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../securitymanager.html" accesskey="U">Security Manager</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">firemon_api.apps.securitymanager.routes</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-firemon_api.apps.securitymanager.routes">
+<span id="firemon-api-apps-securitymanager-routes"></span><h1>firemon_api.apps.securitymanager.routes<a class="headerlink" href="#module-firemon_api.apps.securitymanager.routes" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.routes.Route">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">firemon_api.apps.securitymanager.routes.</span></span><span class="sig-name descname"><span class="pre">Route</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../core/app.html#firemon_api.core.app.App" title="firemon_api.core.app.App"><span class="pre">App</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#firemon_api.apps.securitymanager.routes.Route" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../core/response.html#firemon_api.core.response.BaseRecord" title="firemon_api.core.response.BaseRecord"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseRecord</span></code></a></p>
+<p>Device Route Object <cite>Record</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<em>dict</em>) – dictionary of things values from json</p></li>
+<li><p><strong>app</strong> (<em>obj</em>) – App()</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.routes.Routes">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">firemon_api.apps.securitymanager.routes.</span></span><span class="sig-name descname"><span class="pre">Routes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api:</span> <span class="pre">~firemon_api.core.api.FiremonAPI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app:</span> <span class="pre">~firemon_api.core.app.App</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record=&lt;class</span> <span class="pre">'firemon_api.apps.securitymanager.routes.Route'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_id:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#firemon_api.apps.securitymanager.routes.Routes" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../core/endpoint.html#firemon_api.core.endpoint.Endpoint" title="firemon_api.core.endpoint.Endpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">Endpoint</span></code></a></p>
+<p>Device Route Object Endpoint.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>api</strong> (<em>obj</em>) – FiremonAPI()</p></li>
+<li><p><strong>app</strong> (<em>obj</em>) – App()</p></li>
+</ul>
+</dd>
+<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>record</strong> (<em>obj</em>) – default <cite>Record</cite> object</p></li>
+<li><p><strong>device_id</strong> (<em>int</em>) – Device id</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.routes.Routes.all">
+<span class="sig-name descname"><span class="pre">all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#firemon_api.apps.securitymanager.routes.Route" title="firemon_api.apps.securitymanager.routes.Route"><span class="pre">Route</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#firemon_api.apps.securitymanager.routes.Routes.all" title="Link to this definition">¶</a></dt>
+<dd><p>Get all <cite>Record</cite></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.routes.Routes.ep_name">
+<span class="sig-name descname"><span class="pre">ep_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'routeobject/paged-search'</span></em><a class="headerlink" href="#firemon_api.apps.securitymanager.routes.Routes.ep_name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.routes.Routes.filter">
+<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#firemon_api.apps.securitymanager.routes.Route" title="firemon_api.apps.securitymanager.routes.Route"><span class="pre">Route</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#firemon_api.apps.securitymanager.routes.Routes.filter" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieve a filtered list of Routes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>**kwargs</strong> – key value pairs in a device pack dictionary</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a list of Route()</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#firemon_api.apps.securitymanager.routes.Route" title="firemon_api.apps.securitymanager.routes.Route">Route</a>]</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fm</span><span class="o">.</span><span class="n">sm</span><span class="o">.</span><span class="n">routes</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">derived</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.routes.Routes.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#firemon_api.apps.securitymanager.routes.Route" title="firemon_api.apps.securitymanager.routes.Route"><span class="pre">Route</span></a></span></span><a class="headerlink" href="#firemon_api.apps.securitymanager.routes.Routes.get" title="Link to this definition">¶</a></dt>
+<dd><p>Query and retrieve individual Routes. Spelling matters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*args</strong> – route UUID (matchId)</p></li>
+<li><p><strong>**kwargs</strong> – key value pairs in a zone dictionary</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Route</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fm</span><span class="o">.</span><span class="n">sm</span><span class="o">.</span><span class="n">routes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;6014fd68-010d-4437-80cb-8fd4807ba73b&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fm</span><span class="o">.</span><span class="n">sm</span><span class="o">.</span><span class="n">routes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;192.168.202.0/23, metric:0&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.routes.RoutesError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">firemon_api.apps.securitymanager.routes.</span></span><span class="sig-name descname"><span class="pre">RoutesError</span></span><a class="headerlink" href="#firemon_api.apps.securitymanager.routes.RoutesError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../core/errors.html#firemon_api.core.errors.SecurityManagerError" title="firemon_api.core.errors.SecurityManagerError"><code class="xref py py-class docutils literal notranslate"><span class="pre">SecurityManagerError</span></code></a></p>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/logo_firemon.png" alt="Logo"/>
+            </a></p><p>
+    FireMon-API is a Python web wrapper for the FireMon SIP (Security Mangager, etc...)
+    APIs. The intent is make something that is useful for quick and easy development
+    against FireMon products.
+</p>
+
+<h3>Useful Links</h3>
+<ul>
+    <li><a href="https://firemon-api.readthedocs.io/en/latest/user/install.html">Installation</a></li>
+    <li><a href="https://firemon-api.readthedocs.io/en/latest/user/quickstart.html">Quickstart</a></li>
+
+    <p></p>
+
+    <p></p>
+
+    <li><a href="https://github.com/lukejohannsen/firemon-api">FireMon-API @ GitHub</a></li>
+    <li><a href="https://pypi.org/project/firemon-api/">FireMon-API @ PyPI</a></li>
+    <li><a href="https://github.com/lukejohannsen/firemon-api/issues">Issue Tracker</a></li>
+</ul>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  
+  </body>
+</html>

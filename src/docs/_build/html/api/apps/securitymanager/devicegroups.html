@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>firemon_api.apps.securitymanager.devicegroups &#8212; firemon-api  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d7e2fa82" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/nameko.css?v=2296cfae" />
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="firemon_api.apps.securitymanager.devicepacks" href="devicepacks.html" />
+    <link rel="prev" title="firemon_api.apps.securitymanager.deviceclusters" href="deviceclusters.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Lora:400' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  </head><body>
+  
+  
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="devicepacks.html" title="firemon_api.apps.securitymanager.devicepacks"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="deviceclusters.html" title="firemon_api.apps.securitymanager.deviceclusters"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">firemon-api  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../apps.html" >FireMon Applications</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../securitymanager.html" accesskey="U">Security Manager</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">firemon_api.apps.securitymanager.devicegroups</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-firemon_api.apps.securitymanager.devicegroups">
+<span id="firemon-api-apps-securitymanager-devicegroups"></span><h1>firemon_api.apps.securitymanager.devicegroups<a class="headerlink" href="#module-firemon_api.apps.securitymanager.devicegroups" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.devicegroups.DeviceGroup">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">firemon_api.apps.securitymanager.devicegroups.</span></span><span class="sig-name descname"><span class="pre">DeviceGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../core/app.html#firemon_api.core.app.App" title="firemon_api.core.app.App"><span class="pre">App</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#firemon_api.apps.securitymanager.devicegroups.DeviceGroup" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../core/response.html#firemon_api.core.response.Record" title="firemon_api.core.response.Record"><code class="xref py py-class docutils literal notranslate"><span class="pre">Record</span></code></a></p>
+<p>Device Group Record</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<em>dict</em>) – dictionary of things values from json</p></li>
+<li><p><strong>app</strong> (<em>obj</em>) – App()</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dg</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">sm</span><span class="o">.</span><span class="n">devicegroups</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;my group&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dg</span><span class="o">.</span><span class="n">devices</span><span class="p">()</span>
+<span class="go">[&lt;Device(F5-V13-1)&gt;, &lt;Device(NS-5XP)&gt;, &lt;Device(cp-r8030-fw-d1-2)&gt;]</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.devicegroups.DeviceGroup.assign">
+<span class="sig-name descname"><span class="pre">assign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#firemon_api.apps.securitymanager.devicegroups.DeviceGroup.assign" title="Link to this definition">¶</a></dt>
+<dd><p>assign a device by id to device group</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>id</strong> (<em>int</em>) – Device id</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.devicegroups.DeviceGroup.devices">
+<span class="sig-name descname"><span class="pre">devices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="devices.html#firemon_api.apps.securitymanager.devices.Device" title="firemon_api.apps.securitymanager.devices.Device"><span class="pre">Device</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#firemon_api.apps.securitymanager.devicegroups.DeviceGroup.devices" title="Link to this definition">¶</a></dt>
+<dd><p>Get all devices assigned to device group</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[Device]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.devicegroups.DeviceGroup.rule_rec_devices">
+<span class="sig-name descname"><span class="pre">rule_rec_devices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">requirement</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../structures.html#firemon_api.apps.structure.RuleRecRequirement" title="firemon_api.apps.structure.rulerec.RuleRecRequirement"><span class="pre">RuleRecRequirement</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">license_category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'LOG_SERVERS'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'ROUTERS'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'OPERATING_SYSTEMS'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'FIREWALLS'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'FIREWALL_MANAGER_MODULES'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'EDGE_DEVICES'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'GENERIC_DEVICES'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'TRAFFIC_MANAGER_MODULES'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'UNKNOWN'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'SALES_ONLY_SMLO_HA'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'SALES_ONLY_SMSO_HA'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'SALES_ONLY_SMM_HA'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'POLICY_PLANNER'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'RISK'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'POLICY_OPTIMIZER'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'INSIGHT'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'GLOBAL_POLICY_CONTROLLER'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'AUTOMATION'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'LICENSE_NOT_REQUIRED'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'NAME_PATTERN'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'HITCOUNT'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'REFERENCES'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'NONE'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'NONE'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_tiebreak</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_error_recs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="devices.html#firemon_api.apps.securitymanager.devices.Device" title="firemon_api.apps.securitymanager.devices.Device"><span class="pre">Device</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#firemon_api.apps.securitymanager.devicegroups.DeviceGroup.rule_rec_devices" title="Link to this definition">¶</a></dt>
+<dd><p>Find devices in a Device Group that would have recommendable changes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.devicegroups.DeviceGroup.rule_rec_startingdevices">
+<span class="sig-name descname"><span class="pre">rule_rec_startingdevices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">requirement</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../structures.html#firemon_api.apps.structure.RuleRecRequirement" title="firemon_api.apps.structure.rulerec.RuleRecRequirement"><span class="pre">RuleRecRequirement</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">license_category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'LOG_SERVERS'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'ROUTERS'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'OPERATING_SYSTEMS'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'FIREWALLS'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'FIREWALL_MANAGER_MODULES'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'EDGE_DEVICES'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'GENERIC_DEVICES'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'TRAFFIC_MANAGER_MODULES'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'UNKNOWN'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'SALES_ONLY_SMLO_HA'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'SALES_ONLY_SMSO_HA'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'SALES_ONLY_SMM_HA'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'POLICY_PLANNER'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'RISK'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'POLICY_OPTIMIZER'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'INSIGHT'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'GLOBAL_POLICY_CONTROLLER'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'AUTOMATION'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'LICENSE_NOT_REQUIRED'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="devices.html#firemon_api.apps.securitymanager.devices.Device" title="firemon_api.apps.securitymanager.devices.Device"><span class="pre">Device</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#firemon_api.apps.securitymanager.devicegroups.DeviceGroup.rule_rec_startingdevices" title="Link to this definition">¶</a></dt>
+<dd><p>Find devices in a Device Group that would have recommendable changes.
+Probably preferable to use <cite>rule_rec_devices()</cite></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.devicegroups.DeviceGroup.unassign">
+<span class="sig-name descname"><span class="pre">unassign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#firemon_api.apps.securitymanager.devicegroups.DeviceGroup.unassign" title="Link to this definition">¶</a></dt>
+<dd><p>unassign a device by id from device group</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>id</strong> (<em>int</em>) – Device id</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.devicegroups.DeviceGroups">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">firemon_api.apps.securitymanager.devicegroups.</span></span><span class="sig-name descname"><span class="pre">DeviceGroups</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api:</span> <span class="pre">~firemon_api.core.api.FiremonAPI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app:</span> <span class="pre">~firemon_api.core.app.App</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record=&lt;class</span> <span class="pre">'firemon_api.apps.securitymanager.devicegroups.DeviceGroup'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#firemon_api.apps.securitymanager.devicegroups.DeviceGroups" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../core/endpoint.html#firemon_api.core.endpoint.Endpoint" title="firemon_api.core.endpoint.Endpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">Endpoint</span></code></a></p>
+<p>Represents the Device Groups</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>api</strong> (<em>obj</em>) – FiremonAPI()</p></li>
+<li><p><strong>app</strong> (<em>obj</em>) – App()</p></li>
+</ul>
+</dd>
+<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>record</strong> (<em>obj</em>) – default <cite>Record</cite> object</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">sm</span><span class="o">.</span><span class="n">devicegroups</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;my group&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fm</span><span class="o">.</span><span class="n">sm</span><span class="o">.</span><span class="n">devicegroups</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.devicegroups.DeviceGroups.ep_name">
+<span class="sig-name descname"><span class="pre">ep_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'devicegroup'</span></em><a class="headerlink" href="#firemon_api.apps.securitymanager.devicegroups.DeviceGroups.ep_name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.devicegroups.DeviceGroups.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#firemon_api.apps.securitymanager.devicegroups.DeviceGroup" title="firemon_api.apps.securitymanager.devicegroups.DeviceGroup"><span class="pre">DeviceGroup</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#firemon_api.apps.securitymanager.devicegroups.DeviceGroups.get" title="Link to this definition">¶</a></dt>
+<dd><p>Get single DeviceGroup</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*args</strong> (<em>int/str</em>) – (optional) id or name to retrieve.</p></li>
+<li><p><strong>**kwargs</strong> (<em>str</em>) – (optional) see filter() for available filters</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Get by ID</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fm</span><span class="o">.</span><span class="n">sm</span><span class="o">.</span><span class="n">devicegroupss</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fm</span><span class="o">.</span><span class="n">sm</span><span class="o">.</span><span class="n">devicegroups</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;my group&quot;</span><span class="p">)</span>
+<span class="go">&lt;DeviceGroup(my group)&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/logo_firemon.png" alt="Logo"/>
+            </a></p><p>
+    FireMon-API is a Python web wrapper for the FireMon SIP (Security Mangager, etc...)
+    APIs. The intent is make something that is useful for quick and easy development
+    against FireMon products.
+</p>
+
+<h3>Useful Links</h3>
+<ul>
+    <li><a href="https://firemon-api.readthedocs.io/en/latest/user/install.html">Installation</a></li>
+    <li><a href="https://firemon-api.readthedocs.io/en/latest/user/quickstart.html">Quickstart</a></li>
+
+    <p></p>
+
+    <p></p>
+
+    <li><a href="https://github.com/lukejohannsen/firemon-api">FireMon-API @ GitHub</a></li>
+    <li><a href="https://pypi.org/project/firemon-api/">FireMon-API @ PyPI</a></li>
+    <li><a href="https://github.com/lukejohannsen/firemon-api/issues">Issue Tracker</a></li>
+</ul>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  
+  </body>
+</html>

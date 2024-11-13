@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>firemon_api.apps.securitymanager.users &#8212; firemon-api  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d7e2fa82" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/nameko.css?v=2296cfae" />
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="firemon_api.apps.securitymanager.zones" href="zones.html" />
+    <link rel="prev" title="firemon_api.apps.securitymanager.siql" href="siql.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Lora:400' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  </head><body>
+  
+  
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zones.html" title="firemon_api.apps.securitymanager.zones"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="siql.html" title="firemon_api.apps.securitymanager.siql"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">firemon-api  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../apps.html" >FireMon Applications</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../securitymanager.html" accesskey="U">Security Manager</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">firemon_api.apps.securitymanager.users</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-firemon_api.apps.securitymanager.users">
+<span id="firemon-api-apps-securitymanager-users"></span><h1>firemon_api.apps.securitymanager.users<a class="headerlink" href="#module-firemon_api.apps.securitymanager.users" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.users.Permission">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">firemon_api.apps.securitymanager.users.</span></span><span class="sig-name descname"><span class="pre">Permission</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../core/app.html#firemon_api.core.app.App" title="firemon_api.core.app.App"><span class="pre">App</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#firemon_api.apps.securitymanager.users.Permission" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../core/response.html#firemon_api.core.response.BaseRecord" title="firemon_api.core.response.BaseRecord"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseRecord</span></code></a></p>
+<p>A Permission.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.users.User">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">firemon_api.apps.securitymanager.users.</span></span><span class="sig-name descname"><span class="pre">User</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../core/app.html#firemon_api.core.app.App" title="firemon_api.core.app.App"><span class="pre">App</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#firemon_api.apps.securitymanager.users.User" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../core/response.html#firemon_api.core.response.Record" title="firemon_api.core.response.Record"><code class="xref py py-class docutils literal notranslate"><span class="pre">Record</span></code></a></p>
+<p>Represents a User in Firemon</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<em>dict</em>) – dictionary of things values from json</p></li>
+<li><p><strong>app</strong> (<em>obj</em>) – App()</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Unlock and Enable all users</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">fm</span><span class="o">.</span><span class="n">sm</span><span class="o">.</span><span class="n">users</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+<span class="gp">... </span>  <span class="n">user</span><span class="o">.</span><span class="n">enabled</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="gp">... </span>  <span class="n">user</span><span class="o">.</span><span class="n">locked</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="gp">... </span>  <span class="n">user</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.users.User.set_password">
+<span class="sig-name descname"><span class="pre">set_password</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span></span></span><a class="headerlink" href="#firemon_api.apps.securitymanager.users.User.set_password" title="Link to this definition">¶</a></dt>
+<dd><p>Set user password</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>password</strong> (<em>str</em>) – password</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.users.UserGroup">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">firemon_api.apps.securitymanager.users.</span></span><span class="sig-name descname"><span class="pre">UserGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../core/app.html#firemon_api.core.app.App" title="firemon_api.core.app.App"><span class="pre">App</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#firemon_api.apps.securitymanager.users.UserGroup" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../core/response.html#firemon_api.core.response.Record" title="firemon_api.core.response.Record"><code class="xref py py-class docutils literal notranslate"><span class="pre">Record</span></code></a></p>
+<p>Represents a UserGroup in Firemon</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<em>dict</em>) – dictionary of things values from json</p></li>
+<li><p><strong>app</strong> (<em>obj</em>) – App()</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.users.UserGroup.permission_list">
+<span class="sig-name descname"><span class="pre">permission_list</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#firemon_api.apps.securitymanager.users.Permission" title="firemon_api.apps.securitymanager.users.Permission"><span class="pre">Permission</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#firemon_api.apps.securitymanager.users.UserGroup.permission_list" title="Link to this definition">¶</a></dt>
+<dd><p>List all available permissions in Firemon.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of available permissions.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list[<a class="reference internal" href="#firemon_api.apps.securitymanager.users.Permission" title="firemon_api.apps.securitymanager.users.Permission">Permission</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.users.UserGroup.permission_set">
+<span class="sig-name descname"><span class="pre">permission_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span></span></span><a class="headerlink" href="#firemon_api.apps.securitymanager.users.UserGroup.permission_set" title="Link to this definition">¶</a></dt>
+<dd><p>Set a permision for UserGroup.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>id</strong> (<em>int</em>) – see permission_list() for id values and meaning</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.users.UserGroup.permission_show">
+<span class="sig-name descname"><span class="pre">permission_show</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#firemon_api.apps.securitymanager.users.Permission" title="firemon_api.apps.securitymanager.users.Permission"><span class="pre">Permission</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#firemon_api.apps.securitymanager.users.UserGroup.permission_show" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[Permission]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.users.UserGroup.permission_unset">
+<span class="sig-name descname"><span class="pre">permission_unset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span></span></span><a class="headerlink" href="#firemon_api.apps.securitymanager.users.UserGroup.permission_unset" title="Link to this definition">¶</a></dt>
+<dd><p>Unset a permision for UserGroup.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>id</strong> (<em>int</em>) – see permission_list() for id values and meaning</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.users.UserGroups">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">firemon_api.apps.securitymanager.users.</span></span><span class="sig-name descname"><span class="pre">UserGroups</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api:</span> <span class="pre">~firemon_api.core.api.FiremonAPI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app:</span> <span class="pre">~firemon_api.core.app.App</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record=&lt;class</span> <span class="pre">'firemon_api.apps.securitymanager.users.UserGroup'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#firemon_api.apps.securitymanager.users.UserGroups" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../core/endpoint.html#firemon_api.core.endpoint.Endpoint" title="firemon_api.core.endpoint.Endpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">Endpoint</span></code></a></p>
+<p>Represents the User Groups</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>api</strong> (<em>obj</em>) – FiremonAPI()</p></li>
+<li><p><strong>app</strong> (<em>obj</em>) – App()</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – name of the endpoint</p></li>
+</ul>
+</dd>
+<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>record</strong> (<em>obj</em>) – default <cite>Record</cite> object</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.users.UserGroups.all">
+<span class="sig-name descname"><span class="pre">all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#firemon_api.apps.securitymanager.users.UserGroup" title="firemon_api.apps.securitymanager.users.UserGroup"><span class="pre">UserGroup</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#firemon_api.apps.securitymanager.users.UserGroups.all" title="Link to this definition">¶</a></dt>
+<dd><p>Get all <cite>Record</cite></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.users.UserGroups.ep_name">
+<span class="sig-name descname"><span class="pre">ep_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'usergroup'</span></em><a class="headerlink" href="#firemon_api.apps.securitymanager.users.UserGroups.ep_name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.users.Users">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">firemon_api.apps.securitymanager.users.</span></span><span class="sig-name descname"><span class="pre">Users</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api:</span> <span class="pre">~firemon_api.core.api.FiremonAPI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app:</span> <span class="pre">~firemon_api.core.app.App</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record=&lt;class</span> <span class="pre">'firemon_api.apps.securitymanager.users.User'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#firemon_api.apps.securitymanager.users.Users" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../core/endpoint.html#firemon_api.core.endpoint.Endpoint" title="firemon_api.core.endpoint.Endpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">Endpoint</span></code></a></p>
+<p>Represents the Users</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>api</strong> (<em>obj</em>) – FiremonAPI()</p></li>
+<li><p><strong>app</strong> (<em>obj</em>) – App()</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – name of the endpoint</p></li>
+</ul>
+</dd>
+<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>record</strong> (<em>obj</em>) – default <cite>Record</cite> object</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.users.Users.all">
+<span class="sig-name descname"><span class="pre">all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#firemon_api.apps.securitymanager.users.User" title="firemon_api.apps.securitymanager.users.User"><span class="pre">User</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#firemon_api.apps.securitymanager.users.Users.all" title="Link to this definition">¶</a></dt>
+<dd><p>Get all <cite>Record</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[User]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.users.Users.create">
+<span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#firemon_api.apps.securitymanager.users.User" title="firemon_api.apps.securitymanager.users.User"><span class="pre">User</span></a></span></span><a class="headerlink" href="#firemon_api.apps.securitymanager.users.Users.create" title="Link to this definition">¶</a></dt>
+<dd><p>Creates an object on an endpoint.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>user_config</strong> (<em>dict</em>) – a dictionary of all the needed options</p>
+</dd>
+<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>system_user</strong> (<em>bool</em>) – default (False) create user as a system user</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>User</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.users.Users.ep_name">
+<span class="sig-name descname"><span class="pre">ep_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'user'</span></em><a class="headerlink" href="#firemon_api.apps.securitymanager.users.Users.ep_name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.users.Users.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#firemon_api.apps.securitymanager.users.User" title="firemon_api.apps.securitymanager.users.User"><span class="pre">User</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#firemon_api.apps.securitymanager.users.Users.get" title="Link to this definition">¶</a></dt>
+<dd><p>Get single User</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*args</strong> (<em>int/str</em>) – (optional) id or name to retrieve.</p></li>
+<li><p><strong>**kwargs</strong> (<em>str</em>) – (optional) see filter() for available filters</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Get by ID</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fm</span><span class="o">.</span><span class="n">sm</span><span class="o">.</span><span class="n">devices</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">&lt;User(firemon)&gt;</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fm</span><span class="o">.</span><span class="n">sm</span><span class="o">.</span><span class="n">devices</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;workflow&quot;</span><span class="p">)</span>
+<span class="go">&lt;User(workflow)&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.users.Users.template">
+<span class="sig-name descname"><span class="pre">template</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#firemon_api.apps.securitymanager.users.Users.template" title="Link to this definition">¶</a></dt>
+<dd><p>Create a template of a simple user</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dictionary of data to pass to create</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="firemon_api.apps.securitymanager.users.UsersError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">firemon_api.apps.securitymanager.users.</span></span><span class="sig-name descname"><span class="pre">UsersError</span></span><a class="headerlink" href="#firemon_api.apps.securitymanager.users.UsersError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../core/errors.html#firemon_api.core.errors.SecurityManagerError" title="firemon_api.core.errors.SecurityManagerError"><code class="xref py py-class docutils literal notranslate"><span class="pre">SecurityManagerError</span></code></a></p>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/logo_firemon.png" alt="Logo"/>
+            </a></p><p>
+    FireMon-API is a Python web wrapper for the FireMon SIP (Security Mangager, etc...)
+    APIs. The intent is make something that is useful for quick and easy development
+    against FireMon products.
+</p>
+
+<h3>Useful Links</h3>
+<ul>
+    <li><a href="https://firemon-api.readthedocs.io/en/latest/user/install.html">Installation</a></li>
+    <li><a href="https://firemon-api.readthedocs.io/en/latest/user/quickstart.html">Quickstart</a></li>
+
+    <p></p>
+
+    <p></p>
+
+    <li><a href="https://github.com/lukejohannsen/firemon-api">FireMon-API @ GitHub</a></li>
+    <li><a href="https://pypi.org/project/firemon-api/">FireMon-API @ PyPI</a></li>
+    <li><a href="https://github.com/lukejohannsen/firemon-api/issues">Issue Tracker</a></li>
+</ul>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  
+  </body>
+</html>

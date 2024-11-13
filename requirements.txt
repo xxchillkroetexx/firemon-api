@@ -1,5 +1,3 @@
-pre-commit
 chardet
 requests
-setuptools_scm>=6.2
 tenacity
