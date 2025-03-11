@@ -104,6 +104,8 @@ class FiremonAPI(object):
         self.host = host
         self.domain_id = domain_id
         self._version = "unknown"
+        self._version_fmos = "unknown"
+        self._version_platform = "unknown"
 
     def auth(self, username: str, password: str):
         """User must auth to get access to most api. Basic auth
@@ -130,7 +132,10 @@ class FiremonAPI(object):
         # self.session.headers.update({"X-FM-AUTH-Token": self.token})
 
         # Update items of interest
-        self._version = self._versions()["fmosVersion"]
+        versions = self._versions()
+        self._version = versions["version"]
+        self._version_fmos = versions["fmosVersion"]
+        self._version_platform = versions["platformVersion"]
         self._verify_domain(self.domain_id)
 
         from firemon_api.apps import (
@@ -275,5 +280,12 @@ class FiremonAPI(object):
 
     @property
     def version(self):
-        """FMOS version"""
         return self._version
+
+    @property
+    def version_fmos(self):
+        return self._version_fmos
+
+    @property
+    def version_platform(self):
+        return self._version_platform
