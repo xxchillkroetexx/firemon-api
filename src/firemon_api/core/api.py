@@ -267,16 +267,17 @@ class FiremonAPI(object):
 
     @host.setter
     def host(self, host):
-        try:
-            socket.gethostbyname(host)
-        except socket.gaierror:
-            warnings.warn(f"Host {host} does not resolve")
-        self._host = host
         p_host = urlparse(host)
         if p_host.netloc:
-            self._base_url = f"https://{p_host.netloc}"
+            self._host = p_host.netloc.split(":")[0]
+            self._base_url = f"{p_host.scheme}://{p_host.netloc}"
         else:
+            self._host = host           
             self._base_url = f"https://{host}"
+        try:
+            socket.gethostbyname(self._host)
+        except socket.gaierror:
+            warnings.warn(f"Host {self._host} does not resolve.")
 
     @property
     def version(self):
