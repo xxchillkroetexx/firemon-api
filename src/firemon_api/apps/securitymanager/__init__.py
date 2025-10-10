@@ -25,6 +25,7 @@ from .rulerec import RuleRecommendation
 from .siql import Siql, SiqlData
 from .users import UsersError, Permission, Users, User, UserGroup, UserGroups
 from .zones import ZonesError, Zone, Zones, FmZone, FmZones
+from .usertags import UserTagsError, UserTag, UserTags
 
 __all__ = [
     "AccessPathEvent",
@@ -84,4 +85,7 @@ __all__ = [
     "ZonesError",
     "Zone",
     "Zones",
+    "UserTagsError",
+    "UserTag",
+    "UserTags",
 ]
