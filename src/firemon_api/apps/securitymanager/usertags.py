@@ -1,8 +1,10 @@
 # Standard packages
 import logging
-from typing import Optional
+from typing import Literal, Optional
+from uuid import UUID
 
 # Local packages
+from firemon_api.apps.securitymanager.users import UserGroup
 from firemon_api.core.app import App
 from firemon_api.core.api import FiremonAPI
 from firemon_api.core.endpoint import Endpoint
@@ -11,6 +13,21 @@ from firemon_api.core.response import Record
 from firemon_api.core.query import Request, RequestResponse
 
 log = logging.getLogger(__name__)
+
+UserTagType = Literal[
+    "CONTROL",
+    "NDAPP",
+    "NDNATRULE",
+    "NDNETWORK",
+    "NDPROFILE",
+    "NDSCHEDULE",
+    "NDSECRULE",
+    "NDSERVICE",
+    "NDURLMATCHER",
+    "NDUSER",
+    "REVIEW",
+    "TICKET",
+]
 
 
 class UserTagsError(SecurityManagerError):
@@ -34,7 +51,7 @@ class UserTag(Record):
     """
 
     _ep_name = "usertag"
-    _is_domain_url = False
+    _is_domain_url = True
 
     def __init__(self, config: dict, app: App):
         super().__init__(config, app)
@@ -61,7 +78,7 @@ class UserTags(Endpoint):
     """
 
     ep_name = "usertag"
-    _is_domain_url = False
+    _is_domain_url = True
 
     def __init__(self, api: FiremonAPI, app: App, record=UserTag):
         super().__init__(api, app, record=record)
@@ -109,18 +126,82 @@ class UserTags(Endpoint):
             else:
                 filter_lookup = self.filter(*args)
             if filter_lookup:
-                if len(filter_lookup) > 1:
+                if isinstance(filter_lookup, list) and len(filter_lookup) > 1:
                     raise ValueError(
                         "get() returned more than one result. "
                         "Check that the kwarg(s) passed are valid for this "
                         "endpoint or use filter() or all() instead."
                     )
                 else:
-                    return filter_lookup[0]
+                    return filter_lookup[0] if isinstance(filter_lookup, list) else filter_lookup
             return None
 
-    def create(self, name: str, description: Optional[str] = None, 
-               color: Optional[str] = None) -> UserTag:
+    def filter(self, *args, **kwargs):
+        """Filter user tags using the Security Manager `q` query parameter.
+
+        Supports:
+            - q: raw SM search DSL string, e.g., "name~'Production*'"
+            - name: convenience; maps to q="name~'<value>'"
+            - name_like: convenience; maps to q="name~'<value>'"
+            - only_editable / onlyEditable: boolean to return only tags the user can edit
+            - sort: list of sort fields (passed as-is)
+            - page: page index (int)
+            - page_size / pageSize: page size (int)
+
+        Examples:
+            >>> fm.sm.usertags.filter(q="name~'Production*'", only_editable=False, page=0, page_size=10)
+            >>> fm.sm.usertags.filter(name='Production')
+            >>> fm.sm.usertags.filter(name_like='Production*')
+        """
+        # Keep a copy for potential fallback to super().filter(...)
+        original_kwargs = dict(kwargs)
+
+        # Extract supported params
+        q = kwargs.pop("q", None)
+        only_editable = kwargs.pop("only_editable", kwargs.pop("onlyEditable", None))
+        sort = kwargs.pop("sort", None)
+        page = kwargs.pop("page", None)
+        page_size = kwargs.pop("page_size", kwargs.pop("pageSize", None))
+        name = kwargs.pop("name", None)
+        name_like = kwargs.pop("name_like", None)
+
+        # Map convenience params to q
+        if q is None and (name is not None or name_like is not None):
+            value = name if name is not None else name_like
+            # Use 'like' operator (~). Can include wildcard '*' if needed.
+            q = f"name~'{value}'"
+
+        # If no 'q' and no recognized SM query params were provided, fall back to the base implementation
+        recognized = any(x is not None for x in [q, only_editable, sort, page, page_size, name, name_like])
+        if not recognized:
+            return super().filter(*args, **original_kwargs)
+
+        params = {}
+        if q is not None:
+            params["q"] = q
+        if only_editable is not None:
+            params["onlyEditable"] = only_editable
+        if sort is not None:
+            params["sort"] = sort
+        if page is not None:
+            params["page"] = page
+        if page_size is not None:
+            params["pageSize"] = page_size
+
+        req = Request(
+            base=self.url,
+            session=self.api.session,
+            params=params,
+        )
+        return self._response_loader(req.get())
+
+    def create(
+        self,
+        name: str,
+        description: Optional[str] = None,
+        color: Optional[str] = None,
+        sharedUserGroups: Optional[list[UserGroup]] = None,
+    ) -> UserTag:
         """Create a new usertag
 
         Parameters:
@@ -143,6 +224,8 @@ class UserTags(Endpoint):
             data["description"] = description
         if color is not None:
             data["color"] = color
+        if sharedUserGroups is not None:
+            data["sharedUserGroups"] = [{"id": str(group.id)} for group in sharedUserGroups]
 
         req = Request(
             base=self.url,
@@ -169,4 +252,39 @@ class UserTags(Endpoint):
         conf["name"] = None
         conf["description"] = None
         conf["color"] = None
+        conf["sharedUserGroups"] = []
         return conf
+
+    def associate(self, user_tags: list[UserTag], tagType: UserTagType, matchId: UUID) -> bool:
+        """Associate a given list of usertags with an object. Not mentioned usertags will be removed.
+
+        Parameters:
+            user_tags (list[UserTag]): List of UserTag objects to associate
+            tagType (str): Type of object to associate with. One of:
+                "CONTROL", "NDAPP", "NDNATRULE", "NDNETWORK", "NDPROFILE",
+                "NDSCHEDULE", "NDSECRULE", "NDSERVICE", "NDURLMATCHER",
+                "NDUSER", "REVIEW", "TICKET"
+            matchId (UUID): UUID of the object to associate with
+
+        Returns:
+            bool: True if successful
+
+        Examples:
+
+            >>> tag1 = fm.sm.usertags.get(1)
+            >>> tag2 = fm.sm.usertags.get(2)
+            >>> fm.sm.usertags.associate([tag1, tag2], 'NDNETWORK', UUID('123e4567-e89b-12d3-a456-426614174000'))
+            True
+        """
+        data = {
+            "userTags": [str(tag.id) for tag in user_tags],
+            "tagType": tagType,
+            "matchId": str(matchId),
+        }
+
+        req = Request(
+            base=f"{self.app.url}/usertag-association/{self.id}",
+            session=self.app.api.session,
+        ).post(json=data)
+
+        return req.get("success", False)  # TODO: verify if response structure includes 'success'
