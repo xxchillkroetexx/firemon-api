@@ -193,7 +193,7 @@ class UserTags(Endpoint):
             session=self.api.session,
             filters=filters,
         )
-        return self._response_loader(req.get())
+        return [self._response_loader(i) for i in req.get()]
 
     def create(
         self,
