@@ -176,22 +176,22 @@ class UserTags(Endpoint):
         if not recognized:
             return super().filter(*args, **original_kwargs)
 
-        params = {}
+        filters = {}
         if q is not None:
-            params["q"] = q
+            filters["q"] = q
         if only_editable is not None:
-            params["onlyEditable"] = only_editable
+            filters["onlyEditable"] = only_editable
         if sort is not None:
-            params["sort"] = sort
+            filters["sort"] = sort
         if page is not None:
-            params["page"] = page
+            filters["page"] = page
         if page_size is not None:
-            params["pageSize"] = page_size
+            filters["pageSize"] = page_size
 
         req = Request(
             base=self.url,
             session=self.api.session,
-            params=params,
+            filters=filters,
         )
         return self._response_loader(req.get())
 
