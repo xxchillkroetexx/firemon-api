@@ -59,6 +59,36 @@ class UserTag(Record):
     def __str__(self):
         return str(self.name)
 
+    def save(self) -> bool:
+        """Saves changes to an existing user tag.
+        
+        Override the default save() method because the FireMon API
+        expects PUT /domain/{domainId}/usertag (without ID in path)
+        rather than PUT /domain/{domainId}/usertag/{id}
+        
+        Returns:
+            bool: True if PUT request was successful.
+            
+        Examples:
+            >>> tag = fm.sm.usertags.get(1)
+            >>> tag.name = 'Updated Production'
+            >>> tag.save()
+            True
+        """
+        if self.id:
+            diff = self._diff()
+            if diff:
+                serialized = self.serialize()
+                
+                req = Request(
+                    base=self._ep_url,
+                    session=self._session,
+                )
+                req.put(json=serialized)
+                return True
+
+        return False
+
 
 class UserTags(Endpoint):
     """Represents the UserTags
