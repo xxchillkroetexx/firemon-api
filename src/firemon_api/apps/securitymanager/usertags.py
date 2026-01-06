@@ -313,8 +313,8 @@ class UserTags(Endpoint):
         }
 
         req = Request(
-            base=f"{self.app.url}/usertag-association/{self.id}",
-            session=self.app.api.session,
-        ).post(json=data)
-
-        return req.get("success", False)  # TODO: verify if response structure includes 'success'
+            base=f"{self.app_url}/{self.ep_name}/association",
+            session=self.session,
+        )
+        resp = req.put(json=data)
+        return resp.ok 
