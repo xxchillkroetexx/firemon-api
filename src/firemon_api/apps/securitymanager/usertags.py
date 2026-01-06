@@ -307,7 +307,7 @@ class UserTags(Endpoint):
             True
         """
         data = {
-            "userTags": [str(tag.id) for tag in user_tags],
+            "userTags": [{"id": int(tag.id), "name": str(tag.name), "domainId": int(tag.domainId)} for tag in user_tags],
             "tagType": tagType,
             "matchId": str(matchId),
         }
