@@ -316,5 +316,4 @@ class UserTags(Endpoint):
             base=f"{self.app_url}/{self.ep_name}/association",
             session=self.session,
         )
-        resp = req.put(json=data)
-        return resp.ok 
+        return req.put(json=data)
